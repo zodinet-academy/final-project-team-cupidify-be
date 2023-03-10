@@ -1,3 +1,4 @@
+import { User } from './../../user/entities/user.entity';
 import {
   Entity,
   Column,
@@ -5,6 +6,9 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToOne,
+  JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { MinLength, IsDate, IsString } from 'class-validator';
 import { Gender } from 'src/shared/enum';
@@ -14,8 +18,12 @@ export class Profile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id', type: 'uuid' })
+  @Column()
   user_id: string;
+
+  @ManyToOne((type) => User)
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
+  user: User;
 
   @Column({ name: 'name' })
   @IsString()

@@ -5,8 +5,12 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { MinLength, MaxLength, IsEmail } from 'class-validator';
+import { Profile } from 'src/profile/entities/profile.entity';
+import { Match } from 'src/match/entities/match.entity';
 
 @Entity({ name: 'user', synchronize: true })
 export class User {
@@ -33,4 +37,10 @@ export class User {
 
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
+
+  @OneToOne(() => Profile, (profile) => profile.user_id)
+  user: Profile;
+
+  @OneToMany((type) => Match, (match) => match.user_id)
+  matches: Match[];
 }
