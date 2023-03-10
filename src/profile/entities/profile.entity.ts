@@ -7,6 +7,7 @@ import {
   DeleteDateColumn,
 } from 'typeorm';
 import { MinLength, IsDate, IsString } from 'class-validator';
+import { Gender } from 'src/shared/enum';
 
 @Entity({ name: 'profile', synchronize: true })
 export class ProfileEntity {
@@ -20,6 +21,9 @@ export class ProfileEntity {
   @IsString()
   @MinLength(3)
   name: string;
+
+  @Column({ name: 'gender', type: 'enum', enum: Gender })
+  gender: Gender;
 
   @Column({ name: 'birthday' })
   @IsDate()
