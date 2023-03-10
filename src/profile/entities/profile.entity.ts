@@ -1,4 +1,4 @@
-import { UserEntity } from './../../user/entities/user.entity';
+import { User } from './../../user/entities/user.entity';
 import {
   Entity,
   Column,
@@ -8,19 +8,22 @@ import {
   DeleteDateColumn,
   OneToOne,
   JoinColumn,
+  ManyToOne,
 } from 'typeorm';
 import { MinLength, IsDate, IsString } from 'class-validator';
 import { Gender } from 'src/shared/enum';
 
 @Entity({ name: 'profile', synchronize: true })
-export class ProfileEntity {
+export class Profile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'user_id', type: 'uuid' })
-  @OneToOne(() => UserEntity, (user) => user.user) // specify inverse side as a second parameter
-  @JoinColumn()
-  user_id: UserEntity;
+  @Column()
+  user_id: string;
+
+  @ManyToOne((type) => User)
+  @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
+  user: User;
 
   @Column({ name: 'name' })
   @IsString()
