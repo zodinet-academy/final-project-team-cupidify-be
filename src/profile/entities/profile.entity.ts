@@ -1,3 +1,4 @@
+import { UserEntity } from './../../user/entities/user.entity';
 import {
   Entity,
   Column,
@@ -5,6 +6,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToOne,
+  JoinColumn,
 } from 'typeorm';
 import { MinLength, IsDate, IsString } from 'class-validator';
 import { Gender } from 'src/shared/enum';
@@ -15,7 +18,9 @@ export class ProfileEntity {
   id: string;
 
   @Column({ name: 'user_id', type: 'uuid' })
-  user_id: string;
+  @OneToOne(() => UserEntity, (user) => user.user) // specify inverse side as a second parameter
+  @JoinColumn()
+  user_id: UserEntity;
 
   @Column({ name: 'name' })
   @IsString()
