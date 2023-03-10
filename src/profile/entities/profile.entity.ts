@@ -10,7 +10,7 @@ import { MinLength, IsDate, IsString } from 'class-validator';
 import { Gender } from 'src/shared/enum';
 
 @Entity({ name: 'profile', synchronize: true })
-export class ProfileEntity {
+export class Profile {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 

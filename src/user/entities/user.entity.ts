@@ -9,7 +9,7 @@ import {
 import { MinLength, MaxLength, IsEmail } from 'class-validator';
 
 @Entity({ name: 'user', synchronize: true })
-export class UserEntity {
+export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
