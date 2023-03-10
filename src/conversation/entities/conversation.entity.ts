@@ -21,4 +21,7 @@ export class Conversation {
   updatedAt: Date;
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
+
+  // @ManyToOne(() => User, (user) => user.photos)
+  // user: User;
 }
