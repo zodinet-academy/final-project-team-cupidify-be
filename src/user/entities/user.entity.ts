@@ -6,12 +6,14 @@ import {
   UpdateDateColumn,
   DeleteDateColumn,
   OneToOne,
+  OneToMany,
 } from 'typeorm';
 import { MinLength, MaxLength, IsEmail } from 'class-validator';
-import { ProfileEntity } from 'src/profile/entities/profile.entity';
+import { Profile } from 'src/profile/entities/profile.entity';
+import { Match } from 'src/match/entities/match.entity';
 
 @Entity({ name: 'user', synchronize: true })
-export class UserEntity {
+export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -36,6 +38,9 @@ export class UserEntity {
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
 
-  @OneToOne(() => ProfileEntity, (profile) => profile.user_id)
-  user: ProfileEntity;
+  @OneToOne(() => Profile, (profile) => profile.user_id)
+  user: Profile;
+
+  @OneToMany((type) => Match, (match) => match.user_id)
+  matches: Match[];
 }
