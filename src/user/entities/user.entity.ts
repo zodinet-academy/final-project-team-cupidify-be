@@ -5,8 +5,10 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   DeleteDateColumn,
+  OneToOne,
 } from 'typeorm';
 import { MinLength, MaxLength, IsEmail } from 'class-validator';
+import { ProfileEntity } from 'src/profile/entities/profile.entity';
 
 @Entity({ name: 'user', synchronize: true })
 export class UserEntity {
@@ -33,4 +35,7 @@ export class UserEntity {
 
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
+
+  @OneToOne(() => ProfileEntity, (profile) => profile.user_id)
+  user: ProfileEntity;
 }
