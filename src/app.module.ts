@@ -10,6 +10,7 @@ import { ConversationModule } from './conversation/conversation.module';
 import { MessageModule } from './message/message.module';
 import { MatchModule } from './match/match.module';
 import { BlackListModule } from './black-list/black-list.module';
+import { PhotoModule } from './photo/photo.module';
 @Module({
   imports: [
     UserModule,
@@ -19,7 +20,7 @@ import { BlackListModule } from './black-list/black-list.module';
     MatchModule,
     ConversationModule,
     MessageModule,
-  ],
+  , PhotoModule],
   controllers: [AppController],
   providers: [AppService],
 })

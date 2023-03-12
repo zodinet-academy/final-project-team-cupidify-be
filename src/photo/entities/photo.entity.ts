@@ -1,23 +1,22 @@
-import { NotiType } from 'src/shared/enum';
 import { User } from 'src/user/entities/user.entity';
 import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
-export class Notification {
+export class Photo {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'is_seen' })
-  isSeen: boolean;
+  // @Column({ name: 'user_id', type: 'uuid' })
+  // userId: string;
 
-  @Column('text')
-  type: NotiType;
+  @Column({ name: 'photo_url' })
+  photoUrl: string;
 
-  @ManyToOne(() => User, (user) => user.notification, { onDelete: 'CASCADE' })
-  fromUser: User;
+  @Column({ name: 'is_favorite' })
+  isFavorite: boolean;
 
-  @ManyToOne(() => User, (user) => user.notification, { onDelete: 'CASCADE' })
-  toUser: User;
+  @ManyToOne(() => User, (user) => user.photos, { onDelete: 'CASCADE' })
+  user: User;
 
   @Column({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

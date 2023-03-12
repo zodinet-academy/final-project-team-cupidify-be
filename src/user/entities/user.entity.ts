@@ -7,10 +7,14 @@ import {
   DeleteDateColumn,
   OneToOne,
   OneToMany,
+  JoinColumn,
 } from 'typeorm';
 import { MinLength, MaxLength, IsEmail } from 'class-validator';
 import { Profile } from 'src/profile/entities/profile.entity';
 import { Match } from 'src/match/entities/match.entity';
+import { Photo } from 'src/photo/entities/photo.entity';
+import { Notification } from 'src/notification/entities/notification.entity';
+import { BlackList } from 'src/black-list/entities/black-list.entity';
 
 @Entity({ name: 'user', synchronize: true })
 export class User {
@@ -43,4 +47,14 @@ export class User {
 
   @OneToMany((type) => Match, (match) => match.user_id)
   matches: Match[];
+
+  @OneToMany(() => Photo, (photo) => photo.user)
+  photos: Photo[];
+
+  @OneToMany(() => Notification, (notification) => notification.fromUser)
+  notification: Notification[];
+
+  @OneToOne(() => BlackList, (blackList) => blackList.user)
+  @JoinColumn()
+  blackList: BlackList;
 }
