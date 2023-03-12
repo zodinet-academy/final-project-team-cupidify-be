@@ -1,7 +1,7 @@
 import { User } from 'src/user/entities/user.entity';
 import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
 
-@Entity('black_list')
+@Entity()
 export class BlackList {
   @PrimaryGeneratedColumn('uuid')
   id: string;
