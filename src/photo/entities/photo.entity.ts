@@ -15,6 +15,9 @@ export class Photo {
   @Column({ name: 'is_favorite' })
   isFavorite: boolean;
 
+  @ManyToOne(() => User, (user) => user.photos, { onDelete: 'CASCADE' })
+  user: User;
+
   @Column({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
@@ -23,7 +26,4 @@ export class Photo {
 
   @Column({ name: 'deleted_at', type: 'timestamptz' })
   deletedAt: Date;
-
-  // @ManyToOne(() => User, (user) => user.photos)
-  // user: User;
 }

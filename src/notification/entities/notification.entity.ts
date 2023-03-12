@@ -1,26 +1,23 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
-
-enum NotiType {
-  Matching = 'matching',
-  Message = 'message',
-}
+import { NotiType } from 'src/shared/enum';
+import { User } from 'src/user/entities/user.entity';
+import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Notification {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ name: 'from_id' })
-  fromId: string;
-
-  @Column({ name: 'to_id' })
-  toId: string;
-
   @Column({ name: 'is_seen' })
   isSeen: boolean;
 
   @Column('text')
   type: NotiType;
+
+  @ManyToOne(() => User, (user) => user.notification, { onDelete: 'CASCADE' })
+  fromUser: User;
+
+  @ManyToOne(() => User, (user) => user.notification, { onDelete: 'CASCADE' })
+  toUser: User;
 
   @Column({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

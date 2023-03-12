@@ -3,3 +3,8 @@ export enum Gender {
   FEMALE = 'FEMALE',
   OTHER = 'OTHER',
 }
+
+export enum NotiType {
+  Matching = 'matching',
+  Message = 'message',
+}
