@@ -1,12 +1,19 @@
 import { User } from 'src/user/entities/user.entity';
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
-@Entity()
+@Entity('black_list')
 export class BlackList {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @OneToOne(() => User, (user) => user.blackList, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
   user: User;
 
   @Column({ name: 'blocked_id' })

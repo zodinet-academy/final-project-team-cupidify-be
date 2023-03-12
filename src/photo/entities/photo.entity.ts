@@ -1,22 +1,26 @@
 import { User } from 'src/user/entities/user.entity';
-import { Column, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 
 @Entity()
 export class Photo {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // @Column({ name: 'user_id', type: 'uuid' })
-  // userId: string;
+  @ManyToOne(() => User, (user) => user.photos, { onDelete: 'CASCADE' })
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column({ name: 'photo_url' })
   photoUrl: string;
 
   @Column({ name: 'is_favorite' })
   isFavorite: boolean;
-
-  @ManyToOne(() => User, (user) => user.photos, { onDelete: 'CASCADE' })
-  user: User;
 
   @Column({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

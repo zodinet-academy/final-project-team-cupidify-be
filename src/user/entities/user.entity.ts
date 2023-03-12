@@ -52,9 +52,8 @@ export class User {
   photos: Photo[];
 
   @OneToMany(() => Notification, (notification) => notification.fromUser)
-  notification: Notification[];
+  notifications: Notification[];
 
   @OneToOne(() => BlackList, (blackList) => blackList.user)
-  @JoinColumn()
   blackList: BlackList;
 }
