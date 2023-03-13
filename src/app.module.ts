@@ -38,6 +38,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     ConversationModule,
     MessageModule,
     PhotoModule,
+    LocationModule,
   ],
   controllers: [AppController],
   providers: [AppService],

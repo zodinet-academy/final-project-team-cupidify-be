@@ -1,25 +1,16 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  OneToOne,
-  OneToMany,
-} from 'typeorm';
-import { MinLength, MaxLength, IsEmail } from 'class-validator';
-import { Profile } from '../../profile/entities/profile.entity';
-import { Match } from '../../match/entities/match.entity';
+import { IsEmail, MaxLength, MinLength } from 'class-validator';
+
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 import { BlackList } from '../../black-list/entities/black-list.entity';
+import { Location } from '../../location/entities/location.entity';
+import { Match } from '../../match/entities/match.entity';
 import { Notification } from '../../notification/entities/notification.entity';
 import { Photo } from '../../photo/entities/photo.entity';
+import { Profile } from '../../profile/entities/profile.entity';
+import { Base } from '../../shared/base.entity';
 
 @Entity({ name: 'user', synchronize: true })
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class User extends Base {
   @Column({ name: 'phone', unique: true })
   @MinLength(15)
   @MaxLength(15)
@@ -32,19 +23,10 @@ export class User {
   @IsEmail()
   email: string;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
-
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt: Date;
-
-  @OneToOne(() => Profile, (profile) => profile.user_id)
+  @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
 
-  @OneToMany(() => Match, (match) => match.user_id)
+  @OneToMany(() => Match, (match) => match.user)
   matches: Match[];
 
   @OneToMany(() => Photo, (photo) => photo.user)
@@ -53,6 +35,9 @@ export class User {
   @OneToMany(() => Notification, (notification) => notification.fromUser)
   notifications: Notification[];
 
-  @OneToOne(() => BlackList, (blackList) => blackList.user)
-  blackList: BlackList;
+  @OneToMany(() => BlackList, (blackList) => blackList.user)
+  blackList: BlackList[];
+
+  @OneToOne(() => Location, (location) => location.user)
+  location: Location;
 }
