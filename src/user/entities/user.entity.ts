@@ -34,8 +34,8 @@ export class User extends Base {
   @OneToMany(() => Notification, (notification) => notification.fromUser)
   notifications: Notification[];
 
-  @OneToOne(() => BlackList, (blackList) => blackList.user)
-  blackList: BlackList;
+  @OneToMany(() => BlackList, (blackList) => blackList.user)
+  blackList: BlackList[];
 
   @OneToOne(() => Location, (location) => location.user)
   location: Location;
