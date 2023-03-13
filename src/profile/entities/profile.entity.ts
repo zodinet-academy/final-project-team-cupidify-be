@@ -8,7 +8,6 @@ import {
   DeleteDateColumn,
   OneToOne,
   JoinColumn,
-  ManyToOne,
 } from 'typeorm';
 import { MinLength, IsDate, IsString } from 'class-validator';
 import { Gender } from 'src/shared/enum';
@@ -21,7 +20,7 @@ export class Profile {
   @Column()
   user_id: string;
 
-  @ManyToOne((type) => User)
+  @OneToOne(() => User)
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 

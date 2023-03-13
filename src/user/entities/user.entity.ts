@@ -43,9 +43,9 @@ export class User {
   deletedAt: Date;
 
   @OneToOne(() => Profile, (profile) => profile.user_id)
-  user: Profile;
+  profile: Profile;
 
-  @OneToMany((type) => Match, (match) => match.user_id)
+  @OneToMany(() => Match, (match) => match.user_id)
   matches: Match[];
 
   @OneToMany(() => Photo, (photo) => photo.user)
