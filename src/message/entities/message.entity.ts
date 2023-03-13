@@ -7,8 +7,7 @@ export class Message {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @ManyToOne((type) => Conversation)
-  @JoinColumn({ name: 'conversation_id', referencedColumnName: 'id' })
+  @ManyToOne(() => Conversation, (conversation) => conversation.messages)
   conversation: Conversation;
 
   @Column({ name: 'sender_id', type: 'uuid' })
