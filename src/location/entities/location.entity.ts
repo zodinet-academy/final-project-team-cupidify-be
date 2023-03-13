@@ -1,23 +1,9 @@
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  JoinColumn,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Base } from 'src/shared/base.entity';
+import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
 import { User } from './../../user/entities/user.entity';
 
 @Entity({ name: 'location', synchronize: true })
-export class Location {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column()
-  user_id: string;
-
+export class Location extends Base {
   @OneToOne(() => User, (user) => user.location, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
@@ -27,13 +13,4 @@ export class Location {
 
   @Column('double precision')
   latitude: number;
-
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at', type: 'timestamptz' })
-  updatedAt: Date;
-
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt: Date;
 }

@@ -5,22 +5,11 @@ import { Match } from 'src/match/entities/match.entity';
 import { Notification } from 'src/notification/entities/notification.entity';
 import { Photo } from 'src/photo/entities/photo.entity';
 import { Profile } from 'src/profile/entities/profile.entity';
-import {
-  Column,
-  CreateDateColumn,
-  DeleteDateColumn,
-  Entity,
-  OneToMany,
-  OneToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Base } from 'src/shared/base.entity';
+import { Column, Entity, OneToMany, OneToOne } from 'typeorm';
 
 @Entity({ name: 'user', synchronize: true })
-export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+export class User extends Base {
   @Column({ name: 'phone', unique: true })
   @MinLength(15)
   @MaxLength(15)
@@ -33,19 +22,10 @@ export class User {
   @IsEmail()
   email: string;
 
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
-
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt: Date;
-
-  @OneToOne(() => Profile, (profile) => profile.user_id)
+  @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
 
-  @OneToMany(() => Match, (match) => match.user_id)
+  @OneToMany(() => Match, (match) => match.user)
   matches: Match[];
 
   @OneToMany(() => Photo, (photo) => photo.user)
