@@ -13,6 +13,10 @@ import { BlackListModule } from './black-list/black-list.module';
 import { PhotoModule } from './photo/photo.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LocationModule } from './location/location.module';
+import { config } from 'dotenv';
+import { AuthModule } from './auth/auth.module';
+config();
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -39,6 +43,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     MessageModule,
     PhotoModule,
     LocationModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
