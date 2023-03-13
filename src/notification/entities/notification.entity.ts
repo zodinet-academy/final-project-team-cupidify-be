@@ -14,11 +14,11 @@ export class Notification {
   id: string;
 
   @ManyToOne(() => User, (user) => user.notifications, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'from_id' })
   fromUser: User;
 
   @ManyToOne(() => User, (user) => user.notifications, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'to_id' })
   toUser: User;
 
   @Column({ name: 'is_seen' })
