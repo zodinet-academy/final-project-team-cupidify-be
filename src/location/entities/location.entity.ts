@@ -18,7 +18,7 @@ export class Location {
   @Column()
   user_id: string;
 
-  @OneToOne(() => User)
+  @OneToOne(() => User, (user) => user.location, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
 

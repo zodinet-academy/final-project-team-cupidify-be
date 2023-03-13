@@ -1,20 +1,20 @@
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  OneToOne,
-  OneToMany,
-  JoinColumn,
-} from 'typeorm';
-import { MinLength, MaxLength, IsEmail } from 'class-validator';
-import { Profile } from 'src/profile/entities/profile.entity';
-import { Match } from 'src/match/entities/match.entity';
-import { Photo } from 'src/photo/entities/photo.entity';
-import { Notification } from 'src/notification/entities/notification.entity';
+import { IsEmail, MaxLength, MinLength } from 'class-validator';
 import { BlackList } from 'src/black-list/entities/black-list.entity';
+import { Location } from 'src/location/entities/location.entity';
+import { Match } from 'src/match/entities/match.entity';
+import { Notification } from 'src/notification/entities/notification.entity';
+import { Photo } from 'src/photo/entities/photo.entity';
+import { Profile } from 'src/profile/entities/profile.entity';
+import {
+  Column,
+  CreateDateColumn,
+  DeleteDateColumn,
+  Entity,
+  OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+  UpdateDateColumn,
+} from 'typeorm';
 
 @Entity({ name: 'user', synchronize: true })
 export class User {
@@ -56,4 +56,7 @@ export class User {
 
   @OneToOne(() => BlackList, (blackList) => blackList.user)
   blackList: BlackList;
+
+  @OneToOne(() => Location, (location) => location.user)
+  location: Location;
 }
