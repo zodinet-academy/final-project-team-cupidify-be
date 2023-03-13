@@ -22,27 +22,25 @@ export class Profile extends Base {
   @IsDate()
   birthday: Date;
 
-  @Column({ name: 'description' })
+  @Column({ name: 'description', nullable: true })
   @IsString()
   description: string;
 
-  @Column({ name: 'float' })
+  @Column({ name: 'float', nullable: true })
   height: number;
 
-  @Column({ name: 'religion' })
+  @Column({ name: 'religion', nullable: true })
   religion: string;
 
-  @Column({ name: 'drinking' })
+  @Column({ name: 'drinking', nullable: true })
   drinking: boolean;
 
-  @Column({ name: 'education' })
-  @IsDate()
+  @Column({ name: 'education', nullable: true })
   education: string;
 
-  @Column({ name: 'have_children' })
+  @Column({ name: 'have_children', nullable: true })
   haveChildren: boolean;
 
-  @Column('text', { name: 'interests', array: true })
-  @IsDate()
-  interests: Date;
+  @Column('text', { name: 'interests', array: true, nullable: true })
+  interests: string[];
 }

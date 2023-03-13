@@ -1,9 +1,9 @@
 import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
+config();
 
 import { join } from 'path';
-config();
 
 const configService = new ConfigService();
 console.log(join(__dirname, 'migrations/*{.ts,.js}'));
