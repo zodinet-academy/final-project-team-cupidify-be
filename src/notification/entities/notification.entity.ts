@@ -1,5 +1,3 @@
-import { NotiType } from 'src/shared/enum';
-import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   Entity,
@@ -7,6 +5,8 @@ import {
   ManyToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { NotiType } from '../../shared/enum';
+import { User } from '../../user/entities/user.entity';
 
 @Entity()
 export class Notification {
@@ -14,11 +14,11 @@ export class Notification {
   id: string;
 
   @ManyToOne(() => User, (user) => user.notifications, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'user_from_id' })
   fromUser: User;
 
   @ManyToOne(() => User, (user) => user.notifications, { onDelete: 'CASCADE' })
-  @JoinColumn({ name: 'user_id' })
+  @JoinColumn({ name: 'user_to_id' })
   toUser: User;
 
   @Column({ name: 'is_seen' })

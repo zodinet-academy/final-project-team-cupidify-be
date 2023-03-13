@@ -10,7 +10,7 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { MinLength, IsDate, IsString } from 'class-validator';
-import { Gender } from 'src/shared/enum';
+import { Gender } from '../../shared/enum';
 
 @Entity({ name: 'profile', synchronize: true })
 export class Profile {

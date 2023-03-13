@@ -1,4 +1,3 @@
-import { User } from 'src/user/entities/user.entity';
 import {
   Column,
   Entity,
@@ -6,6 +5,7 @@ import {
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
+import { User } from '../../user/entities/user.entity';
 
 @Entity('black_list')
 export class BlackList {
@@ -16,8 +16,8 @@ export class BlackList {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
-  @Column({ name: 'blocked_id' })
-  blockedId: string[];
+  // @Column({ name: 'blocked_id', array: true })
+  // blockedId: string[];
 
   @Column({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;

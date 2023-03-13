@@ -9,11 +9,11 @@ import {
   OneToMany,
 } from 'typeorm';
 import { MinLength, MaxLength, IsEmail } from 'class-validator';
-import { Profile } from 'src/profile/entities/profile.entity';
-import { Match } from 'src/match/entities/match.entity';
-import { Photo } from 'src/photo/entities/photo.entity';
-import { Notification } from 'src/notification/entities/notification.entity';
-import { BlackList } from 'src/black-list/entities/black-list.entity';
+import { Profile } from '../../profile/entities/profile.entity';
+import { Match } from '../../match/entities/match.entity';
+import { BlackList } from '../../black-list/entities/black-list.entity';
+import { Notification } from '../../notification/entities/notification.entity';
+import { Photo } from '../../photo/entities/photo.entity';
 
 @Entity({ name: 'user', synchronize: true })
 export class User {

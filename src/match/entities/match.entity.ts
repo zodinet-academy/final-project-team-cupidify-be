@@ -1,4 +1,3 @@
-import { User } from 'src/user/entities/user.entity';
 import {
   Entity,
   Column,
@@ -9,6 +8,7 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
+import { User } from '../../user/entities/user.entity';
 
 @Entity({ name: 'match', synchronize: true })
 export class Match {

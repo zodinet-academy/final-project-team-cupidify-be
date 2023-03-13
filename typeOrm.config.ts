@@ -1,10 +1,12 @@
-import { User } from './src/user/entities/user.entity';
 import { DataSource } from 'typeorm';
 import { ConfigService } from '@nestjs/config';
 import { config } from 'dotenv';
+
+import { join } from 'path';
 config();
 
 const configService = new ConfigService();
+console.log(join(__dirname, 'migrations/*{.ts,.js}'));
 
 export default new DataSource({
   type: 'postgres',
@@ -13,6 +15,6 @@ export default new DataSource({
   username: configService.get('DATABASE_USERNAME'),
   password: configService.get('DATABASE_PASSWORD'),
   database: configService.get('DATABASE_NAME'),
-  entities: [__dirname + './src/**/**/**.entity.ts'],
-  migrations: ['src/migrations/*{.ts,.js}'],
+  entities: [join(__dirname, 'src/**/entities/*.ts')],
+  migrations: [join(__dirname, 'migrations/*{.ts,.js}')],
 });
