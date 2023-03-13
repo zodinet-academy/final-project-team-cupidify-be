@@ -1,17 +1,9 @@
+import { Base } from 'src/shared/base.entity';
 import { User } from 'src/user/entities/user.entity';
-import {
-  Column,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-} from 'typeorm';
+import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 
-@Entity()
-export class Photo {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
+@Entity({ name: 'photo', synchronize: true })
+export class Photo extends Base {
   @ManyToOne(() => User, (user) => user.photos, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
@@ -21,13 +13,4 @@ export class Photo {
 
   @Column({ name: 'is_favorite' })
   isFavorite: boolean;
-
-  @Column({ name: 'created_at', type: 'timestamptz' })
-  createdAt: Date;
-
-  @Column({ name: 'updated_at', type: 'timestamptz' })
-  updatedAt: Date;
-
-  @Column({ name: 'deleted_at', type: 'timestamptz' })
-  deletedAt: Date;
 }

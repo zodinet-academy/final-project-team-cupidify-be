@@ -1,25 +1,11 @@
 import { User } from './../../user/entities/user.entity';
-import {
-  Entity,
-  Column,
-  PrimaryGeneratedColumn,
-  CreateDateColumn,
-  UpdateDateColumn,
-  DeleteDateColumn,
-  OneToOne,
-  JoinColumn,
-} from 'typeorm';
+import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { MinLength, IsDate, IsString } from 'class-validator';
 import { Gender } from 'src/shared/enum';
+import { Base } from 'src/shared/base.entity';
 
 @Entity({ name: 'profile', synchronize: true })
-export class Profile {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
-
-  @Column()
-  user_id: string;
-
+export class Profile extends Base {
   @OneToOne(() => User)
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
@@ -59,13 +45,4 @@ export class Profile {
   @Column('text', { name: 'interests', array: true })
   @IsDate()
   interests: Date;
-
-  @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
-  createdAt: Date;
-
-  @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
-
-  @DeleteDateColumn({ name: 'deleted_at' })
-  deletedAt: Date;
 }
