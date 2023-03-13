@@ -11,8 +11,24 @@ import { MessageModule } from './message/message.module';
 import { MatchModule } from './match/match.module';
 import { BlackListModule } from './black-list/black-list.module';
 import { PhotoModule } from './photo/photo.module';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 @Module({
   imports: [
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        type: 'postgres',
+        host: configService.get('DATABASE_HOST'),
+        port: configService.get('DATABASE_PORT'),
+        username: configService.get('DATABASE_USERNAME'),
+        password: configService.get('DATABASE_PASSWORD'),
+        database: configService.get('DATABASE_NAME'),
+        entities: ['src/**/entities/*.entity{.ts,.js}'],
+        autoLoadEntities: true,
+      }),
+    }),
     UserModule,
     ProfileModule,
     NotificationModule,
@@ -20,7 +36,8 @@ import { PhotoModule } from './photo/photo.module';
     MatchModule,
     ConversationModule,
     MessageModule,
-  , PhotoModule],
+    PhotoModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })
