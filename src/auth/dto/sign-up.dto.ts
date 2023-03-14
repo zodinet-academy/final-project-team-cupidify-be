@@ -7,7 +7,7 @@ import {
   Matches,
   MaxLength,
 } from 'class-validator';
-import { Gender } from 'src/shared/enum';
+import { Gender } from '../../shared/enums/index';
 
 export class SignUpDto {
   @IsString()

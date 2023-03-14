@@ -1,51 +1,29 @@
-import { Injectable } from '@nestjs/common';
-import { InjectRepository } from '@nestjs/typeorm';
-import { User } from 'src/user/entities/user.entity';
-import { Repository } from 'typeorm';
-import { CheckPhoneDto } from './dto/check-phone.dto';
-import { CheckSocialDto } from './dto/check-social.dto';
+import { Injectable, Inject, forwardRef } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+
 import { SignUpDto } from './dto/sign-up.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class AuthService {
   constructor(
-    @InjectRepository(User)
-    private userRepository: Repository<User>,
+    @Inject(forwardRef(() => UserService))
+    private readonly _userService: UserService,
+    private readonly _jwtService: JwtService,
   ) {}
 
-  async checkPhoneExist(checkPhoneDto: CheckPhoneDto) {
-    const { phone } = checkPhoneDto;
-
-    try {
-      const user = await this.userRepository.findOne({ where: { phone } });
-
-      if (!user) {
-        return false;
-      }
-      return;
-    } catch (err) {
-      throw err;
-    }
+  generateToken(payload): string {
+    const token = this._jwtService.sign(payload);
+    return token;
   }
 
-  async checkSocialExist(checkSocialDto: CheckSocialDto) {
-    const { socialId } = checkSocialDto;
-
+  async signUp(signUpDto: SignUpDto): Promise<string> {
     try {
-      const user = await this.userRepository.findOne({ where: { socialId } });
+      const user = await this._userService.createUser(signUpDto);
 
-      if (!user) {
-        return false;
-      }
-      return user.phone;
-    } catch (err) {
-      throw err;
-    }
-  }
+      const token = this._jwtService.sign(user);
 
-  async signUp(signUpDto: SignUpDto) {
-    try {
-      await this.userRepository.save(signUpDto);
+      return token;
     } catch (err) {
       throw err;
     }
