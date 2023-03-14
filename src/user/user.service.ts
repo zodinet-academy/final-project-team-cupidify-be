@@ -1,3 +1,4 @@
+import { TResponse } from '../shared/common/response.dto';
 import { BadRequestException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,28 +23,34 @@ export class UserService {
     }
   }
 
-  async isPhoneExist(phone: string): Promise<boolean> {
+  async isPhoneExist(phone: string): Promise<TResponse<UserDto>> {
     try {
       const result = await this._user.findOne({ where: { phone } });
 
-      if (!result) return false;
+      if (!result)
+        return {
+          checked: false,
+        };
 
-      return;
+      return { checked: true, data: result };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
   }
 
-  async isSocialExist(socialId: string): Promise<{ phone: string }> {
+  async isSocialExist(socialId: string): Promise<TResponse<{ phone: string }>> {
     try {
       const user = await this._user.findOne({ where: { socialId } });
 
       if (!user) {
-        return;
+        return {
+          checked: false,
+        };
       }
 
       return {
-        phone: user.phone,
+        checked: true,
+        data: { phone: user.phone },
       };
     } catch (err) {
       throw new BadRequestException(err.message);
