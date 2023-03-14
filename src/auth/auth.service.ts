@@ -10,6 +10,8 @@ import { SignUpDto } from './dto/sign-up.dto';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
 import * as dotenv from 'dotenv';
+import { ProfileService } from 'src/profile/profile.service';
+import IUserPayload from './interfaces/user-payload.interface';
 
 dotenv.config();
 
@@ -18,25 +20,50 @@ export class AuthService {
   constructor(
     private readonly _userService: UserService,
     private readonly _jwtService: JwtService,
+    private readonly _profileService: ProfileService,
   ) {}
 
-  generateToken(payload): string {
-    const token = this._jwtService.sign(payload);
-    return token;
-  }
-
   async signUp(signUpDto: SignUpDto): Promise<AuthDto> {
-    try {
-      const user = await this._userService.createUser(signUpDto);
+    const { phone, email, socialId, gender, name, birthday } = signUpDto;
 
-      const token = this._jwtService.sign(user, {
-        secret: process.env.SECRET_KEY,
-        expiresIn: process.env.EXPIRES_IN,
+    try {
+      const createdUser = await this._userService.createUser({
+        phone,
+        email,
+        socialId,
       });
 
-      return {
-        token,
-      };
+      const createdProfile = await this._profileService.create({
+        user: createdUser,
+        name,
+        birthday,
+        gender,
+      });
+
+      if (!createdUser || !createdProfile) {
+        throw new HttpException(
+          'Please input valid information',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      const [user, profile] = await Promise.all([
+        this._userService.saveUser(createdUser),
+        this._profileService.save({
+          user: createdUser,
+          name,
+          birthday,
+          gender,
+        }),
+      ]);
+
+      const token = this.signToken({
+        id: user.id,
+        phone: user.phone,
+        email: user.email,
+      });
+
+      return { token };
     } catch (err) {
       throw err;
     }
@@ -55,12 +82,7 @@ export class AuthService {
         email: user.data.email,
       };
 
-      console.log(userPayload);
-
-      const token = this._jwtService.sign(userPayload, {
-        secret: process.env.SECRET_KEY,
-        expiresIn: process.env.EXPIRES_IN,
-      });
+      const token = this.signToken(userPayload);
 
       return {
         token,
@@ -68,5 +90,14 @@ export class AuthService {
     } catch (err) {
       throw new BadRequestException('Login Failed');
     }
+  }
+
+  signToken(userPayload: IUserPayload): string {
+    const token = this._jwtService.sign(userPayload, {
+      secret: process.env.SECRET_KEY,
+      expiresIn: process.env.EXPIRES_IN,
+    });
+
+    return token;
   }
 }

@@ -1,13 +1,10 @@
 import {
-  IsDate,
   IsEmail,
   IsNotEmpty,
   IsOptional,
   IsString,
   Matches,
-  MaxLength,
 } from 'class-validator';
-import { Gender } from '../../shared/enums/index';
 
 export class CreateUserDto {
   @IsString()
@@ -22,14 +19,4 @@ export class CreateUserDto {
   @IsEmail()
   @IsNotEmpty()
   email: string;
-
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  name: string;
-
-  @IsDate()
-  birthday: Date;
-
-  gender: Gender;
 }

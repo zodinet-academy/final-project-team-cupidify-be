@@ -18,3 +18,6 @@ export default new DataSource({
   entities: [join(__dirname, 'src/**/entities/*.ts')],
   migrations: [join(__dirname, 'migrations/*{.ts,.js}')],
 });
+
+// zodinet: 192.168.31.99
+// hone: 115.79.210.160

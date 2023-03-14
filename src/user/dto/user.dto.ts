@@ -9,4 +9,7 @@ export class UserDto {
 
   @ApiProperty({ default: '423423443', type: String })
   readonly phone: string;
+
+  @ApiProperty({ default: null, type: String, nullable: true })
+  readonly socialId: string;
 }

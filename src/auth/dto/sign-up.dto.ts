@@ -1,5 +1,5 @@
 import {
-  IsDate,
+  IsDateString,
   IsEmail,
   IsEnum,
   IsNotEmpty,
@@ -9,7 +9,6 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Gender } from '../../shared/enums/index';
-import { Type } from 'class-transformer';
 
 export class SignUpDto {
   @IsString()
@@ -30,10 +29,8 @@ export class SignUpDto {
   @MaxLength(255)
   name: string;
 
-  @IsNotEmpty()
-  @IsDate()
-  @Type(() => Date)
-  birthday: Date;
+  @IsDateString()
+  birthday: string;
 
   @IsEnum(Gender)
   gender: Gender;

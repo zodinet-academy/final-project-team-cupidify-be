@@ -5,6 +5,17 @@ export enum Gender {
 }
 
 export enum NotiType {
-  Matching = 'matching',
-  Message = 'message',
+  MATCHING = 'MATCHING',
+  MESSAGE = 'MESSAGE',
+}
+
+export enum Religion {
+  CHRISTIAN = 'CHRISTIAN',
+  BUDDHISM = 'BUDDHISM',
+  OTHER = 'OTHER',
+}
+
+export enum Education {
+  HIGH_SCHOOL = 'HIGH-SCHOOL',
+  HIGHER = 'HIGHER',
 }
