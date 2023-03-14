@@ -22,33 +22,29 @@ export class UserService {
     }
   }
 
-  async isPhoneExist(phone: string): Promise<string> {
+  async isPhoneExist(phone: string): Promise<boolean> {
     try {
-      console.log(phone);
-      console.log(this._user);
-      // const result = await this._userEntity.findOne({ where: { phone } });
-      const result = await this._user.find();
-      console.log(result);
+      const result = await this._user.findOne({ where: { phone } });
 
-      // console.log('Result:', result.id);
-      if (!result) return 'false';
+      if (!result) return false;
 
       return;
     } catch (err) {
-      console.log('Error');
       throw new BadRequestException(err.message);
     }
   }
 
-  async isSocialExist(socialId: string): Promise<string> {
+  async isSocialExist(socialId: string): Promise<{ phone: string }> {
     try {
       const user = await this._user.findOne({ where: { socialId } });
 
       if (!user) {
-        return 'Invalid social ID';
+        return;
       }
 
-      return user.phone;
+      return {
+        phone: user.phone,
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
