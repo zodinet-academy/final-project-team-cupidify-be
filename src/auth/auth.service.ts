@@ -1,26 +1,53 @@
 import { Injectable } from '@nestjs/common';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from 'src/user/entities/user.entity';
+import { Repository } from 'typeorm';
+import { CheckPhoneDto } from './dto/check-phone.dto';
+import { CheckSocialDto } from './dto/check-social.dto';
+import { SignUpDto } from './dto/sign-up.dto';
 
 @Injectable()
 export class AuthService {
-  create(createAuthDto: CreateAuthDto) {
-    return 'This action adds a new auth';
+  constructor(
+    @InjectRepository(User)
+    private userRepository: Repository<User>,
+  ) {}
+
+  async checkPhoneExist(checkPhoneDto: CheckPhoneDto) {
+    const { phone } = checkPhoneDto;
+
+    try {
+      const user = await this.userRepository.findOne({ where: { phone } });
+
+      if (!user) {
+        return false;
+      }
+      return;
+    } catch (err) {
+      throw err;
+    }
   }
 
-  findAll() {
-    return `This action returns all auth`;
+  async checkSocialExist(checkSocialDto: CheckSocialDto) {
+    const { socialId } = checkSocialDto;
+
+    try {
+      const user = await this.userRepository.findOne({ where: { socialId } });
+
+      if (!user) {
+        return false;
+      }
+      return user.phone;
+    } catch (err) {
+      throw err;
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} auth`;
-  }
-
-  update(id: number, updateAuthDto: UpdateAuthDto) {
-    return `This action updates a #${id} auth`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} auth`;
+  async signUp(signUpDto: SignUpDto) {
+    try {
+      await this.userRepository.save(signUpDto);
+    } catch (err) {
+      throw err;
+    }
   }
 }
