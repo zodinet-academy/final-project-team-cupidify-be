@@ -8,7 +8,7 @@ import {
   MaxLength,
 } from 'class-validator';
 import { Education, Gender, Religion } from 'src/shared/enums';
-import { UserDto } from 'src/user/dto/user.dto';
+import { UserDto } from '../../user/dto/user.dto';
 
 export class CreateProfileDto {
   user: UserDto;

@@ -8,7 +8,6 @@ import { JsonWebTokenStrategy } from './strategies/jwt.strategy';
 import { PassportModule } from '@nestjs/passport';
 import { User } from '../user/entities/user.entity';
 import * as dotenv from 'dotenv';
-import { Profile } from 'src/profile/entities/profile.entity';
 import { ProfileModule } from 'src/profile/profile.module';
 
 dotenv.config();

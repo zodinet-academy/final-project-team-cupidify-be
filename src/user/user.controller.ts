@@ -1,6 +1,6 @@
 import { TResponse } from '../shared/common/response.dto';
 import { PhoneDto } from './dto/phone.dto';
-import { Controller, Post, Body, Get } from '@nestjs/common';
+import { Controller, Post, Body } from '@nestjs/common';
 import { UserService } from './user.service';
 import { SocialDto } from './dto/social.dto';
 import { UserDto } from './dto/user.dto';

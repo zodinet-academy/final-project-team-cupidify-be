@@ -1,9 +1,4 @@
-import {
-  HttpException,
-  HttpStatus,
-  Injectable,
-  BadRequestException,
-} from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
 import { SignUpDto } from './dto/sign-up.dto';
@@ -12,6 +7,8 @@ import { AuthDto } from './dto/auth.dto';
 import * as dotenv from 'dotenv';
 import { ProfileService } from 'src/profile/profile.service';
 import IUserPayload from './interfaces/user-payload.interface';
+import * as admin from 'firebase-admin';
+import { LogInDto } from './dto/log-in.dto';
 
 dotenv.config();
 
@@ -27,35 +24,18 @@ export class AuthService {
     const { phone, email, socialId, gender, name, birthday } = signUpDto;
 
     try {
-      const createdUser = await this._userService.createUser({
+      const user = await this._userService.saveUser({
         phone,
         email,
         socialId,
       });
 
-      const createdProfile = await this._profileService.create({
-        user: createdUser,
+      await this._profileService.save({
+        user,
         name,
         birthday,
         gender,
       });
-
-      if (!createdUser || !createdProfile) {
-        throw new HttpException(
-          'Please input valid information',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
-      const [user, profile] = await Promise.all([
-        this._userService.saveUser(createdUser),
-        this._profileService.save({
-          user: createdUser,
-          name,
-          birthday,
-          gender,
-        }),
-      ]);
 
       const token = this.signToken({
         id: user.id,
@@ -65,16 +45,32 @@ export class AuthService {
 
       return { token };
     } catch (err) {
-      throw err;
+      if (err.message.startsWith('duplicate')) {
+        throw new HttpException(
+          'Phone number exists. Please use another one!',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      throw new HttpException(
+        'Please input valid information',
+        HttpStatus.BAD_REQUEST,
+      );
     }
   }
 
-  async login(phone: string): Promise<AuthDto> {
+  async login(logInDto: LogInDto): Promise<AuthDto> {
     try {
-      const user = await this._userService.isPhoneExist(phone);
+      await this.verifyFirebaseToken(logInDto.token);
+
+      const user = await this._userService.isPhoneExist(logInDto.phone);
+      console.log(user);
 
       if (!user.checked)
-        throw new HttpException('Wrong Credentials', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          'Phone number does not exist. Please sign up!',
+          HttpStatus.NOT_FOUND,
+        );
 
       const userPayload = {
         id: user.data.id,
@@ -88,7 +84,7 @@ export class AuthService {
         token,
       };
     } catch (err) {
-      throw new BadRequestException('Login Failed');
+      throw err;
     }
   }
 
@@ -99,5 +95,17 @@ export class AuthService {
     });
 
     return token;
+  }
+
+  async verifyFirebaseToken(idToken: string) {
+    try {
+      const decodedToken = await admin.auth().verifyIdToken(idToken);
+      return decodedToken;
+    } catch (err) {
+      throw new HttpException(
+        'Please authenticate with your phone number!',
+        HttpStatus.UNAUTHORIZED,
+      );
+    }
   }
 }

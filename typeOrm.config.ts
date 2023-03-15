@@ -10,7 +10,7 @@ console.log(join(__dirname, 'migrations/*{.ts,.js}'));
 
 export default new DataSource({
   type: 'postgres',
-  host: configService.get('DATABASE_HOST'),
+  host: configService.get('DATABASE_ZODINET_HOST'),
   port: configService.get('DATABASE_PORT'),
   username: configService.get('DATABASE_USERNAME'),
   password: configService.get('DATABASE_PASSWORD'),
@@ -18,6 +18,3 @@ export default new DataSource({
   entities: [join(__dirname, 'src/**/entities/*.ts')],
   migrations: [join(__dirname, 'migrations/*{.ts,.js}')],
 });
-
-// zodinet: 192.168.31.99
-// hone: 115.79.210.160
