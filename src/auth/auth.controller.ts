@@ -18,11 +18,6 @@ import { GoogleTokenDto } from './dto/gg-token.dto';
 export class AuthController {
   constructor(private readonly _authService: AuthService) {}
 
-  // @Post('check-phone-exist')
-  // checkPhoneExist(@Body() checkPhoneDto: CheckPhoneDto) {
-  //   return this._authService.isPhoneExist(checkPhoneDto);
-  // }
-
   @Get('google')
   @UseGuards(AuthGuard('google'))
   async googleAuth(@Req() req) {

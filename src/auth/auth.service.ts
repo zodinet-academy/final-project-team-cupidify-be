@@ -13,10 +13,7 @@ import { OAuth2Client } from 'google-auth-library';
 
 dotenv.config();
 
-const client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 @Injectable()
 export class AuthService {
@@ -127,11 +124,15 @@ export class AuthService {
   }
 
   async verifyGgToken(accessToken: string) {
-    const ticket = await client.verifyIdToken({
-      idToken: accessToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: accessToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
 
-    console.log(ticket.getPayload());
+      console.log(ticket.getPayload());
+    } catch (err) {
+      throw err;
+    }
   }
 }
