@@ -9,8 +9,14 @@ import { ProfileService } from 'src/profile/profile.service';
 import IUserPayload from './interfaces/user-payload.interface';
 import * as admin from 'firebase-admin';
 import { LogInDto } from './dto/log-in.dto';
+import { OAuth2Client } from 'google-auth-library';
 
 dotenv.config();
+
+const client = new OAuth2Client(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+);
 
 @Injectable()
 export class AuthService {
@@ -88,6 +94,17 @@ export class AuthService {
     }
   }
 
+  googleLogin(req) {
+    if (!req.user) {
+      return 'No user found!';
+    }
+
+    return {
+      message: 'User info',
+      user: req.user,
+    };
+  }
+
   signToken(userPayload: IUserPayload): string {
     const token = this._jwtService.sign(userPayload, {
       secret: process.env.SECRET_KEY,
@@ -107,5 +124,14 @@ export class AuthService {
         HttpStatus.UNAUTHORIZED,
       );
     }
+  }
+
+  async verifyGgToken(accessToken: string) {
+    const ticket = await client.verifyIdToken({
+      idToken: accessToken,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    console.log(ticket.getPayload());
   }
 }

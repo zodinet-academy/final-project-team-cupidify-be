@@ -9,6 +9,7 @@ import { PassportModule } from '@nestjs/passport';
 import { User } from '../user/entities/user.entity';
 import * as dotenv from 'dotenv';
 import { ProfileModule } from 'src/profile/profile.module';
+import { GoogleStrategy } from './strategies/google.strategy';
 
 dotenv.config();
 
@@ -24,7 +25,7 @@ dotenv.config();
     forwardRef(() => UserModule),
   ],
   controllers: [AuthController],
-  providers: [AuthService, JsonWebTokenStrategy],
+  providers: [AuthService, JsonWebTokenStrategy, GoogleStrategy],
   exports: [AuthService],
 })
 export class AuthModule {}
