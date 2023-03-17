@@ -16,7 +16,7 @@ export class User extends Base {
   @MaxLength(15)
   phone: string;
 
-  @Column({ name: 'social_id' })
+  @Column({ name: 'social_id', nullable: true })
   socialId: string;
 
   @Column({ name: 'email' })

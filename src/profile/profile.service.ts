@@ -1,11 +1,33 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { Profile } from './entities/profile.entity';
 
 @Injectable()
 export class ProfileService {
-  create(createProfileDto: CreateProfileDto) {
-    return 'This action adds a new profile';
+  constructor(
+    @InjectRepository(Profile)
+    private readonly _profile: Repository<Profile>,
+  ) {}
+
+  async create(createProfileDto: CreateProfileDto) {
+    try {
+      const profile = await this._profile.create(createProfileDto);
+      return profile;
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
+  }
+
+  async save(createProfileDto: CreateProfileDto) {
+    try {
+      const profile = await this._profile.save(createProfileDto);
+      return profile;
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
   }
 
   findAll() {

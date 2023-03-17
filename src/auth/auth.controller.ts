@@ -1,34 +1,56 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  Get,
+  UseGuards,
+  Req,
+  HttpStatus,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { CreateAuthDto } from './dto/create-auth.dto';
-import { UpdateAuthDto } from './dto/update-auth.dto';
+import { SignUpDto } from './dto/sign-up.dto';
+import { FirebaseTokenDto } from './dto/firebase-token.dto';
+import { LogInDto } from './dto/log-in.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { GoogleTokenDto } from './dto/gg-token.dto';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly _authService: AuthService) {}
 
-  @Post()
-  create(@Body() createAuthDto: CreateAuthDto) {
-    return this.authService.create(createAuthDto);
+  @Get('/facebook')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLogin(): Promise<HttpStatus> {
+    return HttpStatus.OK;
   }
 
-  @Get()
-  findAll() {
-    return this.authService.findAll();
+  @Get('/facebook/redirect')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLoginRedirect(@Req() req: Request): Promise<any> {
+    return {
+      statusCode: HttpStatus.OK,
+      data: req.user,
+    };
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.authService.findOne(+id);
+  @Post('signup')
+  signUp(@Body() signUpDto: SignUpDto) {
+    return this._authService.signUp(signUpDto);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateAuthDto: UpdateAuthDto) {
-    return this.authService.update(+id, updateAuthDto);
+  @Post('login')
+  login(@Body() logInDto: LogInDto) {
+    return this._authService.login(logInDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.authService.remove(+id);
+  @Post('verify-otp-token')
+  verifyOtpToken(@Body() firebaseTokenDto: FirebaseTokenDto) {
+    return this._authService.verifyFirebaseToken(firebaseTokenDto.token);
+  }
+
+  @Post('verify-gg-token')
+  verifyGgToken(@Body() ggTokenDto: GoogleTokenDto) {
+    return this._authService.verifyGgToken(ggTokenDto.token);
   }
 }
