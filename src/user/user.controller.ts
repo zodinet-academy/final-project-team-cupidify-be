@@ -1,4 +1,4 @@
-import { TResponse } from '../shared/common/response.dto';
+import { TCheckedResponse } from '../shared/common/check-response.dto';
 import { PhoneDto } from './dto/phone.dto';
 import { Controller, Post, Body } from '@nestjs/common';
 import { UserService } from './user.service';
@@ -12,7 +12,7 @@ export class UserController {
   @Post('check-phone')
   async isPhoneExist(
     @Body() checkPhone: PhoneDto,
-  ): Promise<TResponse<UserDto>> {
+  ): Promise<TCheckedResponse<UserDto>> {
     return await this._userService.isPhoneExist(checkPhone.phone);
   }
 

@@ -13,10 +13,26 @@ import { FirebaseTokenDto } from './dto/firebase-token.dto';
 import { LogInDto } from './dto/log-in.dto';
 import { AuthGuard } from '@nestjs/passport';
 import { GoogleTokenDto } from './dto/gg-token.dto';
+import { Request } from 'express';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly _authService: AuthService) {}
+
+  @Get('/facebook')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLogin(): Promise<HttpStatus> {
+    return HttpStatus.OK;
+  }
+
+  @Get('/facebook/redirect')
+  @UseGuards(AuthGuard('facebook'))
+  async facebookLoginRedirect(@Req() req: Request): Promise<any> {
+    return {
+      statusCode: HttpStatus.OK,
+      data: req.user,
+    };
+  }
 
   @Post('signup')
   signUp(@Body() signUpDto: SignUpDto) {
