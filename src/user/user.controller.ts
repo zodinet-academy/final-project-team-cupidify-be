@@ -1,13 +1,25 @@
 import { TCheckedResponse } from '../shared/common/check-response.dto';
 import { PhoneDto } from './dto/phone.dto';
-import { Controller, Post, Body } from '@nestjs/common';
+import { Controller, Post, Body, Get, UseGuards } from '@nestjs/common';
 import { UserService } from './user.service';
 import { SocialDto } from './dto/social.dto';
 import { UserDto } from './dto/user.dto';
+import { User } from './decorator/user.decorator';
+import { User as UserEntity } from './entities/user.entity';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AuthenticationGuard } from '../auth/guards/auth.guard';
 
 @Controller('user')
 export class UserController {
   constructor(private readonly _userService: UserService) {}
+
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Get()
+  async findById(@User() user: UserDto) {
+    console.log(user);
+    return await this._userService.findById(user.id);
+  }
 
   @Post('check-phone')
   async isPhoneExist(

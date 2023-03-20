@@ -66,4 +66,13 @@ export class UserService {
       throw new BadRequestException(err.message);
     }
   }
+
+  async findById(idUser: string): Promise<UserDto> {
+    console.log(idUser);
+
+    const response = await this._user.findOne({ where: { id: idUser } });
+    console.log(response);
+
+    return response;
+  }
 }
