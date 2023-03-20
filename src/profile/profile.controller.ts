@@ -26,9 +26,11 @@ export class ProfileController {
     return this.profileService.create(createProfileDto);
   }
 
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
   @Get()
-  findAll() {
-    return this.profileService.findAll();
+  findProfile(@User() user: UserDto) {
+    return this.profileService.findOneByUserId(user.id);
   }
 
   @Get(':id')

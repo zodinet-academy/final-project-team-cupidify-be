@@ -45,15 +45,19 @@ export class ProfileService {
 
   async findOneByUserId(userId: string): Promise<Profile> {
     try {
+      console.log('userId: ', userId);
+
       const profile = await this._profileRepository.findOne({
         where: { userId },
       });
+      console.log('profile: ', profile);
 
-      if (!profile)
+      if (!profile) {
         throw new HttpException(
           'No profile found with that id!',
           HttpStatus.NOT_FOUND,
         );
+      }
 
       return profile;
     } catch (err) {
