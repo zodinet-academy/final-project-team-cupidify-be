@@ -1,4 +1,3 @@
-import { THttpResponse } from './../shared/common/http-response.dto';
 import { CloudinaryService } from './../cloudinary/cloudinary.service';
 import {
   Injectable,
