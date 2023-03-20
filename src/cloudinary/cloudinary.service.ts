@@ -5,7 +5,7 @@ import { CloudinaryUtilService } from './utils/cloudinaryUtil.service';
 export class CloudinaryService {
   constructor(private _cloudinary: CloudinaryUtilService) {}
   async uploadImagesToCloudinary(files: Array<Express.Multer.File>) {
-    return await this._cloudinary.uploadAllImg(files).catch((err) => {
+    return await this._cloudinary.uploadImages(files).catch((err) => {
       throw new BadRequestException(err.message);
     });
   }
