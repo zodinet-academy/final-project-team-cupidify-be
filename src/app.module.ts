@@ -13,6 +13,32 @@ import { BlackListModule } from './black-list/black-list.module';
 import { PhotoModule } from './photo/photo.module';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { LocationModule } from './location/location.module';
+import { config } from 'dotenv';
+import { AuthModule } from './auth/auth.module';
+
+import { User } from './user/entities/user.entity';
+import { Profile } from './profile/entities/profile.entity';
+import { Match } from './match/entities/match.entity';
+import { Notification } from './notification/entities/notification.entity';
+import { Location } from './location/entities/location.entity';
+import { Conversation } from './conversation/entities/conversation.entity';
+import { Message } from './message/entities/message.entity';
+import { BlackList } from './black-list/entities/black-list.entity';
+import { Photo } from './photo/entities/photo.entity';
+config();
+
+const entities = [
+  User,
+  Profile,
+  Match,
+  Photo,
+  Notification,
+  BlackList,
+  Location,
+  Message,
+  Conversation,
+];
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
@@ -20,12 +46,12 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
         type: 'postgres',
-        host: configService.get('DATABASE_HOST'),
+        host: configService.get('DATABASE_ZODINET_HOST'),
         port: configService.get('DATABASE_PORT'),
         username: configService.get('DATABASE_USERNAME'),
         password: configService.get('DATABASE_PASSWORD'),
         database: configService.get('DATABASE_NAME'),
-        entities: [],
+        entities: [...entities],
         // entities: ['src/**/entities/*.entity{.ts,.js}'],
         // autoLoadEntities: true,
       }),
@@ -39,6 +65,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     MessageModule,
     PhotoModule,
     LocationModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

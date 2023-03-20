@@ -1,6 +1,6 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Base } from '../../shared/base.entity';
-import { NotiType } from '../../shared/enum';
+import { NotiType } from '../../shared/enums/index';
 import { User } from '../../user/entities/user.entity';
 
 @Entity()
