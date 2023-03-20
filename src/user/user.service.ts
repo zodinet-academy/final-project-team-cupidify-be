@@ -67,10 +67,12 @@ export class UserService {
     }
   }
 
-  // async findById(user: UserDto): Promise<UserDto> {
-  //   console.log(user);
-  //   console.log(user.id);
-  //   const response = await this._user.findOne({ where: { id: user.id } });
-  //   return response;
-  // }
+  async findById(idUser: string): Promise<UserDto> {
+    console.log(idUser);
+
+    const response = await this._user.findOne({ where: { id: idUser } });
+    console.log(response);
+
+    return response;
+  }
 }

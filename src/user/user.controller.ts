@@ -13,12 +13,13 @@ import { AuthenticationGuard } from '../auth/guards/auth.guard';
 export class UserController {
   constructor(private readonly _userService: UserService) {}
 
-  // @ApiBearerAuth()
-  // @UseGuards(AuthenticationGuard)
-  // @Get()
-  // async findById(@User() user: UserDto) {
-  //   return await this._userService.findById(user);
-  // }
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Get()
+  async findById(@User() user: UserDto) {
+    console.log(user);
+    return await this._userService.findById(user.id);
+  }
 
   @Post('check-phone')
   async isPhoneExist(
