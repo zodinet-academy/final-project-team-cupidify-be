@@ -1,4 +1,4 @@
-export type TResponse<T> = {
+export type TCheckedResponse<T> = {
   checked?: boolean;
   data?: T;
 };

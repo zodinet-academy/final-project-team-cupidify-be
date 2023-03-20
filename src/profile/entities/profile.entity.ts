@@ -6,6 +6,9 @@ import { Education, Gender, Religion } from '../../shared/enums/index';
 
 @Entity({ name: 'profile', synchronize: true })
 export class Profile extends Base {
+  @Column({ name: 'user_id' })
+  userId: string;
+
   @OneToOne(() => User)
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;

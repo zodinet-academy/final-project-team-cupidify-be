@@ -34,7 +34,7 @@ export class AuthService {
       });
 
       await this._profileService.save({
-        user,
+        userId: user.id,
         name,
         birthday,
         gender,
