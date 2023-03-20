@@ -6,6 +6,7 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 export interface IAuthPayload {
+  id: string;
   name: string;
   phone: string;
 }
@@ -21,6 +22,6 @@ export class JsonWebTokenStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: IAuthPayload) {
-    return { name: payload.name, phone: payload.phone };
+    return { id: payload.id, name: payload.name, phone: payload.phone };
   }
 }

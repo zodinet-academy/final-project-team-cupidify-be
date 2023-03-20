@@ -11,7 +11,7 @@ import { Education, Gender, Religion } from 'src/shared/enums';
 import { UserDto } from '../../user/dto/user.dto';
 
 export class CreateProfileDto {
-  user: UserDto;
+  userId: string;
 
   @IsString()
   @IsNotEmpty()
