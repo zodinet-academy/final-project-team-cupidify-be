@@ -4,6 +4,9 @@ import { User } from '../../user/entities/user.entity';
 
 @Entity({ name: 'photo', synchronize: true })
 export class Photo extends Base {
+  @Column({ name: 'user_id' })
+  userId: string;
+
   @ManyToOne(() => User, (user) => user.photos, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;

@@ -8,6 +8,9 @@ import { Base } from '../../shared/base.entity';
 
 @Entity({ name: 'message', synchronize: true })
 export class Message extends Base {
+  @Column({ name: 'conversation_id' })
+  conversationId: string;
+
   @ManyToOne(() => Conversation, (conversation) => conversation.messages)
   @JoinColumn({ name: 'conversation_id', referencedColumnName: 'id' })
   conversation: Conversation;
