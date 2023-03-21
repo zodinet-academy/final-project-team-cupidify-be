@@ -6,7 +6,6 @@ import { User } from './../../user/entities/user.entity';
 @Entity({ name: 'location', synchronize: true })
 export class Location extends Base {
   @Column({ name: 'user_id' })
-  @ApiProperty()
   userId: string;
 
   @OneToOne(() => User, (user) => user.location, { onDelete: 'CASCADE' })

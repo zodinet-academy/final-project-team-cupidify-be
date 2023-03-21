@@ -16,6 +16,15 @@ export class LocationService {
 
   async create(createLocationDto: Location) {
     try {
+      const userExist = await this._locationRepository.findOne({
+        where: { userId: createLocationDto.userId },
+      });
+      if (userExist) {
+        return this.update(createLocationDto.userId, {
+          long: createLocationDto.long,
+          lat: createLocationDto.lat,
+        });
+      }
       const pointObj: Point = {
         type: 'Point',
         coordinates: [createLocationDto.long, createLocationDto.lat],
@@ -29,9 +38,8 @@ export class LocationService {
       };
 
       const location = await this._locationRepository.save(createdLocation);
-      console.log(location);
 
-      return location;
+      return { data: location, status: 200 };
     } catch (err) {
       console.log(err.message);
 
@@ -66,13 +74,15 @@ export class LocationService {
         location: pointObj,
       });
 
-      return await this._locationRepository.save(updatedLocation);
+      return { data: updatedLocation, status: 200 };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
   }
 
-  async findUsersWithin(userId: string): Promise<IUserFinded[]> {
+  async findUsersWithin(
+    userId: string,
+  ): Promise<{ data: IUserFinded[]; status: number }> {
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -102,7 +112,7 @@ export class LocationService {
 
       // Filter: Array Not Contains User
       if (locationUsers.length === 1) {
-        throw new HttpException('Không có người dùng nào lân cận', 401);
+        throw new HttpException('Không có người dùng nào lân cận', 201);
       }
       const listLocationUser = locationUsers.filter(
         (location: IUserLocation) => location.user !== userId,
@@ -118,7 +128,7 @@ export class LocationService {
         };
         listUserFinded.push(userFinded);
       }
-      return listUserFinded;
+      return { data: listUserFinded, status: 200 };
     } catch (err) {
       throw new BadRequestException(err);
     }
