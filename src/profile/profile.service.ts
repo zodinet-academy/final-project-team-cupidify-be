@@ -36,14 +36,6 @@ export class ProfileService {
     }
   }
 
-  findAll() {
-    return `This action returns all profile`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} profile`;
-  }
-
   async findOneByUserId(userId: string): Promise<THttpResponse<Profile>> {
     try {
       console.log('userId: ', userId);
@@ -79,9 +71,5 @@ export class ProfileService {
     } catch (err) {
       throw new BadRequestException(err.message);
     }
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} profile`;
   }
 }

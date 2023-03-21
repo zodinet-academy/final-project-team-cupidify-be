@@ -82,9 +82,9 @@ export class PhotoService {
     }
   }
 
-  async deleteImages(deleteReq: DeleteUpdatePhotoDto): Promise<void> {
+  async deleteImages(userId, publicId): Promise<void> {
     try {
-      const { userId, publicId } = deleteReq;
+      // const { userId, publicId } = deleteReq;
 
       await this._photo.delete({
         userId,
@@ -114,10 +114,8 @@ export class PhotoService {
   //   }
   // }
 
-  async updateFavorite(updateReq: DeleteUpdatePhotoDto): Promise<void> {
+  async updateFavorite(userId, publicId): Promise<void> {
     try {
-      const { userId, publicId } = updateReq;
-
       await this._photo.update(
         {
           isFavorite: true,
