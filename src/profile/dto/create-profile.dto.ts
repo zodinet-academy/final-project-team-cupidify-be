@@ -7,8 +7,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { Education, Gender, Religion } from 'src/shared/enums';
-import { UserDto } from '../../user/dto/user.dto';
+import { Education, Gender, Reason, Religion } from 'src/shared/enums';
 
 export class CreateProfileDto {
   userId: string;
@@ -23,6 +22,10 @@ export class CreateProfileDto {
 
   @IsDateString()
   birthday: string;
+
+  @IsOptional()
+  @IsEnum(Reason)
+  reason?: Reason;
 
   @IsOptional()
   @IsString()

@@ -2,7 +2,7 @@ import { User } from './../../user/entities/user.entity';
 import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { MinLength, IsString } from 'class-validator';
 import { Base } from '../../shared/base.entity';
-import { Education, Gender, Religion } from '../../shared/enums/index';
+import { Education, Gender, Reason, Religion } from '../../shared/enums/index';
 
 @Entity({ name: 'profile', synchronize: true })
 export class Profile extends Base {
@@ -25,7 +25,7 @@ export class Profile extends Base {
   avatar: string;
 
   @Column({ name: 'reason', nullable: true })
-  reason: string;
+  reason: Reason;
 
   @Column({ name: 'birthday', type: 'date' })
   birthday: string;

@@ -8,7 +8,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { Education, Gender, Religion } from 'src/shared/enums';
+import { Education, Gender, Reason, Religion } from 'src/shared/enums';
 import { CreateProfileDto } from './create-profile.dto';
 
 export class UpdateProfileDto extends PartialType(CreateProfileDto) {
@@ -21,6 +21,10 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @IsOptional()
   @IsEnum(Gender)
   gender: Gender;
+
+  @IsOptional()
+  @IsEnum(Reason)
+  reason: Reason;
 
   @IsOptional()
   @IsDateString()
