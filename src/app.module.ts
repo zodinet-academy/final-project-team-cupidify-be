@@ -27,8 +27,6 @@ import { Message } from './message/entities/message.entity';
 import { BlackList } from './black-list/entities/black-list.entity';
 import { Photo } from './photo/entities/photo.entity';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
-import { TestlocationModule } from './testlocation/testlocation.module';
-import { TestLocation } from './testlocation/entities/testlocation.entity';
 config();
 
 const entities = [
@@ -41,7 +39,6 @@ const entities = [
   Location,
   Message,
   Conversation,
-  TestLocation,
 ];
 @Module({
   imports: [
@@ -71,7 +68,6 @@ const entities = [
     LocationModule,
     AuthModule,
     CloudinaryModule,
-    TestlocationModule,
   ],
   controllers: [AppController],
   providers: [AppService],
