@@ -21,6 +21,12 @@ export class Profile extends Base {
   @Column({ name: 'gender', type: 'enum', enum: Gender })
   gender: Gender;
 
+  @Column({ name: 'avatar' })
+  avatar: string;
+
+  @Column({ name: 'reason' })
+  reason: string;
+
   @Column({ name: 'birthday', type: 'date' })
   birthday: string;
 
