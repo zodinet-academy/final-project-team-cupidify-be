@@ -5,6 +5,12 @@ import { User } from '../../user/entities/user.entity';
 
 @Entity()
 export class Notification extends Base {
+  @Column({ name: 'from_id' })
+  userFromId: string;
+
+  @Column({ name: 'to_id' })
+  userToId: string;
+
   @ManyToOne(() => User, (user) => user.notifications, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'from_id' })
   fromUser: User;
