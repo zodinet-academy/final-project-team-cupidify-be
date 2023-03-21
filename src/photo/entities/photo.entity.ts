@@ -4,6 +4,9 @@ import { User } from '../../user/entities/user.entity';
 
 @Entity({ name: 'photo', synchronize: true })
 export class Photo extends Base {
+  @Column({ name: 'public_id' })
+  publicId: string;
+
   @Column({ name: 'user_id' })
   userId: string;
 

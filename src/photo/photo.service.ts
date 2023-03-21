@@ -37,6 +37,13 @@ export class PhotoService {
   }
 
   async storeImages(userId: string, imageUrls: string[]) {
+    // imageUrls.map(async (url) => {
+    //   await this._photo.save({
+    //     userId,
+    //     photoUrl: url,
+    //     isFavorite: false,
+    //   });
+    // });
     for (let i = 0; i < imageUrls.length; i++) {
       await this._photo.save({
         userId,
