@@ -33,18 +33,24 @@ export class PhotoController {
   //   return this._photoService.findOne(user.id);
   // }
 
-  @Get(':id')
-  async getPhotoByUserId(@Param('id') userId: string) {
-    return this._photoService.getPhotoByUserId(userId);
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Get()
+  async getPhotoByUserId(@User() user: UserDto) {
+    return this._photoService.getPhotoByUserId(user);
   }
 
-  @Post('upload-images/:id')
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Post('upload-images')
   @UseInterceptors(FilesInterceptor('files'))
   async uploadImages(
     @UploadedFiles() files: Array<Express.Multer.File>,
-    @Param('id') userId: string,
+    @User() user: UserDto,
+    // @Param('id') userId: string,
   ): Promise<THttpResponse<string[]>> {
-    return this._photoService.uploadImages(files, userId);
+    const { id } = user;
+    return this._photoService.uploadImages(files, id);
   }
 
   // @Put('update-images')

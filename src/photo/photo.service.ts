@@ -1,3 +1,4 @@
+import { UserDto } from './../user/dto/user.dto';
 import { THttpResponse } from './../shared/common/http-response.dto';
 import { DeleteUpdatePhotoDto } from './dto/delete-update-photo.dts';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -22,9 +23,10 @@ export class PhotoService {
     private readonly _cloudinaryService: CloudinaryService,
   ) {}
 
-  async getPhotoByUserId(userId: string): Promise<THttpResponse<PhotoDto[]>> {
+  async getPhotoByUserId(user: UserDto): Promise<THttpResponse<PhotoDto[]>> {
     try {
-      const result = await this._photo.find({ where: { userId } });
+      const { id } = user;
+      const result = await this._photo.find({ where: { userId: id } });
 
       console.log(result);
 
