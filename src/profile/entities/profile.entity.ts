@@ -21,10 +21,10 @@ export class Profile extends Base {
   @Column({ name: 'gender', type: 'enum', enum: Gender })
   gender: Gender;
 
-  @Column({ name: 'avatar' })
+  @Column({ name: 'avatar', nullable: true })
   avatar: string;
 
-  @Column({ name: 'reason' })
+  @Column({ name: 'reason', nullable: true })
   reason: string;
 
   @Column({ name: 'birthday', type: 'date' })
