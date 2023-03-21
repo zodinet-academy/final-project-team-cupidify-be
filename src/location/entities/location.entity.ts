@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, OneToOne } from 'typeorm';
+import { Column, Entity, Index, JoinColumn, OneToOne, Point } from 'typeorm';
 import { Base } from '../../shared/base.entity';
 import { User } from './../../user/entities/user.entity';
 
@@ -12,8 +12,17 @@ export class Location extends Base {
   user: User;
 
   @Column('double precision')
-  longitude: number;
+  long: number;
 
   @Column('double precision')
-  latitude: number;
+  lat: number;
+
+  @Index({ spatial: true })
+  @Column({
+    type: 'geography',
+    spatialFeatureType: 'Point',
+    srid: 4326,
+    nullable: true,
+  })
+  location: Point;
 }
