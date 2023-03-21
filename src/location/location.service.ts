@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable, HttpException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
 import { UpdateLocationDto } from './dto/update-location.dto';
@@ -39,7 +44,7 @@ export class LocationService {
 
       const location = await this._locationRepository.save(createdLocation);
 
-      return { data: location, status: 200 };
+      return { data: location, statusCode: HttpStatus.CREATED };
     } catch (err) {
       console.log(err.message);
 
@@ -74,7 +79,7 @@ export class LocationService {
         location: pointObj,
       });
 
-      return { data: updatedLocation, status: 200 };
+      return { data: updatedLocation, statusCode: HttpStatus.OK };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
@@ -82,7 +87,7 @@ export class LocationService {
 
   async findUsersWithin(
     userId: string,
-  ): Promise<{ data: IUserFinded[]; status: number }> {
+  ): Promise<{ data: IUserFinded[]; statusCode: number }> {
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -128,7 +133,7 @@ export class LocationService {
         };
         listUserFinded.push(userFinded);
       }
-      return { data: listUserFinded, status: 200 };
+      return { data: listUserFinded, statusCode: HttpStatus.OK };
     } catch (err) {
       throw new BadRequestException(err);
     }
