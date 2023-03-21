@@ -26,6 +26,7 @@ import { Conversation } from './conversation/entities/conversation.entity';
 import { Message } from './message/entities/message.entity';
 import { BlackList } from './black-list/entities/black-list.entity';
 import { Photo } from './photo/entities/photo.entity';
+import { CloudinaryModule } from './cloudinary/cloudinary.module';
 config();
 
 const entities = [
@@ -66,6 +67,7 @@ const entities = [
     PhotoModule,
     LocationModule,
     AuthModule,
+    CloudinaryModule,
   ],
   controllers: [AppController],
   providers: [AppService],

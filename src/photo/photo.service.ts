@@ -1,15 +1,21 @@
-import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { CreatePhotoDto } from './dto/create-photo.dto';
-import { UpdatePhotoDto } from './dto/update-photo.dto';
+import { CloudinaryService } from './../cloudinary/cloudinary.service';
+import {
+  Injectable,
+  BadRequestException,
+  HttpStatus,
+  UploadedFiles,
+} from '@nestjs/common';
 import { Photo } from './entities/photo.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PhotoService {
   constructor(
     @InjectRepository(Photo)
-    private readonly _photoRepository: Repository<Photo>,
+    private readonly _photo: Repository<Photo>,
+    private readonly _cloudinaryService: CloudinaryService,
   ) {}
 
   create(createPhotoDto: CreatePhotoDto) {
@@ -21,17 +27,45 @@ export class PhotoService {
   }
 
   async findOne(userId: string) {
-    const response = await this._photoRepository.find({ where: { userId } });
+    const response = await this._photo.find({ where: { userId } });
     console.log(response);
 
     return response;
   }
 
-  update(id: number, updatePhotoDto: UpdatePhotoDto) {
-    return `This action updates a #${id} photo`;
+  async uploadImages(
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    userId: string,
+  ): Promise<any> {
+    try {
+      const result = await this._cloudinaryService.uploadImagesToCloudinary(
+        files,
+      );
+
+      await this.storeImages(userId, result.data);
+    } catch (err) {
+      console.log(err.message);
+      throw new BadRequestException(
+        HttpStatus.BAD_REQUEST,
+        'Upload images failed',
+      );
+    }
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} photo`;
+  async storeImages(userId: string, imageUrls: string[]) {
+    // imageUrls.map(async (url) => {
+    //   await this._photo.save({
+    //     userId,
+    //     photoUrl: url,
+    //     isFavorite: false,
+    //   });
+    // });
+    for (let i = 0; i < imageUrls.length; i++) {
+      await this._photo.save({
+        userId,
+        photoUrl: imageUrls[i],
+        isFavorite: false,
+      });
+    }
   }
 }
