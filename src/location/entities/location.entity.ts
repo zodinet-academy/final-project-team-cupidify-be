@@ -1,3 +1,4 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { Column, Entity, Index, JoinColumn, OneToOne, Point } from 'typeorm';
 import { Base } from '../../shared/base.entity';
 import { User } from './../../user/entities/user.entity';
@@ -5,6 +6,7 @@ import { User } from './../../user/entities/user.entity';
 @Entity({ name: 'location', synchronize: true })
 export class Location extends Base {
   @Column({ name: 'user_id' })
+  @ApiProperty()
   userId: string;
 
   @OneToOne(() => User, (user) => user.location, { onDelete: 'CASCADE' })
@@ -12,9 +14,11 @@ export class Location extends Base {
   user: User;
 
   @Column('double precision')
+  @ApiProperty()
   long: number;
 
   @Column('double precision')
+  @ApiProperty()
   lat: number;
 
   @Index({ spatial: true })
