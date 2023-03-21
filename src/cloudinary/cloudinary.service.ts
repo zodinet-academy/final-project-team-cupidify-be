@@ -9,4 +9,16 @@ export class CloudinaryService {
       throw new BadRequestException(err.message);
     });
   }
+
+  async deleteImagesInCloudinary(publicId: string) {
+    return await this._cloudinary.deleteImg(publicId).catch((err) => {
+      throw new BadRequestException(err.message);
+    });
+  }
+
+  // async updateImagesInCloudinary(file: Express.Multer.File, publicId: string) {
+  //   return await this._cloudinary.updateImg(publicId, file).catch((err) => {
+  //     throw new BadRequestException(err.message);
+  //   });
+  // }
 }
