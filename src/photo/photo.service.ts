@@ -1,26 +1,55 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePhotoDto } from './dto/create-photo.dto';
-import { UpdatePhotoDto } from './dto/update-photo.dto';
+import { CloudinaryService } from './../cloudinary/cloudinary.service';
+import {
+  Injectable,
+  BadRequestException,
+  HttpStatus,
+  UploadedFiles,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Photo } from './entities/photo.entity';
+import { Repository } from 'typeorm';
 
 @Injectable()
 export class PhotoService {
-  create(createPhotoDto: CreatePhotoDto) {
-    return 'This action adds a new photo';
+  constructor(
+    @InjectRepository(Photo)
+    private readonly _photo: Repository<Photo>,
+    private readonly _cloudinaryService: CloudinaryService,
+  ) {}
+
+  async uploadImages(
+    @UploadedFiles() files: Array<Express.Multer.File>,
+    userId: string,
+  ): Promise<any> {
+    try {
+      const result = await this._cloudinaryService.uploadImagesToCloudinary(
+        files,
+      );
+
+      await this.storeImages(userId, result.data);
+    } catch (err) {
+      console.log(err.message);
+      throw new BadRequestException(
+        HttpStatus.BAD_REQUEST,
+        'Upload images failed',
+      );
+    }
   }
 
-  findAll() {
-    return `This action returns all photo`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} photo`;
-  }
-
-  update(id: number, updatePhotoDto: UpdatePhotoDto) {
-    return `This action updates a #${id} photo`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} photo`;
+  async storeImages(userId: string, imageUrls: string[]) {
+    // imageUrls.map(async (url) => {
+    //   await this._photo.save({
+    //     userId,
+    //     photoUrl: url,
+    //     isFavorite: false,
+    //   });
+    // });
+    for (let i = 0; i < imageUrls.length; i++) {
+      await this._photo.save({
+        userId,
+        photoUrl: imageUrls[i],
+        isFavorite: false,
+      });
+    }
   }
 }
