@@ -1,3 +1,4 @@
+import { THttpResponse } from './../shared/common/http-response.dto';
 import {
   BadRequestException,
   HttpException,
@@ -43,7 +44,7 @@ export class ProfileService {
     return `This action returns a #${id} profile`;
   }
 
-  async findOneByUserId(userId: string): Promise<Profile> {
+  async findOneByUserId(userId: string): Promise<THttpResponse<Profile>> {
     try {
       console.log('userId: ', userId);
 
@@ -59,7 +60,10 @@ export class ProfileService {
         );
       }
 
-      return profile;
+      return {
+        statusCode: HttpStatus.OK,
+        data: profile,
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
