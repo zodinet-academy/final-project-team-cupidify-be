@@ -1,21 +1,11 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
-import { ProfileService } from './profile.service';
-import { CreateProfileDto } from './dto/create-profile.dto';
-import { UpdateProfileDto } from './dto/update-profile.dto';
+import { Body, Controller, Get, Post, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthenticationGuard } from '../auth/guards/auth.guard';
-import { UserDto } from '../user/dto/user.dto';
 import { User } from '../user/decorator/user.decorator';
+import { UserDto } from '../user/dto/user.dto';
+import { CreateProfileDto } from './dto/create-profile.dto';
+import { UpdateProfileDto } from './dto/update-profile.dto';
+import { ProfileService } from './profile.service';
 
 @Controller('profile')
 export class ProfileController {
@@ -33,10 +23,10 @@ export class ProfileController {
     return this.profileService.findOneByUserId(user.id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.profileService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.profileService.findOne(+id);
+  // }
 
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
@@ -49,8 +39,8 @@ export class ProfileController {
     return this.profileService.update(user.id, updateProfileDto);
   }
 
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.profileService.remove(+id);
-  }
+  // @Delete(':id')
+  // remove(@Param('id') id: string) {
+  //   return this.profileService.remove(+id);
+  // }
 }

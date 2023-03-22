@@ -1,10 +1,10 @@
-import { TCheckedResponse } from '../shared/common/check-response.dto';
-import { BadRequestException, Injectable } from '@nestjs/common';
-import { CreateUserDto } from './dto/create-user.dto';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
+import { TCheckedResponse } from '../shared/common/check-response.dto';
+import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UserService {
@@ -37,10 +37,19 @@ export class UserService {
 
       if (!result)
         return {
-          checked: false,
+          statusCode: HttpStatus.NOT_FOUND,
+          data: {
+            checked: false,
+          },
         };
 
-      return { checked: true, data: result };
+      return {
+        statusCode: HttpStatus.OK,
+        data: {
+          checked: true,
+          data: result,
+        },
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
@@ -54,13 +63,19 @@ export class UserService {
 
       if (!user) {
         return {
-          checked: false,
+          statusCode: HttpStatus.NOT_FOUND,
+          data: {
+            checked: false,
+          },
         };
       }
 
       return {
-        checked: true,
-        data: { phone: user.phone },
+        statusCode: HttpStatus.OK,
+        data: {
+          checked: true,
+          data: { phone: user.phone },
+        },
       };
     } catch (err) {
       throw new BadRequestException(err.message);
