@@ -118,7 +118,7 @@ export class LocationService {
           listLocationUser[i].user,
         );
         const userFinded: IUserFinded = {
-          user: response,
+          user: response.data,
           distance: this.round10(listLocationUser[i].distance, -1),
         };
         listUserFinded.push(userFinded);
