@@ -36,6 +36,7 @@ export class ProfileController {
     @Body()
     updateProfileDto: UpdateProfileDto,
   ) {
+    console.log(updateProfileDto);
     return this.profileService.update(user.id, updateProfileDto);
   }
 

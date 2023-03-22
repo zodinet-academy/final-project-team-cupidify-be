@@ -58,13 +58,20 @@ export class ProfileService {
     }
   }
 
-  async update(userId: string, updateProfileDto: UpdateProfileDto) {
+  async update(
+    userId: string,
+    updateProfileDto: UpdateProfileDto,
+  ): Promise<THttpResponse<void>> {
     try {
       const profile = await this.findOneByUserId(userId);
 
-      const updatedProfile = Object.assign(profile, updateProfileDto);
+      const updatedProfile = Object.assign(profile.data, updateProfileDto);
 
-      return await this._profileRepository.save(updatedProfile);
+      await this._profileRepository.save(updatedProfile);
+
+      return {
+        statusCode: HttpStatus.NO_CONTENT,
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
