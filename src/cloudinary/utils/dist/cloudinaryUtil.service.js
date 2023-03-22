@@ -49,21 +49,83 @@ var toStream = require("buffer-to-stream");
 var CloudinaryUtilService = /** @class */ (function () {
     function CloudinaryUtilService() {
     }
-    CloudinaryUtilService.prototype.uploadAllImg = function (files) {
+    CloudinaryUtilService.prototype.uploadImages = function (files) {
         return __awaiter(this, void 0, Promise, function () {
-            var result;
+            var result, err_1;
             var _this = this;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, Promise.all(files.map(function (f) { return _this.uploadSingleImg(f); }))];
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, Promise.all(files.map(function (f) { return _this.upload(f); }))];
                     case 1:
                         result = _a.sent();
-                        return [2 /*return*/, result];
+                        return [2 /*return*/, {
+                                statusCode: common_1.HttpStatus.CREATED,
+                                data: result.map(function (i) {
+                                    return {
+                                        publicId: i.public_id,
+                                        photoUrl: i.url
+                                    };
+                                })
+                            }];
+                    case 2:
+                        err_1 = _a.sent();
+                        throw new common_1.BadRequestException('Upload failed');
+                    case 3: return [2 /*return*/];
                 }
             });
         });
     };
-    CloudinaryUtilService.prototype.uploadSingleImg = function (file) {
+    CloudinaryUtilService.prototype.uploadImage = function (file) {
+        return __awaiter(this, void 0, Promise, function () {
+            var result, err_2;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 2, , 3]);
+                        return [4 /*yield*/, this.upload(file)];
+                    case 1:
+                        result = _a.sent();
+                        return [2 /*return*/, {
+                                statusCode: common_1.HttpStatus.CREATED,
+                                data: {
+                                    publicId: result.public_id,
+                                    photoUrl: result.url
+                                }
+                            }];
+                    case 2:
+                        err_2 = _a.sent();
+                        throw new common_1.BadRequestException('Upload failed');
+                    case 3: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    CloudinaryUtilService.prototype.updateImg = function (publicId, file) {
+        return __awaiter(this, void 0, void 0, function () {
+            var deleteRes, res, err_3;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, this["delete"](publicId)];
+                    case 1:
+                        deleteRes = _a.sent();
+                        return [4 /*yield*/, this.upload(file[0])];
+                    case 2:
+                        res = _a.sent();
+                        return [3 /*break*/, 4];
+                    case 3:
+                        err_3 = _a.sent();
+                        console.log(err_3);
+                        throw new common_1.BadRequestException('Update failed');
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    CloudinaryUtilService.prototype.upload = function (file) {
         return new Promise(function (resolve, reject) {
             var upload = cloudinary_1.v2.uploader.upload_stream(function (error, result) {
                 if (error)
@@ -71,6 +133,18 @@ var CloudinaryUtilService = /** @class */ (function () {
                 resolve(result);
             });
             toStream(file.buffer).pipe(upload);
+        });
+    };
+    CloudinaryUtilService.prototype["delete"] = function (public_id) {
+        return new Promise(function (resolve, reject) {
+            var result = cloudinary_1.v2.uploader.destroy(public_id, {
+                resource_type: 'image'
+            }, function (error) {
+                if (error) {
+                    return reject(error);
+                }
+                resolve(result);
+            });
         });
     };
     CloudinaryUtilService = __decorate([

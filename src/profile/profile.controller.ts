@@ -33,11 +33,6 @@ export class ProfileController {
     return this.profileService.findOneByUserId(user.id);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.profileService.findOne(+id);
-  }
-
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Put()
@@ -47,10 +42,5 @@ export class ProfileController {
     updateProfileDto: UpdateProfileDto,
   ) {
     return this.profileService.update(user.id, updateProfileDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.profileService.remove(+id);
   }
 }

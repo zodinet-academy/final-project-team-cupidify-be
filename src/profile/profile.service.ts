@@ -1,3 +1,4 @@
+import { THttpResponse } from './../shared/common/http-response.dto';
 import {
   BadRequestException,
   HttpException,
@@ -35,15 +36,7 @@ export class ProfileService {
     }
   }
 
-  findAll() {
-    return `This action returns all profile`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} profile`;
-  }
-
-  async findOneByUserId(userId: string): Promise<Profile> {
+  async findOneByUserId(userId: string): Promise<THttpResponse<Profile>> {
     try {
       const profile = await this._profileRepository.findOne({
         where: { userId },
@@ -56,7 +49,10 @@ export class ProfileService {
         );
       }
 
-      return profile;
+      return {
+        statusCode: HttpStatus.OK,
+        data: profile,
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
@@ -72,9 +68,5 @@ export class ProfileService {
     } catch (err) {
       throw new BadRequestException(err.message);
     }
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} profile`;
   }
 }

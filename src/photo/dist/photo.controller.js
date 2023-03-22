@@ -5,6 +5,9 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var __param = (this && this.__param) || function (paramIndex, decorator) {
+    return function (target, key) { decorator(target, key, paramIndex); }
+};
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -42,63 +45,100 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 exports.__esModule = true;
-exports.CloudinaryService = void 0;
+exports.PhotoController = void 0;
 var common_1 = require("@nestjs/common");
-var CloudinaryService = /** @class */ (function () {
-    function CloudinaryService(_cloudinary) {
-        this._cloudinary = _cloudinary;
+var swagger_1 = require("@nestjs/swagger");
+var auth_guard_1 = require("../auth/guards/auth.guard");
+var user_decorator_1 = require("../user/decorator/user.decorator");
+var platform_express_1 = require("@nestjs/platform-express");
+var decorators_1 = require("@nestjs/common/decorators");
+var PhotoController = /** @class */ (function () {
+    function PhotoController(_photoService) {
+        this._photoService = _photoService;
     }
-    CloudinaryService.prototype.uploadImageToCloudinary = function (file) {
+    PhotoController.prototype.getPhotoByUserId = function (user) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._cloudinary.uploadImage(file)["catch"](function (err) {
-                            throw new common_1.BadRequestException(err.message);
-                        })];
-                    case 1: return [2 /*return*/, _a.sent()];
-                }
+                return [2 /*return*/, this._photoService.getPhotoByUserId(user)];
             });
         });
     };
-    CloudinaryService.prototype.uploadImagesToCloudinary = function (files) {
-        return __awaiter(this, void 0, void 0, function () {
+    PhotoController.prototype.uploadImages = function (files, user) {
+        return __awaiter(this, void 0, Promise, function () {
+            var id;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._cloudinary.uploadImages(files)["catch"](function (err) {
-                            throw new common_1.BadRequestException(err.message);
-                        })];
-                    case 1: return [2 /*return*/, _a.sent()];
-                }
+                id = user.id;
+                console.log(files);
+                return [2 /*return*/, this._photoService.uploadImages(files, id)];
             });
         });
     };
-    CloudinaryService.prototype.deleteImagesInCloudinary = function (publicId) {
+    PhotoController.prototype.deleteImage = function (user, publicId) {
         return __awaiter(this, void 0, void 0, function () {
+            var id;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._cloudinary["delete"](publicId)["catch"](function (err) {
-                            throw new common_1.BadRequestException(err.message);
-                        })];
-                    case 1: return [2 /*return*/, _a.sent()];
-                }
+                id = user.id;
+                return [2 /*return*/, this._photoService.deleteImage(id, publicId)];
             });
         });
     };
-    CloudinaryService.prototype.updateImagesInCloudinary = function (publicId, file) {
+    PhotoController.prototype.updateImage = function (file, user, publicId) {
         return __awaiter(this, void 0, void 0, function () {
+            var id;
             return __generator(this, function (_a) {
-                switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._cloudinary.updateImg(publicId, file)["catch"](function (err) {
-                            throw new common_1.BadRequestException('Update ', err.message);
-                        })];
-                    case 1: return [2 /*return*/, _a.sent()];
-                }
+                id = user.id;
+                console.log(file);
+                return [2 /*return*/, this._photoService.updateImage(file, id, publicId)];
             });
         });
     };
-    CloudinaryService = __decorate([
-        common_1.Injectable()
-    ], CloudinaryService);
-    return CloudinaryService;
+    PhotoController.prototype.updateFavorite = function (user, publicId) {
+        return __awaiter(this, void 0, void 0, function () {
+            var id;
+            return __generator(this, function (_a) {
+                id = user.id;
+                return [2 /*return*/, this._photoService.updateFavorite(id, publicId)];
+            });
+        });
+    };
+    __decorate([
+        swagger_1.ApiBearerAuth(),
+        common_1.UseGuards(auth_guard_1.AuthenticationGuard),
+        common_1.Get(),
+        __param(0, user_decorator_1.User())
+    ], PhotoController.prototype, "getPhotoByUserId");
+    __decorate([
+        swagger_1.ApiBearerAuth(),
+        common_1.UseGuards(auth_guard_1.AuthenticationGuard),
+        common_1.Post(),
+        decorators_1.UseInterceptors(platform_express_1.FilesInterceptor('files')),
+        __param(0, decorators_1.UploadedFiles()),
+        __param(1, user_decorator_1.User())
+    ], PhotoController.prototype, "uploadImages");
+    __decorate([
+        swagger_1.ApiBearerAuth(),
+        common_1.UseGuards(auth_guard_1.AuthenticationGuard),
+        common_1.Delete(':id'),
+        __param(0, user_decorator_1.User()), __param(1, common_1.Param('id'))
+    ], PhotoController.prototype, "deleteImage");
+    __decorate([
+        swagger_1.ApiBearerAuth(),
+        common_1.UseGuards(auth_guard_1.AuthenticationGuard),
+        common_1.Put(':id'),
+        decorators_1.UseInterceptors(platform_express_1.FilesInterceptor('files')),
+        __param(0, decorators_1.UploadedFiles()),
+        __param(1, user_decorator_1.User()),
+        __param(2, common_1.Param('id'))
+    ], PhotoController.prototype, "updateImage");
+    __decorate([
+        swagger_1.ApiBearerAuth(),
+        common_1.UseGuards(auth_guard_1.AuthenticationGuard),
+        common_1.Put('favorite'),
+        __param(0, user_decorator_1.User()), __param(1, common_1.Param('id'))
+    ], PhotoController.prototype, "updateFavorite");
+    PhotoController = __decorate([
+        common_1.Controller('photo')
+    ], PhotoController);
+    return PhotoController;
 }());
-exports.CloudinaryService = CloudinaryService;
+exports.PhotoController = PhotoController;
