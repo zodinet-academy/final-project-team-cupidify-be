@@ -1,4 +1,3 @@
-import { UserDto } from './../user/dto/user.dto';
 import { THttpResponse } from './../shared/common/http-response.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CloudinaryService } from './../cloudinary/cloudinary.service';
@@ -14,6 +13,7 @@ import { Repository } from 'typeorm';
 import { ICloudinaryData } from '../shared/interfaces/cloudinary.interface';
 import { PhotoDto } from './dto/photo.dto';
 import { UserService } from 'src/user/user.service';
+import { MAXIMUM_PHOTOS } from '../shared/constants/constants';
 
 @Injectable()
 export class PhotoService {
@@ -50,6 +50,15 @@ export class PhotoService {
     userId: string,
   ): Promise<THttpResponse<void>> {
     try {
+      const countUserPhoto: number = await this.countPhoto(userId);
+
+      if (countUserPhoto === MAXIMUM_PHOTOS) {
+        return {
+          statusCode: HttpStatus.BAD_REQUEST,
+          message: 'Maximum 10 photos',
+        };
+      }
+
       const result = await this._cloudinaryService.uploadImagesToCloudinary(
         files,
       );
@@ -152,6 +161,20 @@ export class PhotoService {
         HttpStatus.BAD_REQUEST,
         'Update favorite failed',
       );
+    }
+  }
+
+  async countPhoto(userId: string): Promise<number> {
+    try {
+      const count = await this._photo.count({
+        where: {
+          userId,
+        },
+      });
+
+      return count;
+    } catch (err) {
+      throw new BadRequestException('User Not Found');
     }
   }
 }
