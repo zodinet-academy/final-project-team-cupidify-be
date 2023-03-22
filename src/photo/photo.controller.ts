@@ -1,3 +1,4 @@
+import { PhotoDto } from './dto/photo.dto';
 import {
   Controller,
   Get,
@@ -23,7 +24,9 @@ export class PhotoController {
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
-  async getPhotoByUserId(@User() user: UserDto) {
+  async getPhotoByUserId(
+    @User() user: UserDto,
+  ): Promise<THttpResponse<PhotoDto[]>> {
     return this._photoService.getPhotoByUserId(user);
   }
 
@@ -34,34 +37,45 @@ export class PhotoController {
   async uploadImages(
     @UploadedFiles() files: Array<Express.Multer.File>,
     @User() user: UserDto,
-    // @Param('id') userId: string,
-  ): Promise<THttpResponse<string[]>> {
+  ): Promise<THttpResponse<void>> {
     const { id } = user;
+    console.log(files);
     return this._photoService.uploadImages(files, id);
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Delete(':id')
-  async deleteImages(@User() user: UserDto, @Param('id') publicId: string) {
+  async deleteImage(
+    @User() user: UserDto,
+    @Param('id') publicId: string,
+  ): Promise<THttpResponse<void>> {
     const { id } = user;
-    return this._photoService.deleteImages(id, publicId);
+    return this._photoService.deleteImage(id, publicId);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Put(':id')
+  @UseInterceptors(FilesInterceptor('files'))
+  async updateImage(
+    @UploadedFiles() file: Express.Multer.File,
+    @User() user: UserDto,
+    @Param('id') publicId: string,
+  ): Promise<THttpResponse<void>> {
+    const { id } = user;
+    console.log(file);
+    return this._photoService.updateImage(file, id, publicId);
   }
 
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Put('favorite')
-  async updateFavorite(@User() user: UserDto, @Param('id') publicId: string) {
+  async updateFavorite(
+    @User() user: UserDto,
+    @Param('id') publicId: string,
+  ): Promise<THttpResponse<void>> {
     const { id } = user;
     return this._photoService.updateFavorite(id, publicId);
   }
-
-  // @Put('update-images')
-  // @UseInterceptors(FileInterceptor('files'))
-  // async updateImage(
-  //   @UploadedFile() file: Express.Multer.File,
-  //   @Body() updateReq: DeleteUpdatePhotoDto,
-  // ) {
-  //   return this._photoService.updateImage(file, updateReq);
-  // }
 }

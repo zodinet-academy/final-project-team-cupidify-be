@@ -1,6 +1,5 @@
 import { UserDto } from './../user/dto/user.dto';
 import { THttpResponse } from './../shared/common/http-response.dto';
-import { DeleteUpdatePhotoDto } from './dto/delete-update-photo.dts';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CloudinaryService } from './../cloudinary/cloudinary.service';
 import {
@@ -42,13 +41,20 @@ export class PhotoService {
   async uploadImages(
     @UploadedFiles() files: Array<Express.Multer.File>,
     userId: string,
-  ): Promise<any> {
+  ): Promise<THttpResponse<void>> {
     try {
       const result = await this._cloudinaryService.uploadImagesToCloudinary(
         files,
       );
 
+      console.log(result);
+
       await this.storeImages(userId, result.data);
+
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Uploaded',
+      };
     } catch (err) {
       console.log(err.message);
       throw new BadRequestException(
@@ -82,7 +88,7 @@ export class PhotoService {
     }
   }
 
-  async deleteImages(userId, publicId): Promise<void> {
+  async deleteImage(userId, publicId): Promise<THttpResponse<void>> {
     try {
       // const { userId, publicId } = deleteReq;
 
@@ -92,29 +98,39 @@ export class PhotoService {
       });
 
       await this._cloudinaryService.deleteImagesInCloudinary(publicId);
+
+      return {
+        statusCode: HttpStatus.NO_CONTENT,
+        message: 'Deleted',
+      };
     } catch (err) {
       throw new BadRequestException(HttpStatus.BAD_REQUEST, 'Delete Failed');
     }
   }
 
-  // async updateImage(
-  //   @UploadedFile() file: Express.Multer.File,
-  //   updateReq: DeleteUpdatePhotoDto,
-  // ) {
-  //   try {
-  //     // const { userId, publicId } = updateReq;
-  //     // console.log(userId, publicId, file);
-  //     // await this._cloudinaryService.updateImagesInCloudinary(file, publicId);
-  //     // console.log('Image Updated');
-  //   } catch (err) {
-  //     throw new BadRequestException(
-  //       HttpStatus.BAD_REQUEST,
-  //       'Update image failed',
-  //     );
-  //   }
-  // }
+  async updateImage(
+    @UploadedFile() file: Express.Multer.File,
+    userId: string,
+    publicId: string,
+  ): Promise<THttpResponse<void>> {
+    try {
+      await this._photo.delete({ publicId });
 
-  async updateFavorite(userId, publicId): Promise<void> {
+      await this._cloudinaryService.updateImagesInCloudinary(publicId, file);
+
+      return {
+        statusCode: HttpStatus.NO_CONTENT,
+        message: 'Updated',
+      };
+    } catch (err) {
+      throw new BadRequestException(
+        HttpStatus.BAD_REQUEST,
+        'Update image failed',
+      );
+    }
+  }
+
+  async updateFavorite(userId, publicId): Promise<THttpResponse<void>> {
     try {
       await this._photo.update(
         {
@@ -125,6 +141,11 @@ export class PhotoService {
           publicId,
         },
       );
+
+      return {
+        statusCode: HttpStatus.NO_CONTENT,
+        message: 'Updated favorite',
+      };
     } catch (err) {
       throw new BadRequestException(
         HttpStatus.BAD_REQUEST,

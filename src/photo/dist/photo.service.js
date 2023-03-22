@@ -88,10 +88,14 @@ var PhotoService = /** @class */ (function () {
                         return [4 /*yield*/, this._cloudinaryService.uploadImagesToCloudinary(files)];
                     case 1:
                         result = _a.sent();
+                        console.log(result);
                         return [4 /*yield*/, this.storeImages(userId, result.data)];
                     case 2:
                         _a.sent();
-                        return [3 /*break*/, 4];
+                        return [2 /*return*/, {
+                                statusCode: common_1.HttpStatus.CREATED,
+                                message: 'Uploaded'
+                            }];
                     case 3:
                         err_2 = _a.sent();
                         console.log(err_2.message);
@@ -146,7 +150,7 @@ var PhotoService = /** @class */ (function () {
             });
         });
     };
-    PhotoService.prototype.deleteImages = function (userId, publicId) {
+    PhotoService.prototype.deleteImage = function (userId, publicId) {
         return __awaiter(this, void 0, Promise, function () {
             var err_4;
             return __generator(this, function (_a) {
@@ -164,7 +168,10 @@ var PhotoService = /** @class */ (function () {
                         return [4 /*yield*/, this._cloudinaryService.deleteImagesInCloudinary(publicId)];
                     case 2:
                         _a.sent();
-                        return [3 /*break*/, 4];
+                        return [2 /*return*/, {
+                                statusCode: common_1.HttpStatus.NO_CONTENT,
+                                message: 'Deleted'
+                            }];
                     case 3:
                         err_4 = _a.sent();
                         throw new common_1.BadRequestException(common_1.HttpStatus.BAD_REQUEST, 'Delete Failed');
@@ -173,25 +180,34 @@ var PhotoService = /** @class */ (function () {
             });
         });
     };
-    // async updateImage(
-    //   @UploadedFile() file: Express.Multer.File,
-    //   updateReq: DeleteUpdatePhotoDto,
-    // ) {
-    //   try {
-    //     // const { userId, publicId } = updateReq;
-    //     // console.log(userId, publicId, file);
-    //     // await this._cloudinaryService.updateImagesInCloudinary(file, publicId);
-    //     // console.log('Image Updated');
-    //   } catch (err) {
-    //     throw new BadRequestException(
-    //       HttpStatus.BAD_REQUEST,
-    //       'Update image failed',
-    //     );
-    //   }
-    // }
-    PhotoService.prototype.updateFavorite = function (userId, publicId) {
+    PhotoService.prototype.updateImage = function (file, userId, publicId) {
         return __awaiter(this, void 0, Promise, function () {
             var err_5;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        _a.trys.push([0, 3, , 4]);
+                        return [4 /*yield*/, this._photo["delete"]({ publicId: publicId })];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this._cloudinaryService.updateImagesInCloudinary(publicId, file)];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/, {
+                                statusCode: common_1.HttpStatus.NO_CONTENT,
+                                message: "Updated"
+                            }];
+                    case 3:
+                        err_5 = _a.sent();
+                        throw new common_1.BadRequestException(common_1.HttpStatus.BAD_REQUEST, 'Update image failed');
+                    case 4: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    PhotoService.prototype.updateFavorite = function (userId, publicId) {
+        return __awaiter(this, void 0, Promise, function () {
+            var err_6;
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
@@ -204,9 +220,12 @@ var PhotoService = /** @class */ (function () {
                             })];
                     case 1:
                         _a.sent();
-                        return [3 /*break*/, 3];
+                        return [2 /*return*/, {
+                                statusCode: common_1.HttpStatus.NO_CONTENT,
+                                message: "Updated favorite"
+                            }];
                     case 2:
-                        err_5 = _a.sent();
+                        err_6 = _a.sent();
                         throw new common_1.BadRequestException(common_1.HttpStatus.BAD_REQUEST, 'Update favorite failed');
                     case 3: return [2 /*return*/];
                 }
@@ -216,6 +235,9 @@ var PhotoService = /** @class */ (function () {
     __decorate([
         __param(0, common_1.UploadedFiles())
     ], PhotoService.prototype, "uploadImages");
+    __decorate([
+        __param(0, common_1.UploadedFile())
+    ], PhotoService.prototype, "updateImage");
     PhotoService = __decorate([
         common_1.Injectable(),
         __param(0, typeorm_1.InjectRepository(photo_entity_1.Photo))

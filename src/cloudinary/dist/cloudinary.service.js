@@ -48,12 +48,48 @@ var CloudinaryService = /** @class */ (function () {
     function CloudinaryService(_cloudinary) {
         this._cloudinary = _cloudinary;
     }
+    CloudinaryService.prototype.uploadImageToCloudinary = function (file) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this._cloudinary.uploadImage(file)["catch"](function (err) {
+                            throw new common_1.BadRequestException(err.message);
+                        })];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
     CloudinaryService.prototype.uploadImagesToCloudinary = function (files) {
         return __awaiter(this, void 0, void 0, function () {
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, this._cloudinary.uploadAllImg(files)["catch"](function (err) {
+                    case 0: return [4 /*yield*/, this._cloudinary.uploadImages(files)["catch"](function (err) {
                             throw new common_1.BadRequestException(err.message);
+                        })];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    CloudinaryService.prototype.deleteImagesInCloudinary = function (publicId) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this._cloudinary["delete"](publicId)["catch"](function (err) {
+                            throw new common_1.BadRequestException(err.message);
+                        })];
+                    case 1: return [2 /*return*/, _a.sent()];
+                }
+            });
+        });
+    };
+    CloudinaryService.prototype.updateImagesInCloudinary = function (publicId, file) {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this._cloudinary.updateImg(publicId, file)["catch"](function (err) {
+                            throw new common_1.BadRequestException('Update ', err.message);
                         })];
                     case 1: return [2 /*return*/, _a.sent()];
                 }
