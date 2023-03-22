@@ -29,17 +29,30 @@ export class PhotoController {
   constructor(private readonly _photoService: PhotoService) {}
 
   @ApiOkResponse({
-    description: 'Get photo URLs by userId',
+    description: 'Get user photo URLs',
     type: PhotoDto,
   })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
-  async getPhotoByUserId(
+  async getUserPhoto(
     @User() user: UserDto,
-  ): Promise<THttpResponse<PhotoDto[]>> {
+  ): Promise<THttpResponse<PhotoDto | PhotoDto[]>> {
     const { id } = user;
-    return this._photoService.getPhotoByUserId(id);
+    return this._photoService.getUserPhoto(id);
+  }
+
+  @ApiOkResponse({
+    description: 'Get photo URLs by userId',
+    type: PhotoDto,
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Get(':id')
+  async getPhotoByUser(
+    @Param('id') userId: string,
+  ): Promise<THttpResponse<PhotoDto | PhotoDto[]>> {
+    return this._photoService.getUserPhoto(userId);
   }
 
   @ApiCreatedResponse({

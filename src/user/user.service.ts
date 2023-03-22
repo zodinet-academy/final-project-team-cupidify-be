@@ -1,10 +1,12 @@
+import { THttpResponse } from 'src/shared/common/http-response.dto';
 import { TCheckedResponse } from '../shared/common/check-response.dto';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable, HttpStatus } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { UserDto } from './dto/user.dto';
+import { isEmpty } from 'class-validator';
 
 @Injectable()
 export class UserService {
@@ -74,5 +76,18 @@ export class UserService {
     console.log(response);
 
     return response;
+  }
+
+  async isUserExist(userId: string): Promise<any> {
+    try {
+      const result = await this.findById(userId);
+      // console.log(result); // if (result) return false;
+
+      if (result) {
+        return true;
+      }
+    } catch (error) {
+      return false;
+    }
   }
 }

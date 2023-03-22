@@ -13,6 +13,7 @@ import { Photo } from './entities/photo.entity';
 import { Repository } from 'typeorm';
 import { ICloudinaryData } from '../shared/interfaces/cloudinary.interface';
 import { PhotoDto } from './dto/photo.dto';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class PhotoService {
@@ -20,10 +21,19 @@ export class PhotoService {
     @InjectRepository(Photo)
     private readonly _photo: Repository<Photo>,
     private readonly _cloudinaryService: CloudinaryService,
+    private readonly _userService: UserService,
   ) {}
 
-  async getPhotoByUserId(userId: string): Promise<THttpResponse<PhotoDto[]>> {
+  async getUserPhoto(
+    userId: string,
+  ): Promise<THttpResponse<PhotoDto | PhotoDto[]>> {
     try {
+      const checkUserExist = await this._userService.isUserExist(userId);
+
+      if (!checkUserExist) {
+        throw new BadRequestException(HttpStatus.NOT_FOUND, 'User Not Found');
+      }
+
       const result = await this._photo.find({ where: { userId } });
 
       return {
@@ -31,7 +41,7 @@ export class PhotoService {
         data: result,
       };
     } catch (err) {
-      throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
+      throw new BadRequestException(HttpStatus.NOT_FOUND, 'User Not Found');
     }
   }
 
@@ -83,8 +93,6 @@ export class PhotoService {
 
   async deleteImage(userId, publicId): Promise<THttpResponse<void>> {
     try {
-      // const { userId, publicId } = deleteReq;
-
       await this._photo.delete({
         userId,
         publicId,
