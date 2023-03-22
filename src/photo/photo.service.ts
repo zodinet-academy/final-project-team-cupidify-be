@@ -22,12 +22,9 @@ export class PhotoService {
     private readonly _cloudinaryService: CloudinaryService,
   ) {}
 
-  async getPhotoByUserId(user: UserDto): Promise<THttpResponse<PhotoDto[]>> {
+  async getPhotoByUserId(userId: string): Promise<THttpResponse<PhotoDto[]>> {
     try {
-      const { id } = user;
-      const result = await this._photo.find({ where: { userId: id } });
-
-      console.log(result);
+      const result = await this._photo.find({ where: { userId } });
 
       return {
         statusCode: HttpStatus.OK,
@@ -47,8 +44,6 @@ export class PhotoService {
         files,
       );
 
-      console.log(result);
-
       await this.storeImages(userId, result.data);
 
       return {
@@ -56,7 +51,6 @@ export class PhotoService {
         message: 'Uploaded',
       };
     } catch (err) {
-      console.log(err.message);
       throw new BadRequestException(
         HttpStatus.BAD_REQUEST,
         'Upload images failed',
@@ -76,7 +70,6 @@ export class PhotoService {
       }
     } catch (err) {
       // store url failed => delete in cloudinary
-      console.log('Store failed');
       images.map(async (i) => {
         await this._cloudinaryService.deleteImagesInCloudinary(i.publicId);
       });

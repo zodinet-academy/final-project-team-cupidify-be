@@ -27,7 +27,8 @@ export class PhotoController {
   async getPhotoByUserId(
     @User() user: UserDto,
   ): Promise<THttpResponse<PhotoDto[]>> {
-    return this._photoService.getPhotoByUserId(user);
+    const { id } = user;
+    return this._photoService.getPhotoByUserId(id);
   }
 
   @ApiBearerAuth()
