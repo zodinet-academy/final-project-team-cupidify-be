@@ -46,18 +46,8 @@ export class LocationService {
 
       return { data: location, statusCode: HttpStatus.CREATED };
     } catch (err) {
-      console.log(err.message);
-
       throw new BadRequestException(err.message);
     }
-  }
-
-  findAll() {
-    return `This action returns all location`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} location`;
   }
 
   async update(userId: string, updateLocationDto: UpdateLocationDto) {
@@ -135,12 +125,8 @@ export class LocationService {
       }
       return { data: listUserFinded, statusCode: HttpStatus.OK };
     } catch (err) {
-      throw new BadRequestException(err);
+      throw new BadRequestException(err.message);
     }
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} location`;
   }
 
   decimalAdjust(type, value, exp) {
