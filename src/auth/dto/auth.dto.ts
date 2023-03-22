@@ -1,4 +1,7 @@
 export class AuthDto {
-  token: string;
-  expiresIn?: string;
+  statusCode?: number;
+  data?: {
+    token: string;
+    expiresIn?: string;
+  };
 }

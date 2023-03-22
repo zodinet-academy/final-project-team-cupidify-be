@@ -1,4 +1,8 @@
 export type TCheckedResponse<T> = {
-  checked?: boolean;
-  data?: T;
+  statusCode?: number;
+  data?: {
+    checked?: boolean;
+    data?: T;
+  };
+  phone?: string;
 };
