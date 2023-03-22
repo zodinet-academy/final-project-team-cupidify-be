@@ -9,7 +9,13 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { PhotoService } from './photo.service';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiNoContentResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthenticationGuard } from '../auth/guards/auth.guard';
 import { User } from '../user/decorator/user.decorator';
 import { UserDto } from '../user/dto/user.dto';
@@ -17,10 +23,15 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
 import { UploadedFiles, UseInterceptors } from '@nestjs/common/decorators';
 
+@ApiTags('photo')
 @Controller('photo')
 export class PhotoController {
   constructor(private readonly _photoService: PhotoService) {}
 
+  @ApiOkResponse({
+    description: 'Get photo URLs by userId',
+    type: PhotoDto,
+  })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
@@ -31,6 +42,9 @@ export class PhotoController {
     return this._photoService.getPhotoByUserId(id);
   }
 
+  @ApiCreatedResponse({
+    description: 'Uploaded',
+  })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Post()
@@ -44,6 +58,9 @@ export class PhotoController {
     return this._photoService.uploadImages(files, id);
   }
 
+  @ApiNoContentResponse({
+    description: 'Deleted',
+  })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Delete(':id')
@@ -55,6 +72,9 @@ export class PhotoController {
     return this._photoService.deleteImage(id, publicId);
   }
 
+  @ApiNoContentResponse({
+    description: 'Updated',
+  })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Put(':id')
@@ -69,6 +89,9 @@ export class PhotoController {
     return this._photoService.updateImage(file, id, publicId);
   }
 
+  @ApiNoContentResponse({
+    description: 'Updated favorite',
+  })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Put('favorite')
