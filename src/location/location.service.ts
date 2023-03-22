@@ -101,7 +101,7 @@ export class LocationService {
         .setParameters({
           // stringify GeoJSON
           origin: JSON.stringify(origin),
-          range: 1000 * 1000, //KM conversion
+          range: 0.4 * 1000, //KM conversion
         })
         .getRawMany();
 
