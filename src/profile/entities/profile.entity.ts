@@ -2,10 +2,13 @@ import { User } from './../../user/entities/user.entity';
 import { Entity, Column, OneToOne, JoinColumn } from 'typeorm';
 import { MinLength, IsString } from 'class-validator';
 import { Base } from '../../shared/base.entity';
-import { Education, Gender, Religion } from '../../shared/enums/index';
+import { Education, Gender, Reason, Religion } from '../../shared/enums/index';
 
 @Entity({ name: 'profile', synchronize: true })
 export class Profile extends Base {
+  @Column({ name: 'user_id' })
+  userId: string;
+
   @OneToOne(() => User)
   @JoinColumn({ name: 'user_id', referencedColumnName: 'id' })
   user: User;
@@ -17,6 +20,12 @@ export class Profile extends Base {
 
   @Column({ name: 'gender', type: 'enum', enum: Gender })
   gender: Gender;
+
+  @Column({ name: 'avatar', nullable: true })
+  avatar: string;
+
+  @Column({ name: 'reason', nullable: true })
+  reason: Reason;
 
   @Column({ name: 'birthday', type: 'date' })
   birthday: string;

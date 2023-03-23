@@ -10,7 +10,7 @@ import { User } from '../user/entities/user.entity';
 import * as dotenv from 'dotenv';
 import { ProfileModule } from 'src/profile/profile.module';
 import { GoogleStrategy } from './strategies/google.strategy';
-import { FacebookStrategy } from './strategies/facebook.strategy';
+// import { FacebookStrategy } from './strategies/facebook.strategy';
 
 dotenv.config();
 
@@ -30,7 +30,7 @@ dotenv.config();
     AuthService,
     JsonWebTokenStrategy,
     GoogleStrategy,
-    FacebookStrategy,
+    // FacebookStrategy,
   ],
   exports: [AuthService],
 })

@@ -24,8 +24,8 @@ async function bootstrap() {
   });
 
   const config = new DocumentBuilder()
-    .setTitle('Zodinet User API')
-    .setDescription('The user API description')
+    .setTitle('Zodinet Dating App API')
+    .setDescription('All APIs in Zodinet Dating App')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

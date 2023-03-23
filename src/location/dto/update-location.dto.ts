@@ -1,4 +1,14 @@
-import { PartialType } from '@nestjs/mapped-types';
-import { CreateLocationDto } from './create-location.dto';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsNotEmpty, IsNumber } from 'class-validator';
 
-export class UpdateLocationDto extends PartialType(CreateLocationDto) {}
+export class UpdateLocationDto {
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  long: number;
+
+  @IsNumber()
+  @IsNotEmpty()
+  @ApiProperty()
+  lat: number;
+}

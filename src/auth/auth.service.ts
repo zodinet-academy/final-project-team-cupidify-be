@@ -1,22 +1,19 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 
-import { SignUpDto } from './dto/sign-up.dto';
+import * as dotenv from 'dotenv';
+import * as admin from 'firebase-admin';
+import { OAuth2Client } from 'google-auth-library';
+import { ProfileService } from 'src/profile/profile.service';
 import { UserService } from 'src/user/user.service';
 import { AuthDto } from './dto/auth.dto';
-import * as dotenv from 'dotenv';
-import { ProfileService } from 'src/profile/profile.service';
-import IUserPayload from './interfaces/user-payload.interface';
-import * as admin from 'firebase-admin';
 import { LogInDto } from './dto/log-in.dto';
-import { OAuth2Client } from 'google-auth-library';
+import { SignUpDto } from './dto/sign-up.dto';
+import IUserPayload from './interfaces/user-payload.interface';
 
 dotenv.config();
 
-const client = new OAuth2Client(
-  process.env.GOOGLE_CLIENT_ID,
-  process.env.GOOGLE_CLIENT_SECRET,
-);
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 @Injectable()
 export class AuthService {
@@ -37,7 +34,7 @@ export class AuthService {
       });
 
       await this._profileService.save({
-        user,
+        userId: user.id,
         name,
         birthday,
         gender,
@@ -49,7 +46,12 @@ export class AuthService {
         email: user.email,
       });
 
-      return { token };
+      return {
+        statusCode: HttpStatus.CREATED,
+        data: {
+          token,
+        },
+      };
     } catch (err) {
       if (err.message.startsWith('duplicate')) {
         throw new HttpException(
@@ -70,24 +72,26 @@ export class AuthService {
       await this.verifyFirebaseToken(logInDto.token);
 
       const user = await this._userService.isPhoneExist(logInDto.phone);
-      console.log(user);
 
-      if (!user.checked)
+      if (!user.data.checked)
         throw new HttpException(
           'Phone number does not exist. Please sign up!',
           HttpStatus.NOT_FOUND,
         );
 
       const userPayload = {
-        id: user.data.id,
-        phone: user.data.phone,
-        email: user.data.email,
+        id: user.data.data.id,
+        phone: user.data.data.phone,
+        email: user.data.data.email,
       };
 
       const token = this.signToken(userPayload);
 
       return {
-        token,
+        statusCode: HttpStatus.CREATED,
+        data: {
+          token,
+        },
       };
     } catch (err) {
       throw err;
@@ -127,11 +131,15 @@ export class AuthService {
   }
 
   async verifyGgToken(accessToken: string) {
-    const ticket = await client.verifyIdToken({
-      idToken: accessToken,
-      audience: process.env.GOOGLE_CLIENT_ID,
-    });
+    try {
+      const ticket = await client.verifyIdToken({
+        idToken: accessToken,
+        audience: process.env.GOOGLE_CLIENT_ID,
+      });
 
-    console.log(ticket.getPayload());
+      console.log(ticket.getPayload());
+    } catch (err) {
+      throw err;
+    }
   }
 }

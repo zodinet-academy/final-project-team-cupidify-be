@@ -19,3 +19,9 @@ export enum Education {
   HIGH_SCHOOL = 'HIGH-SCHOOL',
   HIGHER = 'HIGHER',
 }
+
+export enum Reason {
+  DATE = 'DATE',
+  CHAT = 'CHAT',
+  FRIEND = 'FRIEND',
+}

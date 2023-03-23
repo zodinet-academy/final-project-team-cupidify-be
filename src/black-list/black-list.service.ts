@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { CreateBlackListDto } from './dto/create-black-list.dto';
 import { UpdateBlackListDto } from './dto/update-black-list.dto';
-
 @Injectable()
 export class BlackListService {
   create(createBlackListDto: CreateBlackListDto) {
