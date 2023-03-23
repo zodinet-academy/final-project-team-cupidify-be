@@ -14,6 +14,7 @@ import { Repository, UpdateResult } from 'typeorm';
 import { ICloudinaryData } from '../shared/interfaces/cloudinary.interface';
 import { PhotoDto } from './dto/photo.dto';
 import { UserService } from 'src/user/user.service';
+import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 
 @Injectable()
 export class PhotoService {
@@ -24,24 +25,22 @@ export class PhotoService {
     private readonly _userService: UserService,
   ) {}
 
-  async getUserPhoto(
-    userId: string,
-  ): Promise<THttpResponse<PhotoDto | PhotoDto[]>> {
+  async getUserPhoto(userId: string): Promise<THttpResponse<Photo[]>> {
     try {
-      const checkUserExist = await this._userService.isUserExist(userId);
-
-      if (!checkUserExist) {
-        throw new BadRequestException(HttpStatus.NOT_FOUND, 'User Not Found');
-      }
-
-      const result = await this._photo.find({ where: { userId } });
+      const photos = await this._photo.find({
+        where: { userId },
+        order: {
+          isFavorite: 'DESC',
+          updatedAt: 'DESC',
+        },
+      });
 
       return {
         statusCode: HttpStatus.OK,
-        data: result,
+        data: photos,
       };
     } catch (err) {
-      throw new BadRequestException(HttpStatus.NOT_FOUND, 'User Not Found');
+      throw new BadRequestException(HttpStatus.NOT_FOUND, 'Photo not found!');
     }
   }
 
@@ -131,16 +130,25 @@ export class PhotoService {
     }
   }
 
-  async updateFavorite(userId, publicId): Promise<THttpResponse<boolean>> {
+  async updateFavorite(
+    userId,
+    updateFavoriteDto: UpdateFavoriteDto,
+  ): Promise<THttpResponse<boolean>> {
     try {
+      const { publicId, isFavorite } = updateFavoriteDto;
+
+      // const photo = this._photo.findOne({where: {publicId}})
+
       const updatedRes = await this._photo.update(
         {
           publicId,
         },
         {
-          isFavorite: true,
+          isFavorite,
         },
       );
+
+      console.log('raw', updatedRes.raw);
 
       return {
         statusCode: HttpStatus.NO_CONTENT,
@@ -155,12 +163,31 @@ export class PhotoService {
     }
   }
 
-  async getAvatar(userId: string) {
-    try {
-      const photos = await this.getUserPhoto(userId);
-      // const favoritePhoto = photos.filter
-    } catch (err) {
-      throw new BadRequestException(HttpStatus.NOT_FOUND, 'No photos found!');
-    }
-  }
+  // async getAvatar(userId: string) {
+  //   try {
+  //     const { data: photos } = await this.getUserPhoto(userId);
+  //     // const convertDatePhotos = photosRes.data.map(
+  //     //   (photo) => (photo.createdAt = new Date(photo.createdAt)),
+  //     // );
+  //     const favoritePhoto = photos.filter((photo) => photo.isFavorite === true);
+  //     if (favoritePhoto.length === 0) {
+  //       photos.sort((a, b) => {
+  //         const c = new Date(a.createdAt);
+  //         const d = new Date(b.createdAt);
+  //         return d.getTime() - c.getTime();
+  //       });
+  //       return photos[0];
+  //     }
+
+  //     favoritePhoto.sort((a, b) => {
+  //       const c = new Date(a.updatedAt);
+  //       const d = new Date(b.updatedAt);
+  //       return d.getTime() - c.getTime();
+  //     });
+
+  //     return favoritePhoto[0];
+  //   } catch (err) {
+  //     throw new BadRequestException(HttpStatus.NOT_FOUND, 'No photos found!');
+  //   }
+  // }
 }
