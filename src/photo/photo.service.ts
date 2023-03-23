@@ -10,7 +10,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { Photo } from './entities/photo.entity';
-import { Repository } from 'typeorm';
+import { Repository, UpdateResult } from 'typeorm';
 import { ICloudinaryData } from '../shared/interfaces/cloudinary.interface';
 import { PhotoDto } from './dto/photo.dto';
 import { UserService } from 'src/user/user.service';
@@ -131,27 +131,36 @@ export class PhotoService {
     }
   }
 
-  async updateFavorite(userId, publicId): Promise<THttpResponse<void>> {
+  async updateFavorite(userId, publicId): Promise<THttpResponse<boolean>> {
     try {
-      await this._photo.update(
+      const updatedRes = await this._photo.update(
         {
-          isFavorite: true,
+          publicId,
         },
         {
-          userId,
-          publicId,
+          isFavorite: true,
         },
       );
 
       return {
         statusCode: HttpStatus.NO_CONTENT,
         message: 'Updated favorite',
+        data: updatedRes.affected !== 0 ? true : false,
       };
     } catch (err) {
       throw new BadRequestException(
         HttpStatus.BAD_REQUEST,
         'Update favorite failed',
       );
+    }
+  }
+
+  async getAvatar(userId: string) {
+    try {
+      const photos = await this.getUserPhoto(userId);
+      // const favoritePhoto = photos.filter
+    } catch (err) {
+      throw new BadRequestException(HttpStatus.NOT_FOUND, 'No photos found!');
     }
   }
 }

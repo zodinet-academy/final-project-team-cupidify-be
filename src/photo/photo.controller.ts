@@ -22,6 +22,7 @@ import { UserDto } from '../user/dto/user.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
 import { UploadedFiles, UseInterceptors } from '@nestjs/common/decorators';
+import { UpdateResult } from 'typeorm';
 
 @ApiTags('photo')
 @Controller('photo')
@@ -107,11 +108,11 @@ export class PhotoController {
   })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
-  @Put('favorite')
+  @Put('favorite/:id')
   async updateFavorite(
     @User() user: UserDto,
     @Param('id') publicId: string,
-  ): Promise<THttpResponse<void>> {
+  ): Promise<THttpResponse<boolean>> {
     const { id } = user;
     return this._photoService.updateFavorite(id, publicId);
   }
