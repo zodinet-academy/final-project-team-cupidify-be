@@ -15,6 +15,7 @@ import { ICloudinaryData } from '../shared/interfaces/cloudinary.interface';
 import { PhotoDto } from './dto/photo.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
+import { SetAvatarDto } from './dto/set-avatar.dto';
 
 @Injectable()
 export class PhotoService {
@@ -135,20 +136,18 @@ export class PhotoService {
     updateFavoriteDto: UpdateFavoriteDto,
   ): Promise<THttpResponse<boolean>> {
     try {
-      const { publicId, isFavorite } = updateFavoriteDto;
+      const { publicId } = updateFavoriteDto;
 
-      // const photo = this._photo.findOne({where: {publicId}})
+      const photo = await this._photo.findOne({ where: { publicId } });
 
       const updatedRes = await this._photo.update(
         {
           publicId,
         },
         {
-          isFavorite,
+          isFavorite: !photo.isFavorite,
         },
       );
-
-      console.log('raw', updatedRes.raw);
 
       return {
         statusCode: HttpStatus.NO_CONTENT,
@@ -159,6 +158,32 @@ export class PhotoService {
       throw new BadRequestException(
         HttpStatus.BAD_REQUEST,
         'Update favorite failed',
+      );
+    }
+  }
+
+  async setAvatar(setAvatarDto: SetAvatarDto): Promise<THttpResponse<boolean>> {
+    try {
+      const { publicId } = setAvatarDto;
+
+      const updatedRes = await this._photo.update(
+        {
+          publicId,
+        },
+        {
+          isFavorite: true,
+        },
+      );
+
+      return {
+        statusCode: HttpStatus.NO_CONTENT,
+        message: 'Set avatar succesfully!',
+        data: updatedRes.affected !== 0 ? true : false,
+      };
+    } catch (err) {
+      throw new BadRequestException(
+        HttpStatus.BAD_REQUEST,
+        'Set avatar failed!',
       );
     }
   }

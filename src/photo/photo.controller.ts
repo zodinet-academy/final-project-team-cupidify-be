@@ -111,6 +111,18 @@ export class PhotoController {
   }
 
   @ApiNoContentResponse({
+    description: 'Set avatar succesfully!',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Put('set-avatar')
+  async setAvatar(
+    @Body() updateFavoriteDto: UpdateFavoriteDto,
+  ): Promise<THttpResponse<boolean>> {
+    return this._photoService.setAvatar(updateFavoriteDto);
+  }
+
+  @ApiNoContentResponse({
     description: 'Updated',
   })
   @ApiBearerAuth()
