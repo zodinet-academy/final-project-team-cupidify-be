@@ -1,3 +1,4 @@
+import { Mapper } from '@automapper/core';
 import { UserDto } from './../user/dto/user.dto';
 import { THttpResponse } from './../shared/common/http-response.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,6 +15,8 @@ import { Repository } from 'typeorm';
 import { ICloudinaryData } from '../shared/interfaces/cloudinary.interface';
 import { PhotoDto } from './dto/photo.dto';
 import { UserService } from 'src/user/user.service';
+import { InjectMapper } from '@automapper/nestjs';
+import { UploadPhotoDto } from './dto/upload-photo.dto';
 
 @Injectable()
 export class PhotoService {
@@ -22,6 +25,7 @@ export class PhotoService {
     private readonly _photo: Repository<Photo>,
     private readonly _cloudinaryService: CloudinaryService,
     private readonly _userService: UserService,
+    @InjectMapper() private readonly _classMapper: Mapper,
   ) {}
 
   async getUserPhoto(
@@ -34,7 +38,13 @@ export class PhotoService {
         throw new BadRequestException(HttpStatus.NOT_FOUND, 'User Not Found');
       }
 
-      const result = await this._photo.find({ where: { userId } });
+      const res = await this._photo.find({ where: { userId } });
+
+      const result = await this._classMapper.mapArrayAsync(
+        res,
+        Photo,
+        PhotoDto,
+      );
 
       return {
         statusCode: HttpStatus.OK,
@@ -54,7 +64,15 @@ export class PhotoService {
         files,
       );
 
-      await this.storeImages(userId, result.data);
+      const photos = result.data.map((el) => ({
+        ...el,
+        userId,
+        isFavorite: false,
+      }));
+
+      console.log(photos);
+
+      await this.storeImages(userId, photos);
 
       return {
         statusCode: HttpStatus.CREATED,
@@ -68,19 +86,28 @@ export class PhotoService {
     }
   }
 
-  async storeImages(userId: string, images: ICloudinaryData[]) {
+  async storeImages(userId: string, photos: UploadPhotoDto[]): Promise<void> {
     try {
-      for (let i = 0; i < images.length; i++) {
-        await this._photo.save({
-          userId,
-          photoUrl: images[i].photoUrl,
-          publicId: images[i].publicId,
-          isFavorite: false,
-        });
-      }
+      const resources = this._classMapper.mapArray(
+        photos,
+        UploadPhotoDto,
+        Photo,
+      );
+
+      console.log(resources);
+
+      await this._photo.save(resources);
+      // for (let i = 0; i < photos.length; i++) {
+      //   await this._photo.save({
+      //     userId,
+      //     photoUrl: photos[i].photoUrl,
+      //     publicId: photos[i].publicId,
+      //     isFavorite: false,
+      //   });
+      // }
     } catch (err) {
       // store url failed => delete in cloudinary
-      images.map(async (i) => {
+      photos.map(async (i) => {
         await this._cloudinaryService.deleteImagesInCloudinary(i.publicId);
       });
 
