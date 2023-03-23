@@ -1,4 +1,12 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { BlackListService } from './black-list.service';
 import { CreateBlackListDto } from './dto/create-black-list.dto';
 import { UpdateBlackListDto } from './dto/update-black-list.dto';
@@ -23,7 +31,10 @@ export class BlackListController {
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateBlackListDto: UpdateBlackListDto) {
+  update(
+    @Param('id') id: string,
+    @Body() updateBlackListDto: UpdateBlackListDto,
+  ) {
     return this.blackListService.update(+id, updateBlackListDto);
   }
 
