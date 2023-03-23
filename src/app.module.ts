@@ -27,6 +27,8 @@ import { Message } from './message/entities/message.entity';
 import { BlackList } from './black-list/entities/black-list.entity';
 import { Photo } from './photo/entities/photo.entity';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { AutomapperModule } from '@automapper/nestjs';
+import { classes } from '@automapper/classes';
 config();
 
 const entities = [
@@ -56,6 +58,9 @@ const entities = [
         // entities: ['src/**/entities/*.entity{.ts,.js}'],
         // autoLoadEntities: true,
       }),
+    }),
+    AutomapperModule.forRoot({
+      strategyInitializer: classes(),
     }),
     UserModule,
     ProfileModule,
