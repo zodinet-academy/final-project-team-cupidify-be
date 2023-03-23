@@ -16,6 +16,7 @@ import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
 import { User } from 'src/user/decorator/user.decorator';
 import { UserDto } from 'src/user/dto/user.dto';
 import { Location } from './entities/location.entity';
+import { UpdateTest } from './dto/update-test';
 
 @ApiTags('Location')
 @Controller('location')
@@ -45,5 +46,13 @@ export class LocationController {
   @Put()
   update(@User() user: UserDto, @Body() updateLocationDto: UpdateLocationDto) {
     return this.locationService.update(user.id, updateLocationDto);
+  }
+
+  @ApiOperation({ summary: 'Update Location User' })
+  // @ApiBearerAuth()
+  // @UseGuards(AuthenticationGuard)
+  @Put('/update')
+  updatetest(@Body() updateLocationDto: UpdateTest) {
+    return this.locationService.updatetest(updateLocationDto);
   }
 }

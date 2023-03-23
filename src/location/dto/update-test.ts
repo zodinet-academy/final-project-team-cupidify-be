@@ -1,8 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { IsNotEmpty, IsNumber } from 'class-validator';
 
-export class UpdateLocationDto {
-  // ủeid: string;
+export class UpdateTest {
+  userId: string;
 
   @IsNumber()
   @IsNotEmpty()

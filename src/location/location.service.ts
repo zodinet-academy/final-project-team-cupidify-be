@@ -10,6 +10,7 @@ import { UpdateLocationDto } from './dto/update-location.dto';
 import { Location } from './entities/location.entity';
 import { ProfileService } from '../profile/profile.service';
 import { IUserFinded, IUserLocation } from './interface/IUserFinded';
+import { UpdateTest } from './dto/update-test';
 
 @Injectable()
 export class LocationService {
@@ -68,6 +69,7 @@ export class LocationService {
         lat,
         location: pointObj,
       });
+      await this._locationRepository.save(updatedLocation);
 
       return { data: updatedLocation, statusCode: HttpStatus.OK };
     } catch (err) {
@@ -101,10 +103,11 @@ export class LocationService {
         .setParameters({
           // stringify GeoJSON
           origin: JSON.stringify(origin),
-          range: 0.4 * 1000, //KM conversion
+          range: 1000 * 1000, //KM conversion
         })
         .getRawMany();
 
+      console.log('locations: ', locationUsers);
       // Filter: Array Not Contains User
       if (locationUsers.length === 1) {
         throw new HttpException('Không có người dùng nào lân cận', 201);
@@ -151,5 +154,30 @@ export class LocationService {
   }
   round10(value, exp) {
     return this.decimalAdjust('round', value, exp);
+  }
+
+  async updatetest(updateLocationDto: UpdateTest) {
+    try {
+      const location = await this._locationRepository.findOne({
+        where: { userId: updateLocationDto.userId },
+      });
+
+      const { long, lat } = updateLocationDto;
+
+      const pointObj: Point = {
+        type: 'Point',
+        coordinates: [long, lat],
+      };
+
+      const updatedLocation = Object.assign(location, {
+        long,
+        lat,
+        location: pointObj,
+      });
+      const response = await this._locationRepository.save(updatedLocation);
+      return { data: response, statusCode: HttpStatus.OK };
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
   }
 }
