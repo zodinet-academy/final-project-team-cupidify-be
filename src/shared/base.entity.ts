@@ -1,3 +1,4 @@
+import { AutoMap } from '@automapper/classes';
 import {
   CreateDateColumn,
   DeleteDateColumn,
@@ -6,6 +7,7 @@ import {
 } from 'typeorm';
 
 export class Base {
+  @AutoMap()
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
