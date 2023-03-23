@@ -6,6 +6,8 @@ import { User } from '../../user/entities/user.entity';
 export class BlackList extends Base {
   @Column({ name: 'user_id' })
   userId: string;
+  @Column({ name: 'blocked_id' })
+  blockedId: string;
 
   @ManyToOne(() => User, (user) => user.blackList, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })

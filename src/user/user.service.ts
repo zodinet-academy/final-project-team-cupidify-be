@@ -105,4 +105,8 @@ export class UserService {
       return false;
     }
   }
+
+  findAll() {
+    return this._user.find();
+  }
 }

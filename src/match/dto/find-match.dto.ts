@@ -1,9 +1,6 @@
-import { ApiProperty } from '@nestjs/swagger';
 import { IsString, IsNotEmpty } from 'class-validator';
-export class CreateMatchDto {
-  @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
+import { ApiProperty } from '@nestjs/swagger';
+export class FindMatchDto {
   userId: string;
 
   @ApiProperty()

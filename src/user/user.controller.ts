@@ -33,4 +33,9 @@ export class UserController {
   ): Promise<{ checked?: boolean; phone?: string }> {
     return await this._userService.isSocialExist(checkSocial.socialId);
   }
+
+  @Get('/findall')
+  findAll() {
+    return this._userService.findAll();
+  }
 }
