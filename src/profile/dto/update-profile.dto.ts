@@ -24,7 +24,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @IsString()
   @IsNotEmpty()
   @MaxLength(255)
-  name: string;
+  name?: string;
 
   @ApiPropertyOptional({
     default: Gender.MALE,
@@ -32,7 +32,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   })
   @IsOptional()
   @IsEnum(Gender)
-  gender: Gender;
+  gender?: Gender;
 
   @ApiPropertyOptional({
     default: Reason.DATE,
@@ -40,7 +40,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   })
   @IsOptional()
   @IsEnum(Reason)
-  reason: Reason;
+  reason?: Reason;
 
   @ApiPropertyOptional({
     default: '2001-11-16',
@@ -48,7 +48,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   })
   @IsOptional()
   @IsDateString()
-  birthday: string;
+  birthday?: string;
 
   @ApiPropertyOptional({
     default: 'Anh đẹp trai nhưng chưa có ngừi eo',
@@ -59,6 +59,17 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @MaxLength(255)
   @IsNotEmpty()
   description?: string;
+
+  @ApiPropertyOptional({
+    default:
+      'http://res.cloudinary.com/dtra2soty/image/upload/v1679476089/ycmo2vjymmt9oo5gmao5.png',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  @IsNotEmpty()
+  avatar?: string;
 
   @ApiPropertyOptional({
     default: 180,

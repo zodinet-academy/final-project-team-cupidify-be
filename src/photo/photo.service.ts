@@ -1,4 +1,3 @@
-import { UserDto } from './../user/dto/user.dto';
 import { THttpResponse } from './../shared/common/http-response.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CloudinaryService } from './../cloudinary/cloudinary.service';
@@ -10,12 +9,12 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { Photo } from './entities/photo.entity';
-import { Repository, UpdateResult } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ICloudinaryData } from '../shared/interfaces/cloudinary.interface';
-import { PhotoDto } from './dto/photo.dto';
 import { UserService } from 'src/user/user.service';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { SetAvatarDto } from './dto/set-avatar.dto';
+import { ProfileService } from 'src/profile/profile.service';
 
 @Injectable()
 export class PhotoService {
@@ -24,6 +23,7 @@ export class PhotoService {
     private readonly _photo: Repository<Photo>,
     private readonly _cloudinaryService: CloudinaryService,
     private readonly _userService: UserService,
+    private readonly _profileService: ProfileService,
   ) {}
 
   async getUserPhoto(userId: string): Promise<THttpResponse<Photo[]>> {
@@ -162,23 +162,20 @@ export class PhotoService {
     }
   }
 
-  async setAvatar(setAvatarDto: SetAvatarDto): Promise<THttpResponse<boolean>> {
+  async setAvatar(
+    userId,
+    setAvatarDto: SetAvatarDto,
+  ): Promise<THttpResponse<void>> {
     try {
       const { publicId } = setAvatarDto;
 
-      const updatedRes = await this._photo.update(
-        {
-          publicId,
-        },
-        {
-          isFavorite: true,
-        },
-      );
+      const photo = await this._photo.findOne({ where: { publicId } });
+
+      await this._profileService.update(userId, { avatar: photo.photoUrl });
 
       return {
         statusCode: HttpStatus.NO_CONTENT,
-        message: 'Set avatar succesfully!',
-        data: updatedRes.affected !== 0 ? true : false,
+        message: 'Set avatar succesfully',
       };
     } catch (err) {
       throw new BadRequestException(

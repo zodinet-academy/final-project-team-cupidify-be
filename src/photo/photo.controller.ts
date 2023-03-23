@@ -117,9 +117,11 @@ export class PhotoController {
   @UseGuards(AuthenticationGuard)
   @Put('set-avatar')
   async setAvatar(
+    @User() user: UserDto,
     @Body() updateFavoriteDto: UpdateFavoriteDto,
-  ): Promise<THttpResponse<boolean>> {
-    return this._photoService.setAvatar(updateFavoriteDto);
+  ): Promise<THttpResponse<void>> {
+    const { id } = user;
+    return this._photoService.setAvatar(id, updateFavoriteDto);
   }
 
   @ApiNoContentResponse({
