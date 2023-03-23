@@ -6,6 +6,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { InjectMapper } from '@automapper/nestjs';
 import { Mapper } from '@automapper/core';
+import { AddBlockedUserDto } from './dto/add-blocked-user.dto';
 
 @Injectable()
 export class BlackListService {
@@ -17,14 +18,28 @@ export class BlackListService {
 
   async addBlockedUser(
     userId: string,
-    blockedId: string,
-  ): Promise<THttpResponse<void>> {
+    addBlockUser: AddBlockedUserDto,
+  ): Promise<THttpResponse<{ id: string }>> {
     try {
-      const result = await this._blackList.save({ userId, blockedId });
+      addBlockUser.userId = userId;
+
+      console.log(addBlockUser);
+
+      const resource = this._classMapper.map(
+        addBlockUser,
+        AddBlockedUserDto,
+        BlackList,
+      );
+
+      console.log(resource);
+
+      const result = await this._blackList.save(resource);
 
       return {
         statusCode: HttpStatus.CREATED,
-        message: 'Created',
+        data: {
+          id: result.id,
+        },
       };
     } catch (err) {
       throw new BadRequestException(
