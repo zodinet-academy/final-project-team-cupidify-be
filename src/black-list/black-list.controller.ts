@@ -14,12 +14,12 @@ export class BlackListController {
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Post()
-  async addBlockedUser(
-    @User() user,
-    @Body() addBlockUser: AddBlockedUserDto,
-  ): Promise<THttpResponse<{ id: string }>> {
+  async addBlockedUser(@User() user, @Body() addBlockUser: AddBlockedUserDto) {
     const { id } = user;
-    return await this.blackListService.addBlockedUser(id, addBlockUser);
+    return await this.blackListService.addBlockedUser(
+      id,
+      addBlockUser.blockedId,
+    );
   }
 
   @ApiBearerAuth()
