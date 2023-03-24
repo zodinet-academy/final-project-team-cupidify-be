@@ -131,6 +131,8 @@ export class LocationService {
         userId,
         listLocationUser,
       );
+      console.log('listLocationUser: ', listLocationUser);
+
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {
         const response = await this._profileService.findOneByUserId(
@@ -142,6 +144,7 @@ export class LocationService {
         };
         listUserFinded.push(userFinded);
       }
+
       return {
         data: listUserFinded,
         statusCode: HttpStatus.OK,
@@ -159,13 +162,14 @@ export class LocationService {
     try {
       const resBlockUSer = await this._blackListService.getBlockedUser(idUser);
       const listUserBlock: BlackListDto[] = resBlockUSer.data;
-      let listUserFilter: IUserLocation[] = [];
       listUserBlock.forEach((userBlock) => {
-        listUserFilter = listUser.filter(
-          (user) => userBlock.blockedId !== user.user,
-        );
+        listUser.forEach((user, index) => {
+          if (userBlock.blockedId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
       });
-      return listUserFilter;
+      return listUser;
     } catch (error) {
       throw new BadRequestException(error.message);
     }
