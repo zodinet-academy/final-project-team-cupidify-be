@@ -23,9 +23,9 @@ export class PhotoService {
   constructor(
     @InjectRepository(Photo)
     private readonly _photo: Repository<Photo>,
+    @InjectMapper() private readonly _classMapper: Mapper,
     private readonly _cloudinaryService: CloudinaryService,
     private readonly _userService: UserService,
-    @InjectMapper() private readonly _classMapper: Mapper,
   ) {}
 
   async getUserPhoto(
@@ -70,8 +70,6 @@ export class PhotoService {
         isFavorite: false,
       }));
 
-      console.log(photos);
-
       await this.storeImages(userId, photos);
 
       return {
@@ -94,23 +92,8 @@ export class PhotoService {
         Photo,
       );
 
-      console.log(resources);
-
       await this._photo.save(resources);
-      // for (let i = 0; i < photos.length; i++) {
-      //   await this._photo.save({
-      //     userId,
-      //     photoUrl: photos[i].photoUrl,
-      //     publicId: photos[i].publicId,
-      //     isFavorite: false,
-      //   });
-      // }
     } catch (err) {
-      // store url failed => delete in cloudinary
-      photos.map(async (i) => {
-        await this._cloudinaryService.deleteImagesInCloudinary(i.publicId);
-      });
-
       throw new BadRequestException(
         HttpStatus.FAILED_DEPENDENCY,
         'Store photo failed',
@@ -118,7 +101,10 @@ export class PhotoService {
     }
   }
 
-  async deleteImage(userId, publicId): Promise<THttpResponse<void>> {
+  async deleteImage(
+    userId: string,
+    publicId: string,
+  ): Promise<THttpResponse<void>> {
     try {
       await this._photo.delete({
         userId,
