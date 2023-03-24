@@ -91,85 +91,85 @@ export class LocationService {
     }
   }
 
-  async findUsersWithin(userId: string): Promise<THttpResponse<IUserFinded[]>> {
-    try {
-      const location = await this._locationRepository.findOne({
-        where: { userId },
-      });
+  // async findUsersWithin(userId: string): Promise<THttpResponse<IUserFinded[]>> {
+  //   try {
+  //     const location = await this._locationRepository.findOne({
+  //       where: { userId },
+  //     });
 
-      const origin = {
-        type: 'Point',
-        coordinates: [location.long, location.lat],
-      };
+  //     const origin = {
+  //       type: 'Point',
+  //       coordinates: [location.long, location.lat],
+  //     };
 
-      const locationUsers: IUserLocation[] = await this._locationRepository
-        .createQueryBuilder('location')
-        .select([
-          'location.user_id AS user',
-          'ST_Distance(location, ST_SetSRID(ST_GeomFromGeoJSON(:origin), ST_SRID(location)))/1000 AS distance',
-        ])
-        .where(
-          'ST_DWithin(location, ST_SetSRID(ST_GeomFromGeoJSON(:origin), ST_SRID(location)) ,:range)',
-        )
-        .orderBy('distance')
-        .setParameters({
-          // stringify GeoJSON
-          origin: JSON.stringify(origin),
-          range: 0.4 * 1000, //KM conversion
-        })
-        .getRawMany();
+  //     const locationUsers: IUserLocation[] = await this._locationRepository
+  //       .createQueryBuilder('location')
+  //       .select([
+  //         'location.user_id AS user',
+  //         'ST_Distance(location, ST_SetSRID(ST_GeomFromGeoJSON(:origin), ST_SRID(location)))/1000 AS distance',
+  //       ])
+  //       .where(
+  //         'ST_DWithin(location, ST_SetSRID(ST_GeomFromGeoJSON(:origin), ST_SRID(location)) ,:range)',
+  //       )
+  //       .orderBy('distance')
+  //       .setParameters({
+  //         // stringify GeoJSON
+  //         origin: JSON.stringify(origin),
+  //         range: 0.4 * 1000, //KM conversion
+  //       })
+  //       .getRawMany();
 
-      // Filter: Array Not Contains User
-      if (locationUsers.length === 1) {
-        throw new HttpException('Không có người dùng nào lân cận', 201);
-      }
-      let listLocationUser: IUserLocation[] = locationUsers.filter(
-        (location: IUserLocation) => location.user !== userId,
-      );
-      // Filter: Array Not Contains Block User
-      listLocationUser = await this.filterListUserNotContainBlackList(
-        userId,
-        listLocationUser,
-      );
-      const listUserFinded: IUserFinded[] = [];
-      for (let i = 0; i < listLocationUser.length; i++) {
-        const response = await this._profileService.findOneByUserId(
-          listLocationUser[i].user,
-        );
-        const userFinded: IUserFinded = {
-          user: response.data,
-          distance: this.round10(listLocationUser[i].distance, -1) * 1000,
-        };
-        listUserFinded.push(userFinded);
-      }
-      return {
-        data: listUserFinded,
-        statusCode: HttpStatus.OK,
-        message: 'success',
-      };
-    } catch (err) {
-      throw new BadRequestException(err.message);
-    }
-  }
+  //     // Filter: Array Not Contains User
+  //     if (locationUsers.length === 1) {
+  //       throw new HttpException('Không có người dùng nào lân cận', 201);
+  //     }
+  //     let listLocationUser: IUserLocation[] = locationUsers.filter(
+  //       (location: IUserLocation) => location.user !== userId,
+  //     );
+  //     // Filter: Array Not Contains Block User
+  //     listLocationUser = await this.filterListUserNotContainBlackList(
+  //       userId,
+  //       listLocationUser,
+  //     );
+  //     const listUserFinded: IUserFinded[] = [];
+  //     for (let i = 0; i < listLocationUser.length; i++) {
+  //       const response = await this._profileService.findOneByUserId(
+  //         listLocationUser[i].user,
+  //       );
+  //       const userFinded: IUserFinded = {
+  //         user: response.data,
+  //         distance: this.round10(listLocationUser[i].distance, -1) * 1000,
+  //       };
+  //       listUserFinded.push(userFinded);
+  //     }
+  //     return {
+  //       data: listUserFinded,
+  //       statusCode: HttpStatus.OK,
+  //       message: 'success',
+  //     };
+  //   } catch (err) {
+  //     throw new BadRequestException(err.message);
+  //   }
+  // }
 
-  async filterListUserNotContainBlackList(
-    idUser: string,
-    listUser: IUserLocation[],
-  ): Promise<IUserLocation[]> {
-    try {
-      const resBlockUSer = await this._blackListService.getBlockedUser(idUser);
-      const listUserBlock: BlackListDto[] = resBlockUSer.data;
-      let listUserFilter: IUserLocation[] = [];
-      listUserBlock.forEach((userBlock) => {
-        listUserFilter = listUser.filter(
-          (user) => userBlock.blockedId !== user.user,
-        );
-      });
-      return listUserFilter;
-    } catch (error) {
-      throw new BadRequestException(error.message);
-    }
-  }
+  // async filterListUserNotContainBlackList(
+  //   idUser: string,
+  //   listUser: IUserLocation[],
+  // ): Promise<IUserLocation[]> {
+  //   try {
+  //     const resBlockUSer = await this._blackListService.getBlockedUser(idUser);
+  //     const listUserBlock: BlackListDto[] = resBlockUSer.data;
+  //     let listUserFilter: IUserLocation[] = [];
+  //     listUserBlock.forEach((userBlock) => {
+  //       listUserFilter = listUser.filter(
+  //         (user) => userBlock.blockedId !== user.user,
+  //       );
+  //     });
+  //     return listUserFilter;
+  //   } catch (error) {
+  //     throw new BadRequestException(error.message);
+  //   }
+  // }
 
   decimalAdjust(type, value, exp) {
     type = String(type);

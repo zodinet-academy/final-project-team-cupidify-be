@@ -31,13 +31,13 @@ export class LocationController {
     return this.locationService.create(createLocationDto);
   }
 
-  @ApiOperation({ summary: 'Get User With Location Range' })
-  @ApiBearerAuth()
-  @UseGuards(AuthenticationGuard)
-  @Get()
-  getWithin(@User() user: UserDto) {
-    return this.locationService.findUsersWithin(user.id);
-  }
+  // @ApiOperation({ summary: 'Get User With Location Range' })
+  // @ApiBearerAuth()
+  // @UseGuards(AuthenticationGuard)
+  // @Get()
+  // getWithin(@User() user: UserDto) {
+  //   return this.locationService.findUsersWithin(user.id);
+  // }
 
   @ApiOperation({ summary: 'Update Location User' })
   @ApiBearerAuth()
