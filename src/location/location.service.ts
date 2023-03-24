@@ -160,8 +160,11 @@ export class LocationService {
     listUser: IUserLocation[],
   ): Promise<IUserLocation[]> {
     try {
-      const resBlockUSer = await this._blackListService.getBlockedUser(idUser);
-      const listUserBlock: BlackListDto[] = resBlockUSer.data;
+      const resBlockUSer: THttpResponse<{
+        sourceUsers: BlackListDto[];
+        targetUsers: BlackListDto[];
+      }> = await this._blackListService.getBlockedUser(idUser);
+      const listUserBlock = resBlockUSer.data.sourceUsers;
       listUserBlock.forEach((userBlock) => {
         listUser.forEach((user, index) => {
           if (userBlock.blockedId === user.user) {
@@ -169,6 +172,16 @@ export class LocationService {
           }
         });
       });
+
+      const listUserBlockMe = resBlockUSer.data.targetUsers;
+      listUserBlockMe.forEach((userBlock) => {
+        listUser.forEach((user, index) => {
+          if (userBlock.userId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
       return listUser;
     } catch (error) {
       throw new BadRequestException(error.message);
