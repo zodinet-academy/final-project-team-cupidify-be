@@ -67,7 +67,6 @@ export class PhotoController {
     @User() user: UserDto,
   ): Promise<THttpResponse<void>> {
     const { id } = user;
-    console.log(files);
     return this._photoService.uploadImages(files, id);
   }
 
@@ -83,23 +82,6 @@ export class PhotoController {
   ): Promise<THttpResponse<void>> {
     const { id } = user;
     return this._photoService.deleteImage(id, publicId);
-  }
-
-  @ApiNoContentResponse({
-    description: 'Updated',
-  })
-  @ApiBearerAuth()
-  @UseGuards(AuthenticationGuard)
-  @Put(':id')
-  @UseInterceptors(FilesInterceptor('files'))
-  async updateImage(
-    @UploadedFiles() file: Express.Multer.File,
-    @User() user: UserDto,
-    @Param('id') publicId: string,
-  ): Promise<THttpResponse<void>> {
-    const { id } = user;
-    console.log(file);
-    return this._photoService.updateImage(file, id, publicId);
   }
 
   @ApiNoContentResponse({

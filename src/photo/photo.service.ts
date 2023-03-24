@@ -1,3 +1,4 @@
+import { Mapper } from '@automapper/core';
 import { UserDto } from './../user/dto/user.dto';
 import { THttpResponse } from './../shared/common/http-response.dto';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -14,12 +15,15 @@ import { Repository } from 'typeorm';
 import { ICloudinaryData } from '../shared/interfaces/cloudinary.interface';
 import { PhotoDto } from './dto/photo.dto';
 import { UserService } from 'src/user/user.service';
+import { InjectMapper } from '@automapper/nestjs';
+import { UploadPhotoDto } from './dto/upload-photo.dto';
 
 @Injectable()
 export class PhotoService {
   constructor(
     @InjectRepository(Photo)
     private readonly _photo: Repository<Photo>,
+    @InjectMapper() private readonly _classMapper: Mapper,
     private readonly _cloudinaryService: CloudinaryService,
     private readonly _userService: UserService,
   ) {}
@@ -34,7 +38,13 @@ export class PhotoService {
         throw new BadRequestException(HttpStatus.NOT_FOUND, 'User Not Found');
       }
 
-      const result = await this._photo.find({ where: { userId } });
+      const res = await this._photo.find({ where: { userId } });
+
+      const result = await this._classMapper.mapArrayAsync(
+        res,
+        Photo,
+        PhotoDto,
+      );
 
       return {
         statusCode: HttpStatus.OK,
@@ -54,7 +64,13 @@ export class PhotoService {
         files,
       );
 
-      await this.storeImages(userId, result.data);
+      const photos = result.data.map((el) => ({
+        ...el,
+        userId,
+        isFavorite: false,
+      }));
+
+      await this.storeImages(photos);
 
       return {
         statusCode: HttpStatus.CREATED,
@@ -68,22 +84,16 @@ export class PhotoService {
     }
   }
 
-  async storeImages(userId: string, images: ICloudinaryData[]) {
+  async storeImages(photos: UploadPhotoDto[]): Promise<void> {
     try {
-      for (let i = 0; i < images.length; i++) {
-        await this._photo.save({
-          userId,
-          photoUrl: images[i].photoUrl,
-          publicId: images[i].publicId,
-          isFavorite: false,
-        });
-      }
-    } catch (err) {
-      // store url failed => delete in cloudinary
-      images.map(async (i) => {
-        await this._cloudinaryService.deleteImagesInCloudinary(i.publicId);
-      });
+      const resources = this._classMapper.mapArray(
+        photos,
+        UploadPhotoDto,
+        Photo,
+      );
 
+      await this._photo.save(resources);
+    } catch (err) {
       throw new BadRequestException(
         HttpStatus.FAILED_DEPENDENCY,
         'Store photo failed',
@@ -91,7 +101,10 @@ export class PhotoService {
     }
   }
 
-  async deleteImage(userId, publicId): Promise<THttpResponse<void>> {
+  async deleteImage(
+    userId: string,
+    publicId: string,
+  ): Promise<THttpResponse<void>> {
     try {
       await this._photo.delete({
         userId,
@@ -109,29 +122,10 @@ export class PhotoService {
     }
   }
 
-  async updateImage(
-    @UploadedFile() file: Express.Multer.File,
+  async updateFavorite(
     userId: string,
     publicId: string,
   ): Promise<THttpResponse<void>> {
-    try {
-      await this._photo.delete({ publicId });
-
-      await this._cloudinaryService.updateImagesInCloudinary(publicId, file);
-
-      return {
-        statusCode: HttpStatus.NO_CONTENT,
-        message: 'Updated',
-      };
-    } catch (err) {
-      throw new BadRequestException(
-        HttpStatus.BAD_REQUEST,
-        'Update image failed',
-      );
-    }
-  }
-
-  async updateFavorite(userId, publicId): Promise<THttpResponse<void>> {
     try {
       await this._photo.update(
         {
