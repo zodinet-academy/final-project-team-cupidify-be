@@ -10,6 +10,9 @@ import { UpdateLocationDto } from './dto/update-location.dto';
 import { Location } from './entities/location.entity';
 import { ProfileService } from '../profile/profile.service';
 import { IUserFinded, IUserLocation } from './interface/IUserFinded';
+import { THttpResponse } from '../shared/common/http-response.dto';
+import { BlackListService } from '../black-list/black-list.service';
+import { BlackListDto } from '../black-list/dto/black-list.dto';
 
 @Injectable()
 export class LocationService {
@@ -17,9 +20,10 @@ export class LocationService {
     @InjectRepository(Location)
     private readonly _locationRepository: Repository<Location>,
     private readonly _profileService: ProfileService,
+    private readonly _blackListService: BlackListService,
   ) {}
 
-  async create(createLocationDto: Location) {
+  async create(createLocationDto: Location): Promise<THttpResponse<Location>> {
     try {
       const userExist = await this._locationRepository.findOne({
         where: { userId: createLocationDto.userId },
@@ -44,13 +48,20 @@ export class LocationService {
 
       const location = await this._locationRepository.save(createdLocation);
 
-      return { data: location, statusCode: HttpStatus.CREATED };
+      return {
+        data: location,
+        statusCode: HttpStatus.CREATED,
+        message: 'create success!',
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
   }
 
-  async update(userId: string, updateLocationDto: UpdateLocationDto) {
+  async update(
+    userId: string,
+    updateLocationDto: UpdateLocationDto,
+  ): Promise<THttpResponse<Location>> {
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -68,16 +79,19 @@ export class LocationService {
         lat,
         location: pointObj,
       });
+      await this._locationRepository.save(updatedLocation);
 
-      return { data: updatedLocation, statusCode: HttpStatus.OK };
+      return {
+        data: updatedLocation,
+        statusCode: HttpStatus.OK,
+        message: 'update success',
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
   }
 
-  async findUsersWithin(
-    userId: string,
-  ): Promise<{ data: IUserFinded[]; statusCode: number }> {
+  async findUsersWithin(userId: string): Promise<THttpResponse<IUserFinded[]>> {
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -109,8 +123,13 @@ export class LocationService {
       if (locationUsers.length === 1) {
         throw new HttpException('Không có người dùng nào lân cận', 201);
       }
-      const listLocationUser = locationUsers.filter(
+      let listLocationUser: IUserLocation[] = locationUsers.filter(
         (location: IUserLocation) => location.user !== userId,
+      );
+      // Filter: Array Not Contains Block User
+      listLocationUser = await this.filterListUserNotContainBlackList(
+        userId,
+        listLocationUser,
       );
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {
@@ -119,13 +138,36 @@ export class LocationService {
         );
         const userFinded: IUserFinded = {
           user: response.data,
-          distance: this.round10(listLocationUser[i].distance, -1),
+          distance: this.round10(listLocationUser[i].distance, -1) * 1000,
         };
         listUserFinded.push(userFinded);
       }
-      return { data: listUserFinded, statusCode: HttpStatus.OK };
+      return {
+        data: listUserFinded,
+        statusCode: HttpStatus.OK,
+        message: 'success',
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
+    }
+  }
+
+  async filterListUserNotContainBlackList(
+    idUser: string,
+    listUser: IUserLocation[],
+  ): Promise<IUserLocation[]> {
+    try {
+      const resBlockUSer = await this._blackListService.getBlockedUser(idUser);
+      const listUserBlock: BlackListDto[] = resBlockUSer.data;
+      let listUserFilter: IUserLocation[] = [];
+      listUserBlock.forEach((userBlock) => {
+        listUserFilter = listUser.filter(
+          (user) => userBlock.blockedId !== user.user,
+        );
+      });
+      return listUserFilter;
+    } catch (error) {
+      throw new BadRequestException(error.message);
     }
   }
 
