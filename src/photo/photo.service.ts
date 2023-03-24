@@ -70,7 +70,7 @@ export class PhotoService {
         isFavorite: false,
       }));
 
-      await this.storeImages(userId, photos);
+      await this.storeImages(photos);
 
       return {
         statusCode: HttpStatus.CREATED,
@@ -84,7 +84,7 @@ export class PhotoService {
     }
   }
 
-  async storeImages(userId: string, photos: UploadPhotoDto[]): Promise<void> {
+  async storeImages(photos: UploadPhotoDto[]): Promise<void> {
     try {
       const resources = this._classMapper.mapArray(
         photos,
@@ -122,29 +122,10 @@ export class PhotoService {
     }
   }
 
-  async updateImage(
-    @UploadedFile() file: Express.Multer.File,
+  async updateFavorite(
     userId: string,
     publicId: string,
   ): Promise<THttpResponse<void>> {
-    try {
-      await this._photo.delete({ publicId });
-
-      await this._cloudinaryService.updateImagesInCloudinary(publicId, file);
-
-      return {
-        statusCode: HttpStatus.NO_CONTENT,
-        message: 'Updated',
-      };
-    } catch (err) {
-      throw new BadRequestException(
-        HttpStatus.BAD_REQUEST,
-        'Update image failed',
-      );
-    }
-  }
-
-  async updateFavorite(userId, publicId): Promise<THttpResponse<void>> {
     try {
       await this._photo.update(
         {
