@@ -13,6 +13,7 @@ import { IUserFinded, IUserLocation } from './interface/IUserFinded';
 import { THttpResponse } from '../shared/common/http-response.dto';
 import { BlackListService } from '../black-list/black-list.service';
 import { BlackListDto } from '../black-list/dto/black-list.dto';
+import { GetUserWithinDto } from './dto/get-user-within.dto';
 
 @Injectable()
 export class LocationService {
@@ -91,7 +92,11 @@ export class LocationService {
     }
   }
 
-  async findUsersWithin(userId: string): Promise<THttpResponse<IUserFinded[]>> {
+  async findUsersWithin(
+    userId: string,
+    getUserWithinDto: GetUserWithinDto,
+  ): Promise<THttpResponse<IUserFinded[]>> {
+    const { range } = getUserWithinDto;
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -115,7 +120,7 @@ export class LocationService {
         .setParameters({
           // stringify GeoJSON
           origin: JSON.stringify(origin),
-          range: 0.4 * 1000, //KM conversion
+          range: range, //KM conversion
         })
         .getRawMany();
 
@@ -131,6 +136,8 @@ export class LocationService {
         userId,
         listLocationUser,
       );
+      // console.log('listLocationUser: ', listLocationUser);
+
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {
         const response = await this._profileService.findOneByUserId(
@@ -142,6 +149,7 @@ export class LocationService {
         };
         listUserFinded.push(userFinded);
       }
+
       return {
         data: listUserFinded,
         statusCode: HttpStatus.OK,
@@ -157,15 +165,29 @@ export class LocationService {
     listUser: IUserLocation[],
   ): Promise<IUserLocation[]> {
     try {
-      const resBlockUSer = await this._blackListService.getBlockedUser(idUser);
-      const listUserBlock: BlackListDto[] = resBlockUSer.data;
-      let listUserFilter: IUserLocation[] = [];
+      const resBlockUSer: THttpResponse<{
+        sourceUsers: BlackListDto[];
+        targetUsers: BlackListDto[];
+      }> = await this._blackListService.getBlockedUser(idUser);
+      const listUserBlock = resBlockUSer.data.sourceUsers;
       listUserBlock.forEach((userBlock) => {
-        listUserFilter = listUser.filter(
-          (user) => userBlock.blockedId !== user.user,
-        );
+        listUser.forEach((user, index) => {
+          if (userBlock.blockedId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
       });
-      return listUserFilter;
+
+      const listUserBlockMe = resBlockUSer.data.targetUsers;
+      listUserBlockMe.forEach((userBlock) => {
+        listUser.forEach((user, index) => {
+          if (userBlock.userId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      return listUser;
     } catch (error) {
       throw new BadRequestException(error.message);
     }

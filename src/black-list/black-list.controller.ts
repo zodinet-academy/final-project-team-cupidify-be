@@ -22,7 +22,11 @@ export class BlackListController {
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
-  async getBlockedUser(@User() user): Promise<THttpResponse<BlackListDto[]>> {
+  async getBlockedUser(
+    @User() user,
+  ): Promise<
+    THttpResponse<{ sourceUsers: BlackListDto[]; targetUsers: BlackListDto[] }>
+  > {
     const { id } = user;
     return await this.blackListService.getBlockedUser(id);
   }

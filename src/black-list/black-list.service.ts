@@ -49,19 +49,34 @@ export class BlackListService {
     }
   }
 
-  async getBlockedUser(userId: string): Promise<THttpResponse<BlackListDto[]>> {
+  async getBlockedUser(
+    userId: string,
+  ): Promise<
+    THttpResponse<{ sourceUsers: BlackListDto[]; targetUsers: BlackListDto[] }>
+  > {
     try {
-      const res = await this._blackList.find({ where: { userId } });
+      const res = await this._blackList.find({
+        where: [{ userId }, { blockedId: userId }],
+      });
 
-      const result = await this._classMapper.mapArrayAsync(
-        res,
+      const sourceUsers = await this._classMapper.mapArrayAsync(
+        res.filter((u) => u.userId === userId),
+        BlackList,
+        BlackListDto,
+      );
+
+      const targetUsers = await this._classMapper.mapArrayAsync(
+        res.filter((u) => u.blockedId === userId),
         BlackList,
         BlackListDto,
       );
 
       return {
         statusCode: HttpStatus.OK,
-        data: result,
+        data: {
+          sourceUsers,
+          targetUsers,
+        },
       };
     } catch (err) {
       throw new BadRequestException(

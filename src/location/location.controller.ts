@@ -1,21 +1,12 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Param,
-  Delete,
-  Put,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, Put, UseGuards } from '@nestjs/common';
 import { LocationService } from './location.service';
-import { CreateLocationDto } from './dto/create-location.dto';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
 import { User } from 'src/user/decorator/user.decorator';
 import { UserDto } from 'src/user/dto/user.dto';
 import { Location } from './entities/location.entity';
+import { GetUserWithinDto } from './dto/get-user-within.dto';
 
 @ApiTags('Location')
 @Controller('location')
@@ -34,9 +25,9 @@ export class LocationController {
   @ApiOperation({ summary: 'Get User With Location Range' })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
-  @Get()
-  getWithin(@User() user: UserDto) {
-    return this.locationService.findUsersWithin(user.id);
+  @Post('get-within')
+  getWithin(@User() user: UserDto, @Body() getUserWithinDto: GetUserWithinDto) {
+    return this.locationService.findUsersWithin(user.id, getUserWithinDto);
   }
 
   @ApiOperation({ summary: 'Update Location User' })
