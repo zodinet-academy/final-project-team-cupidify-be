@@ -48,11 +48,11 @@ export class LocationController {
     return this.locationService.update(user.id, updateLocationDto);
   }
 
-  @ApiOperation({ summary: 'Update Location User' })
-  // @ApiBearerAuth()
-  // @UseGuards(AuthenticationGuard)
-  @Put('/update')
-  updatetest(@Body() updateLocationDto: UpdateTest) {
-    return this.locationService.updatetest(updateLocationDto);
-  }
+  // @ApiOperation({ summary: 'Update Location User' })
+  // // @ApiBearerAuth()
+  // // @UseGuards(AuthenticationGuard)
+  // @Put('/update')
+  // updatetest(@Body() updateLocationDto: UpdateTest) {
+  //   return this.locationService.updatetest(updateLocationDto);
+  // }
 }

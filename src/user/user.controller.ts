@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiCreatedResponse,
+  ApiOkResponse,
+  ApiTags,
+} from '@nestjs/swagger';
 import { AuthenticationGuard } from '../auth/guards/auth.guard';
 import { TCheckedResponse } from '../shared/common/check-response.dto';
 import { User } from './decorator/user.decorator';
@@ -8,10 +13,14 @@ import { SocialDto } from './dto/social.dto';
 import { UserDto } from './dto/user.dto';
 import { UserService } from './user.service';
 
+@ApiTags('User')
 @Controller('user')
 export class UserController {
   constructor(private readonly _userService: UserService) {}
 
+  @ApiOkResponse({
+    description: 'Get user succesfully',
+  })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
@@ -20,6 +29,9 @@ export class UserController {
     return await this._userService.findById(user.id);
   }
 
+  @ApiCreatedResponse({
+    description: 'Check phone succesfully',
+  })
   @Post('check-phone')
   async isPhoneExist(
     @Body() checkPhone: PhoneDto,
@@ -27,6 +39,9 @@ export class UserController {
     return await this._userService.isPhoneExist(checkPhone.phone);
   }
 
+  @ApiCreatedResponse({
+    description: 'Check social ID succesfully',
+  })
   @Post('check-social')
   async isSocialExist(
     @Body() checkSocial: SocialDto,

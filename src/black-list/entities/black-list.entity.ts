@@ -1,11 +1,17 @@
 import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Base } from '../../shared/base.entity';
 import { User } from '../../user/entities/user.entity';
+import { AutoMap } from '@automapper/classes';
 
 @Entity({ name: 'black_list', synchronize: true })
 export class BlackList extends Base {
+  @AutoMap()
   @Column({ name: 'user_id' })
   userId: string;
+  @Column({ name: 'blocked_id' })
+  blockedId: string;
+
+  @AutoMap()
   @Column({ name: 'blocked_id' })
   blockedId: string;
 

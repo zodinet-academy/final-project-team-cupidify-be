@@ -1,4 +1,4 @@
-import { Profile } from '../../profile/entities/profile.entity';
+import { ProfileDto } from 'src/profile/dto/profile.dto';
 
 export interface IUserLocation {
   user: string;
@@ -6,6 +6,6 @@ export interface IUserLocation {
 }
 
 export interface IUserFinded {
-  user: Profile;
+  user: ProfileDto;
   distance: number;
 }

@@ -5,7 +5,6 @@ import { Repository } from 'typeorm';
 import { TCheckedResponse } from '../shared/common/check-response.dto';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UserDto } from './dto/user.dto';
-import { isEmpty } from 'class-validator';
 import { User } from './entities/user.entity';
 
 @Injectable()

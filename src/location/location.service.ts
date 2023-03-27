@@ -10,7 +10,9 @@ import { UpdateLocationDto } from './dto/update-location.dto';
 import { Location } from './entities/location.entity';
 import { ProfileService } from '../profile/profile.service';
 import { IUserFinded, IUserLocation } from './interface/IUserFinded';
-import { UpdateTest } from './dto/update-test';
+import { THttpResponse } from '../shared/common/http-response.dto';
+import { BlackListService } from '../black-list/black-list.service';
+import { BlackListDto } from '../black-list/dto/black-list.dto';
 
 @Injectable()
 export class LocationService {
@@ -18,9 +20,10 @@ export class LocationService {
     @InjectRepository(Location)
     private readonly _locationRepository: Repository<Location>,
     private readonly _profileService: ProfileService,
+    private readonly _blackListService: BlackListService,
   ) {}
 
-  async create(createLocationDto: Location) {
+  async create(createLocationDto: Location): Promise<THttpResponse<Location>> {
     try {
       const userExist = await this._locationRepository.findOne({
         where: { userId: createLocationDto.userId },
@@ -45,13 +48,20 @@ export class LocationService {
 
       const location = await this._locationRepository.save(createdLocation);
 
-      return { data: location, statusCode: HttpStatus.CREATED };
+      return {
+        data: location,
+        statusCode: HttpStatus.CREATED,
+        message: 'create success!',
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
   }
 
-  async update(userId: string, updateLocationDto: UpdateLocationDto) {
+  async update(
+    userId: string,
+    updateLocationDto: UpdateLocationDto,
+  ): Promise<THttpResponse<Location>> {
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -71,15 +81,17 @@ export class LocationService {
       });
       await this._locationRepository.save(updatedLocation);
 
-      return { data: updatedLocation, statusCode: HttpStatus.OK };
+      return {
+        data: updatedLocation,
+        statusCode: HttpStatus.OK,
+        message: 'update success',
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
   }
 
-  async findUsersWithin(
-    userId: string,
-  ): Promise<{ data: IUserFinded[]; statusCode: number }> {
+  async findUsersWithin(userId: string): Promise<THttpResponse<IUserFinded[]>> {
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -112,9 +124,16 @@ export class LocationService {
       if (locationUsers.length === 1) {
         throw new HttpException('Không có người dùng nào lân cận', 201);
       }
-      const listLocationUser = locationUsers.filter(
+      let listLocationUser: IUserLocation[] = locationUsers.filter(
         (location: IUserLocation) => location.user !== userId,
       );
+      // Filter: Array Not Contains Block User
+      listLocationUser = await this.filterListUserNotContainBlackList(
+        userId,
+        listLocationUser,
+      );
+      console.log('listLocationUser: ', listLocationUser);
+
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {
         const response = await this._profileService.findOneByUserId(
@@ -122,13 +141,51 @@ export class LocationService {
         );
         const userFinded: IUserFinded = {
           user: response.data,
-          distance: this.round10(listLocationUser[i].distance, -1),
+          distance: this.round10(listLocationUser[i].distance, -1) * 1000,
         };
         listUserFinded.push(userFinded);
       }
-      return { data: listUserFinded, statusCode: HttpStatus.OK };
+
+      return {
+        data: listUserFinded,
+        statusCode: HttpStatus.OK,
+        message: 'success',
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
+    }
+  }
+
+  async filterListUserNotContainBlackList(
+    idUser: string,
+    listUser: IUserLocation[],
+  ): Promise<IUserLocation[]> {
+    try {
+      const resBlockUSer: THttpResponse<{
+        sourceUsers: BlackListDto[];
+        targetUsers: BlackListDto[];
+      }> = await this._blackListService.getBlockedUser(idUser);
+      const listUserBlock = resBlockUSer.data.sourceUsers;
+      listUserBlock.forEach((userBlock) => {
+        listUser.forEach((user, index) => {
+          if (userBlock.blockedId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      const listUserBlockMe = resBlockUSer.data.targetUsers;
+      listUserBlockMe.forEach((userBlock) => {
+        listUser.forEach((user, index) => {
+          if (userBlock.userId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      return listUser;
+    } catch (error) {
+      throw new BadRequestException(error.message);
     }
   }
 
@@ -156,28 +213,28 @@ export class LocationService {
     return this.decimalAdjust('round', value, exp);
   }
 
-  async updatetest(updateLocationDto: UpdateTest) {
-    try {
-      const location = await this._locationRepository.findOne({
-        where: { userId: updateLocationDto.userId },
-      });
+  // async updatetest(updateLocationDto: UpdateTest) {
+  //   try {
+  //     const location = await this._locationRepository.findOne({
+  //       where: { userId: updateLocationDto.userId },
+  //     });
 
-      const { long, lat } = updateLocationDto;
+  //     const { long, lat } = updateLocationDto;
 
-      const pointObj: Point = {
-        type: 'Point',
-        coordinates: [long, lat],
-      };
+  //     const pointObj: Point = {
+  //       type: 'Point',
+  //       coordinates: [long, lat],
+  //     };
 
-      const updatedLocation = Object.assign(location, {
-        long,
-        lat,
-        location: pointObj,
-      });
-      const response = await this._locationRepository.save(updatedLocation);
-      return { data: response, statusCode: HttpStatus.OK };
-    } catch (err) {
-      throw new BadRequestException(err.message);
-    }
-  }
+  //     const updatedLocation = Object.assign(location, {
+  //       long,
+  //       lat,
+  //       location: pointObj,
+  //     });
+  //     const response = await this._locationRepository.save(updatedLocation);
+  //     return { data: response, statusCode: HttpStatus.OK };
+  //   } catch (err) {
+  //     throw new BadRequestException(err.message);
+  //   }
+  // }
 }
