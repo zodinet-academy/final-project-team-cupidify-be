@@ -7,14 +7,14 @@ import { Mapper, createMap } from '@automapper/core';
 import { FindMatchDto } from './dto/find-match.dto';
 
 @Injectable()
-export class BlackListProfile extends AutomapperProfile {
+export class MatchProfile extends AutomapperProfile {
   constructor(@InjectMapper() mapper: Mapper) {
     super(mapper);
   }
 
   override get profile() {
     return (mapper) => {
-      createMap(mapper, FindMatchDto, Match);
+      createMap(mapper, Match, FindMatchDto);
     };
   }
 }

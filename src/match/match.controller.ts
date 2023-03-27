@@ -49,11 +49,15 @@ export class MatchController {
   //   return this._matchService.checkIsMatch(findMatchDto);
   // }
 
-  // @ApiOperation({ summary: 'Get All Match' })
-  // @Get('/all')
-  // getAll() {
-  //   return this._matchService.findAll();
-  // }
+  @ApiOperation({ summary: 'Get user matches' })
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Get()
+  async getAll(@User() user) {
+    const { id } = user;
+    console.log(id);
+    return await this._matchService.getMatches(id);
+  }
 
   // @ApiOperation({ summary: 'Get Match User' })
   // @ApiBearerAuth()

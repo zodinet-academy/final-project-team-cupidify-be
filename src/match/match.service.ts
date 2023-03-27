@@ -43,11 +43,15 @@ export class MatchService {
     try {
       const matches = await this._matchRepository.find({ where: { userId } });
 
+      console.log(matches);
+
       const data = await this._classMapper.mapArrayAsync(
         matches,
         Match,
         FindMatchDto,
       );
+
+      console.log(data);
 
       return {
         statusCode: HttpStatus.OK,
