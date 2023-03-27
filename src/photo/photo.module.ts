@@ -8,6 +8,7 @@ import { UserModule } from 'src/user/user.module';
 import { ProfileService } from 'src/profile/profile.service';
 import { ProfileModule } from 'src/profile/profile.module';
 import { Profile } from 'src/profile/entities/profile.entity';
+import { PhotoProfile } from './photo.profile';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { Profile } from 'src/profile/entities/profile.entity';
     ProfileModule,
   ],
   controllers: [PhotoController],
-  providers: [PhotoService, ProfileService],
+  providers: [PhotoService, ProfileService, PhotoProfile],
 })
 export class PhotoModule {}

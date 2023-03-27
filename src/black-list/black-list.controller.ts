@@ -16,10 +16,7 @@ export class BlackListController {
   @Post()
   async addBlockedUser(@User() user, @Body() addBlockUser: AddBlockedUserDto) {
     const { id } = user;
-    return await this.blackListService.addBlockedUser(
-      id,
-      addBlockUser.blockedId,
-    );
+    return await this.blackListService.addBlockedUser(id, addBlockUser);
   }
 
   @ApiBearerAuth()

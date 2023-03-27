@@ -41,7 +41,9 @@ export class PhotoController {
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
-  async getUserPhoto(@User() user: UserDto): Promise<THttpResponse<Photo[]>> {
+  async getUserPhoto(
+    @User() user: UserDto,
+  ): Promise<THttpResponse<PhotoDto[]>> {
     const { id } = user;
     return this._photoService.getUserPhoto(id);
   }
