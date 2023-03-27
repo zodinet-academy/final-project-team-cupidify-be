@@ -8,8 +8,6 @@ export class BlackList extends Base {
   @AutoMap()
   @Column({ name: 'user_id' })
   userId: string;
-  @Column({ name: 'blocked_id' })
-  blockedId: string;
 
   @AutoMap()
   @Column({ name: 'blocked_id' })
