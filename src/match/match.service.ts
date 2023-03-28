@@ -1,3 +1,5 @@
+import { InjectMapper } from '@automapper/nestjs';
+import { THttpResponse } from 'src/shared/common/http-response.dto';
 import {
   Injectable,
   BadRequestException,
@@ -10,12 +12,15 @@ import { CreateMatchDto } from './dto/create-match.dto';
 import { FindMatchDto } from './dto/find-match.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
 import { Match } from './entities/match.entity';
+import { Mapper } from '@automapper/core';
 
 @Injectable()
 export class MatchService {
   constructor(
     @InjectRepository(Match)
     private readonly _matchRepository: Repository<Match>,
+    @InjectMapper()
+    private readonly _classMapper: Mapper,
   ) {}
 
   async create(matchEntity: FindMatchDto) {
@@ -34,8 +39,27 @@ export class MatchService {
     }
   }
 
-  async findAll() {
-    return this._matchRepository.find();
+  async getMatches(userId: string): Promise<THttpResponse<FindMatchDto[]>> {
+    try {
+      const matches = await this._matchRepository.find({ where: { userId } });
+
+      console.log(matches);
+
+      const data = await this._classMapper.mapArrayAsync(
+        matches,
+        Match,
+        FindMatchDto,
+      );
+
+      console.log(data);
+
+      return {
+        statusCode: HttpStatus.OK,
+        data,
+      };
+    } catch (err) {
+      throw new BadRequestException(HttpStatus.NOT_FOUND, 'Not Found Matches');
+    }
   }
 
   findOne(id: number) {
