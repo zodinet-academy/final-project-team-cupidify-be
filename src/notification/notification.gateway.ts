@@ -9,7 +9,11 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { Server } from 'socket.io';
 
-@WebSocketGateway()
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
 export class NotificationGateway {
   @WebSocketServer()
   server: Server;

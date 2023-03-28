@@ -22,11 +22,16 @@ export class NotificationService {
       CreateNotificationDto,
       Notification,
     );
+    console.log('noti', toSaveNoti);
     const notification = this._classMapper.mapAsync(
       await this._notificationRepository.save(toSaveNoti),
       Notification,
       NotificationDto,
     );
+
+    // const notification = await this._notificationRepository.save(
+    //   createNotificationDto,
+    // );
 
     return notification;
   }

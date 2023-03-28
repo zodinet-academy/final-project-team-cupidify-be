@@ -126,7 +126,6 @@ export class LocationService {
         })
         .getRawMany();
 
-      console.log('locations: ', locationUsers);
       // Filter: Array Not Contains User
       if (locationUsers.length === 1) {
         throw new HttpException('Không có người dùng nào lân cận', 201);
