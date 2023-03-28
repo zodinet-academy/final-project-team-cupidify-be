@@ -1,6 +1,6 @@
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import { Injectable } from '@nestjs/common';
+import { Injectable, BadRequestException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateNotificationDto } from './dto/create-notification.dto';
@@ -29,6 +29,18 @@ export class NotificationService {
     );
 
     return notification;
+  }
+
+  async totalNotificationByUser(userId: string): Promise<void> {
+    try {
+      const result = await this._notificationRepository.findAndCount({
+        where: { userFromId: userId, userToId: userId },
+      });
+
+      console.log('Notification count: ', result);
+    } catch (err) {
+      throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
+    }
   }
 
   findAll() {
