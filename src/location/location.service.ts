@@ -13,6 +13,7 @@ import { IUserFinded, IUserLocation } from './interface/IUserFinded';
 import { THttpResponse } from '../shared/common/http-response.dto';
 import { BlackListService } from '../black-list/black-list.service';
 import { BlackListDto } from '../black-list/dto/black-list.dto';
+import { GetUserWithinDto } from './dto/get-user-within.dto';
 
 @Injectable()
 export class LocationService {
@@ -91,7 +92,11 @@ export class LocationService {
     }
   }
 
-  async findUsersWithin(userId: string): Promise<THttpResponse<IUserFinded[]>> {
+  async findUsersWithin(
+    userId: string,
+    getUserWithinDto: GetUserWithinDto,
+  ): Promise<THttpResponse<IUserFinded[]>> {
+    const { range } = getUserWithinDto;
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -106,6 +111,8 @@ export class LocationService {
         .createQueryBuilder('location')
         .select([
           'location.user_id AS user',
+          'location.long AS long',
+          'location.lat AS lat',
           'ST_Distance(location, ST_SetSRID(ST_GeomFromGeoJSON(:origin), ST_SRID(location)))/1000 AS distance',
         ])
         .where(
@@ -115,7 +122,7 @@ export class LocationService {
         .setParameters({
           // stringify GeoJSON
           origin: JSON.stringify(origin),
-          range: 1000 * 1000, //KM conversion
+          range: range, //KM conversion
         })
         .getRawMany();
 
@@ -127,12 +134,13 @@ export class LocationService {
       let listLocationUser: IUserLocation[] = locationUsers.filter(
         (location: IUserLocation) => location.user !== userId,
       );
+      // console.log(locationUsers);
+
       // Filter: Array Not Contains Block User
       listLocationUser = await this.filterListUserNotContainBlackList(
         userId,
         listLocationUser,
       );
-      console.log('listLocationUser: ', listLocationUser);
 
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {

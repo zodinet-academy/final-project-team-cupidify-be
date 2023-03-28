@@ -1,12 +1,3 @@
-import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { UpdateFavoriteDto } from './update-favorite.dto';
 
-export class SetAvatarDto {
-  @ApiProperty({
-    default: 'xx02cd1ztpfzl9fl19fg',
-    type: String,
-  })
-  @IsString()
-  @IsNotEmpty()
-  publicId: string;
-}
+export class SetAvatarDto extends UpdateFavoriteDto {}

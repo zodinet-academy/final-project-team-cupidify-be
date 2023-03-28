@@ -15,6 +15,9 @@ import { UserService } from 'src/user/user.service';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 import { SetAvatarDto } from './dto/set-avatar.dto';
 import { ProfileService } from 'src/profile/profile.service';
+import { InjectMapper } from '@automapper/nestjs';
+import { Mapper } from '@automapper/core';
+import { PhotoDto } from './dto/photo.dto';
 
 @Injectable()
 export class PhotoService {
@@ -24,17 +27,30 @@ export class PhotoService {
     private readonly _cloudinaryService: CloudinaryService,
     private readonly _userService: UserService,
     private readonly _profileService: ProfileService,
+    @InjectMapper() private readonly _classMapper: Mapper,
   ) {}
 
-  async getUserPhoto(userId: string): Promise<THttpResponse<Photo[]>> {
+  async getUserPhoto(userId: string): Promise<THttpResponse<PhotoDto[]>> {
     try {
-      const photos = await this._photo.find({
-        where: { userId },
-        order: {
-          isFavorite: 'DESC',
-          updatedAt: 'DESC',
-        },
-      });
+      // const photos = await this._photo.find({
+      //   where: { userId },
+      //   order: {
+      //     isFavorite: 'DESC',
+      //     updatedAt: 'DESC',
+      //   },
+      // });
+
+      const photos = await this._classMapper.mapArrayAsync(
+        await this._photo.find({
+          where: { userId },
+          order: {
+            isFavorite: 'DESC',
+            updatedAt: 'DESC',
+          },
+        }),
+        Photo,
+        PhotoDto,
+      );
 
       return {
         statusCode: HttpStatus.OK,
