@@ -126,6 +126,7 @@ export class LocationService {
         })
         .getRawMany();
 
+      console.log('locations: ', locationUsers);
       // Filter: Array Not Contains User
       if (locationUsers.length === 1) {
         throw new HttpException('Không có người dùng nào lân cận', 201);
@@ -219,4 +220,29 @@ export class LocationService {
   round10(value, exp) {
     return this.decimalAdjust('round', value, exp);
   }
+
+  // async updatetest(updateLocationDto: UpdateTest) {
+  //   try {
+  //     const location = await this._locationRepository.findOne({
+  //       where: { userId: updateLocationDto.userId },
+  //     });
+
+  //     const { long, lat } = updateLocationDto;
+
+  //     const pointObj: Point = {
+  //       type: 'Point',
+  //       coordinates: [long, lat],
+  //     };
+
+  //     const updatedLocation = Object.assign(location, {
+  //       long,
+  //       lat,
+  //       location: pointObj,
+  //     });
+  //     const response = await this._locationRepository.save(updatedLocation);
+  //     return { data: response, statusCode: HttpStatus.OK };
+  //   } catch (err) {
+  //     throw new BadRequestException(err.message);
+  //   }
+  // }
 }
