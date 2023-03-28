@@ -111,6 +111,8 @@ export class LocationService {
         .createQueryBuilder('location')
         .select([
           'location.user_id AS user',
+          'location.long AS long',
+          'location.lat AS lat',
           'ST_Distance(location, ST_SetSRID(ST_GeomFromGeoJSON(:origin), ST_SRID(location)))/1000 AS distance',
         ])
         .where(
@@ -131,12 +133,13 @@ export class LocationService {
       let listLocationUser: IUserLocation[] = locationUsers.filter(
         (location: IUserLocation) => location.user !== userId,
       );
+      // console.log(locationUsers);
+
       // Filter: Array Not Contains Block User
       listLocationUser = await this.filterListUserNotContainBlackList(
         userId,
         listLocationUser,
       );
-      // console.log('listLocationUser: ', listLocationUser);
 
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {
