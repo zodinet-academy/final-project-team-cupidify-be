@@ -146,10 +146,14 @@ export class LocationService {
         const response = await this._profileService.findOneByUserId(
           listLocationUser[i].user,
         );
+
         const userFinded: IUserFinded = {
           user: response.data,
           distance: this.round10(listLocationUser[i].distance, -1) * 1000,
+          long: listLocationUser[i].long,
+          lat: listLocationUser[i].lat,
         };
+
         listUserFinded.push(userFinded);
       }
 

@@ -1,3 +1,6 @@
+import { HttpStatus, UseGuards } from '@nestjs/common';
+import { NotificationDto } from './dto/notification.dto';
+import { THttpResponse } from 'src/shared/common/http-response.dto';
 import {
   WebSocketGateway,
   SubscribeMessage,
@@ -7,7 +10,8 @@ import {
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
+import { WsGuard } from '../auth/guards/ws.guard';
 
 @WebSocketGateway({
   cors: {
@@ -18,33 +22,48 @@ export class NotificationGateway {
   @WebSocketServer()
   server: Server;
 
-  constructor(private readonly notificationService: NotificationService) {}
+  constructor(private readonly _notificationService: NotificationService) {}
 
   @SubscribeMessage('createNotification')
-  async create(@MessageBody() createNotificationDto: CreateNotificationDto) {
-    const notification = await this.notificationService.create(
+  async create(
+    @MessageBody() createNotificationDto: CreateNotificationDto,
+  ): Promise<THttpResponse<NotificationDto>> {
+    console.log('Create notification');
+    const notification = await this._notificationService.create(
       createNotificationDto,
     );
+
+    this.server.emit('testNotification', 'Hello World');
 
     this.server.emit(`noti-${notification.userFromId}`, notification);
     this.server.emit(`noti-${notification.userToId}`, notification);
 
-    return notification;
+    return {
+      statusCode: HttpStatus.OK,
+      message: 'Hello',
+      data: notification,
+    };
   }
 
   @SubscribeMessage('findAllNotification')
-  findAll() {
-    return this.notificationService.findAll();
+  @UseGuards(WsGuard)
+  findAll(socket: Socket) {
+    let token = socket.handshake.headers.authorization;
+    token = token.split(' ')[1];
+
+    return this._notificationService.totalNotificationByUser(
+      '06f2c622-9b23-4306-b320-69a7cd9adb6f',
+    );
   }
 
   @SubscribeMessage('findOneNotification')
   findOne(@MessageBody() id: number) {
-    return this.notificationService.findOne(id);
+    return this._notificationService.findOne(id);
   }
 
   @SubscribeMessage('updateNotification')
   update(@MessageBody() updateNotificationDto: UpdateNotificationDto) {
-    return this.notificationService.update(
+    return this._notificationService.update(
       updateNotificationDto.id,
       updateNotificationDto,
     );
@@ -52,6 +71,6 @@ export class NotificationGateway {
 
   @SubscribeMessage('removeNotification')
   remove(@MessageBody() id: number) {
-    return this.notificationService.remove(id);
+    return this._notificationService.remove(id);
   }
 }
