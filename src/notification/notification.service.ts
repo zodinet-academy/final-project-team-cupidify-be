@@ -2,6 +2,7 @@ import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { Injectable, BadRequestException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { THttpResponse } from 'src/shared/common/http-response.dto';
 import { Repository } from 'typeorm';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { NotificationDto } from './dto/notification.dto';
@@ -22,7 +23,7 @@ export class NotificationService {
       CreateNotificationDto,
       Notification,
     );
-    console.log('noti', toSaveNoti);
+
     const notification = this._classMapper.mapAsync(
       await this._notificationRepository.save(toSaveNoti),
       Notification,
@@ -36,13 +37,19 @@ export class NotificationService {
     return notification;
   }
 
-  async totalNotificationByUser(userId: string): Promise<void> {
+  async totalNotificationByUser(
+    userId: string,
+  ): Promise<THttpResponse<Notification[]>> {
     try {
-      const result = await this._notificationRepository.findAndCount({
+      const result = await this._notificationRepository.find({
         where: [{ userFromId: userId }, { userToId: userId }],
       });
 
       // console.log('Notification count: ', result);
+      return {
+        statusCode: HttpStatus.OK,
+        data: result,
+      };
     } catch (err) {
       throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
     }

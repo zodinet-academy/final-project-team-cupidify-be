@@ -12,6 +12,11 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { Server, Socket } from 'socket.io';
 import { WsGuard } from '../auth/guards/ws.guard';
+import { JwtService } from '@nestjs/jwt';
+import * as dotenv from 'dotenv';
+import { Notification } from './entities/notification.entity';
+
+dotenv.config();
 
 @WebSocketGateway({
   cors: {
@@ -28,12 +33,9 @@ export class NotificationGateway {
   async create(
     @MessageBody() createNotificationDto: CreateNotificationDto,
   ): Promise<THttpResponse<NotificationDto>> {
-    console.log('Create notification');
     const notification = await this._notificationService.create(
       createNotificationDto,
     );
-
-    this.server.emit('testNotification', 'Hello World');
 
     this.server.emit(`noti-${notification.userFromId}`, notification);
     this.server.emit(`noti-${notification.userToId}`, notification);
@@ -46,14 +48,21 @@ export class NotificationGateway {
   }
 
   @SubscribeMessage('findAllNotification')
-  @UseGuards(WsGuard)
-  findAll(socket: Socket) {
+  // @UseGuards(WsGuard)
+  async findAll(socket: Socket): Promise<THttpResponse<Notification[]>> {
     let token = socket.handshake.headers.authorization;
     token = token.split(' ')[1];
 
-    return this._notificationService.totalNotificationByUser(
-      '06f2c622-9b23-4306-b320-69a7cd9adb6f',
-    );
+    const jwt = new JwtService();
+    const { id: userId } = jwt.verify(token, {
+      secret: process.env.SECRET_KEY,
+    });
+
+    const notification =
+      await this._notificationService.totalNotificationByUser(userId);
+    // console.log('notis:   ', notification);
+
+    return notification;
   }
 
   @SubscribeMessage('findOneNotification')
