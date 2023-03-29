@@ -16,6 +16,7 @@ import { BlackListDto } from '../black-list/dto/black-list.dto';
 import { GetUserWithinDto } from './dto/get-user-within.dto';
 import { FindMatchDto } from '../match/dto/find-match.dto';
 import { MatchService } from '../match/match.service';
+import { MatchedUserProfile } from '../profile/dto/match-user-profile.dto';
 
 @Injectable()
 export class LocationService {
@@ -181,14 +182,14 @@ export class LocationService {
   }
 
   async filterListUserNotContainBlackList(
-    idUser: string,
+    userId: string,
     listUser: IUserLocation[],
   ): Promise<IUserLocation[]> {
     try {
       const resBlockUSer: THttpResponse<{
         sourceUsers: BlackListDto[];
         targetUsers: BlackListDto[];
-      }> = await this._blackListService.getBlockedUser(idUser);
+      }> = await this._blackListService.getBlockedUser(userId);
       const listUserBlock = resBlockUSer.data.sourceUsers;
       listUserBlock.forEach((userBlock) => {
         listUser.forEach((user, index) => {
@@ -214,17 +215,29 @@ export class LocationService {
   }
 
   async filterListUserNotContainMatchList(
-    idUser: string,
+    userId: string,
     listUser: IUserLocation[],
   ): Promise<IUserLocation[]> {
     try {
       const resMatchUSer: THttpResponse<FindMatchDto[]> =
-        await this._matchService.getMatches(idUser);
+        await this._matchService.getListMacthByID(userId);
+      const resMatchedUser: THttpResponse<MatchedUserProfile[]> =
+        await this._matchService.getMatches(userId);
+
+      const listUserMatched = resMatchedUser.data;
 
       const listUserMatch = resMatchUSer.data;
       listUserMatch.forEach((userMatch) => {
         listUser.forEach((user, index) => {
           if (userMatch.matchedId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      listUserMatched.forEach((userMatched) => {
+        listUser.forEach((user, index) => {
+          if (userMatched.userId === user.user) {
             listUser.splice(index, 1);
           }
         });

@@ -85,6 +85,27 @@ export class MatchService {
     }
   }
 
+  async getListMacthByID(
+    userId: string,
+  ): Promise<THttpResponse<FindMatchDto[]>> {
+    try {
+      const matches = await this._matchRepository.find({ where: { userId } });
+
+      const data = await this._classMapper.mapArrayAsync(
+        matches,
+        Match,
+        FindMatchDto,
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        data,
+      };
+    } catch (err) {
+      throw new BadRequestException(HttpStatus.NOT_FOUND, 'Not Found Matches');
+    }
+  }
+
   findOne(id: number) {
     return `This action returns a #${id} match`;
   }
