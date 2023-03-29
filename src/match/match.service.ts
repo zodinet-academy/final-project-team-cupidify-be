@@ -1,3 +1,4 @@
+import { MatchedUserProfile } from '../profile/dto/match-user-profile.dto';
 import { InjectMapper } from '@automapper/nestjs';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
 import {
@@ -7,18 +8,21 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateMatchDto } from './dto/create-match.dto';
 import { FindMatchDto } from './dto/find-match.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
 import { Match } from './entities/match.entity';
 import { Mapper } from '@automapper/core';
+import { User } from 'src/user/entities/user.entity';
+import { Profile } from 'src/profile/entities/profile.entity';
 
 @Injectable()
 export class MatchService {
   constructor(
     @InjectRepository(Match)
     private readonly _matchRepository: Repository<Match>,
+    private _dataSource: DataSource,
     @InjectMapper()
     private readonly _classMapper: Mapper,
   ) {}
@@ -39,14 +43,36 @@ export class MatchService {
     }
   }
 
-  async getMatches(userId: string): Promise<THttpResponse<FindMatchDto[]>> {
+  async getMatches(
+    userId: string,
+  ): Promise<THttpResponse<MatchedUserProfile[]>> {
     try {
-      const matches = await this._matchRepository.find({ where: { userId } });
+      const matches = await this._dataSource.manager
+        .createQueryBuilder()
+        .from(Match, 'match')
+        .select('profile')
+        .from(Profile, 'profile')
+        .where(
+          new Brackets((query) => {
+            query
+              .where('match.userId = :userId', { userId })
+              .andWhere('profile.userId = match.matchedId');
+          }),
+        )
+        .orWhere(
+          new Brackets((query) => {
+            query
+              .where('match.matchedId = :userId', { userId })
+              .andWhere('profile.userId = match.userId');
+          }),
+        )
+        .andWhere('match.status = true')
+        .getMany();
 
       const data = await this._classMapper.mapArrayAsync(
         matches,
-        Match,
-        FindMatchDto,
+        Profile,
+        MatchedUserProfile,
       );
 
       return {
@@ -54,6 +80,7 @@ export class MatchService {
         data,
       };
     } catch (err) {
+      console.log(err);
       throw new BadRequestException(HttpStatus.NOT_FOUND, 'Not Found Matches');
     }
   }
