@@ -11,6 +11,7 @@ import { CreateProfileDto } from './dto/create-profile.dto';
 import { ProfileDto } from './dto/profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Profile } from './entities/profile.entity';
+import { MatchedUserProfile } from './dto/match-user-profile.dto';
 
 @Injectable()
 export class ProfileProfile extends AutomapperProfile {
@@ -36,6 +37,7 @@ export class ProfileProfile extends AutomapperProfile {
         forMember((dest) => dest.id, ignore()),
       );
       createMap(mapper, UpdateProfileDto, Profile);
+      createMap(mapper, Profile, MatchedUserProfile);
     };
   }
 }
