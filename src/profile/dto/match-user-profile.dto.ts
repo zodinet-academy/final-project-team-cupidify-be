@@ -1,16 +1,16 @@
 import { ApiProperty } from '@nestjs/swagger';
 import { AutoMap } from '@automapper/classes';
 
-export class FindMatchDto {
-  @AutoMap()
-  @ApiProperty()
-  id: string;
-
+export class MatchedUserProfile {
   @AutoMap()
   @ApiProperty()
   userId: string;
 
   @AutoMap()
   @ApiProperty()
-  matchedId: string;
+  name: string;
+
+  @AutoMap()
+  @ApiProperty()
+  avatar: string;
 }
