@@ -1,10 +1,16 @@
 import { IsString, IsNotEmpty } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
+import { AutoMap } from '@automapper/classes';
 export class FindMatchDto {
+  @AutoMap()
+  @ApiProperty()
+  id: string;
+
+  @AutoMap()
+  @ApiProperty()
   userId: string;
 
+  @AutoMap()
   @ApiProperty()
-  @IsString()
-  @IsNotEmpty()
   matchedId: string;
 }

@@ -1,4 +1,4 @@
-import { HttpStatus, UseGuards } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
 import { NotificationDto } from './dto/notification.dto';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
 import {
@@ -11,7 +11,6 @@ import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { Server, Socket } from 'socket.io';
-import { WsGuard } from '../auth/guards/ws.guard';
 import { JwtService } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
 import { Notification } from './entities/notification.entity';
@@ -37,6 +36,8 @@ export class NotificationGateway {
       createNotificationDto,
     );
 
+    console.log('hello');
+
     this.server.emit(`noti-${notification.userFromId}`, notification);
     this.server.emit(`noti-${notification.userToId}`, notification);
 
@@ -48,7 +49,6 @@ export class NotificationGateway {
   }
 
   @SubscribeMessage('findAllNotification')
-  // @UseGuards(WsGuard)
   async findAll(socket: Socket): Promise<THttpResponse<Notification[]>> {
     let token = socket.handshake.headers.authorization;
     token = token.split(' ')[1];
