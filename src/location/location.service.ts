@@ -137,17 +137,7 @@ export class LocationService {
         (location: IUserLocation) => location.user !== userId,
       );
 
-      // Filter: Array Not Contains Block User
-      listLocationUser = await this.filterListUserNotContainBlackList(
-        userId,
-        listLocationUser,
-      );
-
-      // Filter: Array Not Contains Match User
-      listLocationUser = await this.filterListUserNotContainMatchList(
-        userId,
-        listLocationUser,
-      );
+      listLocationUser = await this.filterListUser(userId, listLocationUser);
 
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {
@@ -173,6 +163,21 @@ export class LocationService {
     } catch (err) {
       throw new BadRequestException(err.message);
     }
+  }
+
+  async filterListUser(userId: string, listLocationUser: IUserLocation[]) {
+    // Filter: Array Not Contains Block User
+    listLocationUser = await this.filterListUserNotContainBlackList(
+      userId,
+      listLocationUser,
+    );
+
+    // Filter: Array Not Contains Match User
+    listLocationUser = await this.filterListUserNotContainMatchList(
+      userId,
+      listLocationUser,
+    );
+    return listLocationUser;
   }
 
   async filterListUserNotContainBlackList(
@@ -254,29 +259,4 @@ export class LocationService {
   round10(value, exp) {
     return this.decimalAdjust('round', value, exp);
   }
-
-  // async updatetest(updateLocationDto: UpdateTest) {
-  //   try {
-  //     const location = await this._locationRepository.findOne({
-  //       where: { userId: updateLocationDto.userId },
-  //     });
-
-  //     const { long, lat } = updateLocationDto;
-
-  //     const pointObj: Point = {
-  //       type: 'Point',
-  //       coordinates: [long, lat],
-  //     };
-
-  //     const updatedLocation = Object.assign(location, {
-  //       long,
-  //       lat,
-  //       location: pointObj,
-  //     });
-  //     const response = await this._locationRepository.save(updatedLocation);
-  //     return { data: response, statusCode: HttpStatus.OK };
-  //   } catch (err) {
-  //     throw new BadRequestException(err.message);
-  //   }
-  // }
 }
