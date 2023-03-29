@@ -1,6 +1,4 @@
-import { Match } from 'src/match/entities/match.entity';
-import { ignore } from '@automapper/core';
-import { forMember } from '@automapper/core';
+import { Match } from './entities/match.entity';
 import { Injectable } from '@nestjs/common';
 import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Mapper, createMap } from '@automapper/core';
