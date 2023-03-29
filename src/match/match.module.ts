@@ -10,5 +10,6 @@ import { MatchProfile } from './match.profile';
   imports: [TypeOrmModule.forFeature([Match]), ProfileModule],
   controllers: [MatchController],
   providers: [MatchService, MatchProfile],
+  exports: [MatchService],
 })
 export class MatchModule {}

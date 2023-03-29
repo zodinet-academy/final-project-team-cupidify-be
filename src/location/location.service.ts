@@ -9,11 +9,13 @@ import { Point, Repository } from 'typeorm';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { Location } from './entities/location.entity';
 import { ProfileService } from '../profile/profile.service';
+import { BlackListService } from '../black-list/black-list.service';
 import { IUserFinded, IUserLocation } from './interface/IUserFinded';
 import { THttpResponse } from '../shared/common/http-response.dto';
-import { BlackListService } from '../black-list/black-list.service';
 import { BlackListDto } from '../black-list/dto/black-list.dto';
 import { GetUserWithinDto } from './dto/get-user-within.dto';
+import { FindMatchDto } from '../match/dto/find-match.dto';
+import { MatchService } from '../match/match.service';
 
 @Injectable()
 export class LocationService {
@@ -21,6 +23,7 @@ export class LocationService {
     @InjectRepository(Location)
     private readonly _locationRepository: Repository<Location>,
     private readonly _profileService: ProfileService,
+    private readonly _matchService: MatchService,
     private readonly _blackListService: BlackListService,
   ) {}
 
@@ -126,7 +129,6 @@ export class LocationService {
         })
         .getRawMany();
 
-      console.log('locations: ', locationUsers);
       // Filter: Array Not Contains User
       if (locationUsers.length === 1) {
         throw new HttpException('Không có người dùng nào lân cận', 201);
@@ -134,10 +136,15 @@ export class LocationService {
       let listLocationUser: IUserLocation[] = locationUsers.filter(
         (location: IUserLocation) => location.user !== userId,
       );
-      // console.log(locationUsers);
 
       // Filter: Array Not Contains Block User
       listLocationUser = await this.filterListUserNotContainBlackList(
+        userId,
+        listLocationUser,
+      );
+
+      // Filter: Array Not Contains Match User
+      listLocationUser = await this.filterListUserNotContainMatchList(
         userId,
         listLocationUser,
       );
@@ -190,6 +197,29 @@ export class LocationService {
       listUserBlockMe.forEach((userBlock) => {
         listUser.forEach((user, index) => {
           if (userBlock.userId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      return listUser;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async filterListUserNotContainMatchList(
+    idUser: string,
+    listUser: IUserLocation[],
+  ): Promise<IUserLocation[]> {
+    try {
+      const resMatchUSer: THttpResponse<FindMatchDto[]> =
+        await this._matchService.getMatches(idUser);
+
+      const listUserMatch = resMatchUSer.data;
+      listUserMatch.forEach((userMatch) => {
+        listUser.forEach((user, index) => {
+          if (userMatch.matchedId === user.user) {
             listUser.splice(index, 1);
           }
         });

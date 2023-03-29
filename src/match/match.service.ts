@@ -69,8 +69,6 @@ export class MatchService {
         .andWhere('match.status = true')
         .getMany();
 
-      console.log('Result: ', matches);
-
       const data = await this._classMapper.mapArrayAsync(
         matches,
         Profile,
