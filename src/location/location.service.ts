@@ -16,6 +16,7 @@ import { BlackListDto } from '../black-list/dto/black-list.dto';
 import { GetUserWithinDto } from './dto/get-user-within.dto';
 import { FindMatchDto } from '../match/dto/find-match.dto';
 import { MatchService } from '../match/match.service';
+import { MatchedUserProfile } from '../profile/dto/match-user-profile.dto';
 
 @Injectable()
 export class LocationService {
@@ -137,17 +138,7 @@ export class LocationService {
         (location: IUserLocation) => location.user !== userId,
       );
 
-      // Filter: Array Not Contains Block User
-      listLocationUser = await this.filterListUserNotContainBlackList(
-        userId,
-        listLocationUser,
-      );
-
-      // Filter: Array Not Contains Match User
-      listLocationUser = await this.filterListUserNotContainMatchList(
-        userId,
-        listLocationUser,
-      );
+      listLocationUser = await this.filterListUser(userId, listLocationUser);
 
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {
@@ -175,15 +166,30 @@ export class LocationService {
     }
   }
 
+  async filterListUser(userId: string, listLocationUser: IUserLocation[]) {
+    // Filter: Array Not Contains Block User
+    listLocationUser = await this.filterListUserNotContainBlackList(
+      userId,
+      listLocationUser,
+    );
+
+    // Filter: Array Not Contains Match User
+    listLocationUser = await this.filterListUserNotContainMatchList(
+      userId,
+      listLocationUser,
+    );
+    return listLocationUser;
+  }
+
   async filterListUserNotContainBlackList(
-    idUser: string,
+    userId: string,
     listUser: IUserLocation[],
   ): Promise<IUserLocation[]> {
     try {
       const resBlockUSer: THttpResponse<{
         sourceUsers: BlackListDto[];
         targetUsers: BlackListDto[];
-      }> = await this._blackListService.getBlockedUser(idUser);
+      }> = await this._blackListService.getBlockedUser(userId);
       const listUserBlock = resBlockUSer.data.sourceUsers;
       listUserBlock.forEach((userBlock) => {
         listUser.forEach((user, index) => {
@@ -209,17 +215,29 @@ export class LocationService {
   }
 
   async filterListUserNotContainMatchList(
-    idUser: string,
+    userId: string,
     listUser: IUserLocation[],
   ): Promise<IUserLocation[]> {
     try {
       const resMatchUSer: THttpResponse<FindMatchDto[]> =
-        await this._matchService.getMatches(idUser);
+        await this._matchService.getListMacthByID(userId);
+      const resMatchedUser: THttpResponse<MatchedUserProfile[]> =
+        await this._matchService.getMatches(userId);
+
+      const listUserMatched = resMatchedUser.data;
 
       const listUserMatch = resMatchUSer.data;
       listUserMatch.forEach((userMatch) => {
         listUser.forEach((user, index) => {
           if (userMatch.matchedId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      listUserMatched.forEach((userMatched) => {
+        listUser.forEach((user, index) => {
+          if (userMatched.userId === user.user) {
             listUser.splice(index, 1);
           }
         });
@@ -254,29 +272,4 @@ export class LocationService {
   round10(value, exp) {
     return this.decimalAdjust('round', value, exp);
   }
-
-  // async updatetest(updateLocationDto: UpdateTest) {
-  //   try {
-  //     const location = await this._locationRepository.findOne({
-  //       where: { userId: updateLocationDto.userId },
-  //     });
-
-  //     const { long, lat } = updateLocationDto;
-
-  //     const pointObj: Point = {
-  //       type: 'Point',
-  //       coordinates: [long, lat],
-  //     };
-
-  //     const updatedLocation = Object.assign(location, {
-  //       long,
-  //       lat,
-  //       location: pointObj,
-  //     });
-  //     const response = await this._locationRepository.save(updatedLocation);
-  //     return { data: response, statusCode: HttpStatus.OK };
-  //   } catch (err) {
-  //     throw new BadRequestException(err.message);
-  //   }
-  // }
 }

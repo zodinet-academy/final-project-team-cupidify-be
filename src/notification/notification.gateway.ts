@@ -28,9 +28,7 @@ export class NotificationGateway {
   constructor(private readonly _notificationService: NotificationService) {}
 
   @SubscribeMessage('createNotification')
-  async create(
-    @MessageBody() createNotificationDto: CreateNotificationDto,
-  ): Promise<THttpResponse<NotificationDto>> {
+  async create(@MessageBody() createNotificationDto: CreateNotificationDto) {
     const notification = await this._notificationService.create(
       createNotificationDto,
     );
@@ -46,21 +44,21 @@ export class NotificationGateway {
   }
 
   // @UseGuards(WsGuard)
-  @SubscribeMessage('findAllNotification')
-  async findAll(socket: Socket): Promise<THttpResponse<Notification[]>> {
-    let token = socket.handshake.headers.authorization;
-    console.log('jwt', socket.handshake.headers);
-    token = token.split(' ')[1];
+  // @SubscribeMessage('findAllNotification')
+  // async findAll(socket: Socket): Promise<THttpResponse<Notification[]>> {
+  //   let token = socket.handshake.headers.authorization;
+  //   console.log('jwt', socket.handshake.headers);
+  //   token = token.split(' ')[1];
 
-    const jwt = new JwtService();
-    const { id: userId } = jwt.verify(token, {
-      secret: process.env.SECRET_KEY,
-    });
+  //   const jwt = new JwtService();
+  //   const { id: userId } = jwt.verify(token, {
+  //     secret: process.env.SECRET_KEY,
+  //   });
 
-    const notification =
-      await this._notificationService.totalNotificationByUser(userId);
-    // console.log('notis:   ', notification);
+  //   const notification =
+  //     await this._notificationService.totalNotificationByUser(userId);
+  //   // console.log('notis:   ', notification);
 
-    return notification;
-  }
+  //   return notification;
+  // }
 }

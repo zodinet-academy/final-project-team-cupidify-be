@@ -64,8 +64,6 @@ export class MatchService {
         .andWhere('match.status = true')
         .getMany();
 
-      console.log('Result: ', matches);
-
       const data = await this._classMapper.mapArrayAsync(
         matches,
         Profile,
@@ -78,6 +76,27 @@ export class MatchService {
       };
     } catch (err) {
       console.log(err);
+      throw new BadRequestException(HttpStatus.NOT_FOUND, 'Not Found Matches');
+    }
+  }
+
+  async getListMacthByID(
+    userId: string,
+  ): Promise<THttpResponse<FindMatchDto[]>> {
+    try {
+      const matches = await this._matchRepository.find({ where: { userId } });
+
+      const data = await this._classMapper.mapArrayAsync(
+        matches,
+        Match,
+        FindMatchDto,
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        data,
+      };
+    } catch (err) {
       throw new BadRequestException(HttpStatus.NOT_FOUND, 'Not Found Matches');
     }
   }
