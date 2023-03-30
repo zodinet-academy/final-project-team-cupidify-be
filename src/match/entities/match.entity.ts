@@ -24,6 +24,7 @@ export class Match extends Base {
   @JoinColumn({ name: 'matched_id', referencedColumnName: 'id' })
   matched: User;
 
+  @AutoMap()
   @Column({ name: 'status' })
   status: boolean;
 }
