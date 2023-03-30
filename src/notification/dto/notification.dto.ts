@@ -25,4 +25,7 @@ export class NotificationDto {
 
   @AutoMap()
   type: NotiType;
+
+  @AutoMap()
+  createdAt: Date;
 }

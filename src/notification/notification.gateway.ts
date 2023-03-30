@@ -9,7 +9,6 @@ import {
 } from '@nestjs/websockets';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
@@ -36,8 +35,6 @@ export class NotificationGateway {
       createNotificationDto,
     );
 
-    console.log('hello');
-
     this.server.emit(`noti-${notification.userFromId}`, notification);
     this.server.emit(`noti-${notification.userToId}`, notification);
 
@@ -48,9 +45,11 @@ export class NotificationGateway {
     };
   }
 
+  // @UseGuards(WsGuard)
   @SubscribeMessage('findAllNotification')
   async findAll(socket: Socket): Promise<THttpResponse<Notification[]>> {
     let token = socket.handshake.headers.authorization;
+    console.log('jwt', socket.handshake.headers);
     token = token.split(' ')[1];
 
     const jwt = new JwtService();
@@ -63,23 +62,5 @@ export class NotificationGateway {
     // console.log('notis:   ', notification);
 
     return notification;
-  }
-
-  @SubscribeMessage('findOneNotification')
-  findOne(@MessageBody() id: number) {
-    return this._notificationService.findOne(id);
-  }
-
-  @SubscribeMessage('updateNotification')
-  update(@MessageBody() updateNotificationDto: UpdateNotificationDto) {
-    return this._notificationService.update(
-      updateNotificationDto.id,
-      updateNotificationDto,
-    );
-  }
-
-  @SubscribeMessage('removeNotification')
-  remove(@MessageBody() id: number) {
-    return this._notificationService.remove(id);
   }
 }

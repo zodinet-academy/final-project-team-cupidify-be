@@ -35,10 +35,7 @@ export class MatchController {
   @UseGuards(AuthenticationGuard)
   @Post()
   match(@User() user: UserDto, @Body() findMatchDto: FindMatchDto) {
-    console.log(user);
-
     findMatchDto.userId = user.id;
-    console.log(findMatchDto);
 
     return this._matchService.match(findMatchDto);
   }

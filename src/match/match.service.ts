@@ -13,6 +13,9 @@ import { FindMatchDto } from './dto/find-match.dto';
 import { UpdateMatchDto } from './dto/update-match.dto';
 import { Match } from './entities/match.entity';
 import { Mapper } from '@automapper/core';
+import { NotificationService } from 'src/notification/notification.service';
+import { NotiType } from 'src/shared/enums';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 
 @Injectable()
 export class MatchService {
@@ -21,6 +24,7 @@ export class MatchService {
     private readonly _matchRepository: Repository<Match>,
     @InjectMapper()
     private readonly _classMapper: Mapper,
+    private readonly _notificationGateway: NotificationGateway,
   ) {}
 
   async create(matchEntity: FindMatchDto) {
@@ -131,6 +135,12 @@ export class MatchService {
       // console.log('is created', isUserCreated);
       // If it is user matched updated status
       if (!isUserCreated) {
+        this._notificationGateway.create({
+          userFromId: matchFinded.userId,
+          userToId: matchFinded.matchedId,
+          isSeen: false,
+          type: NotiType.MATCHING,
+        });
         return this.update(matchFinded);
       }
       //Not user matched remove
