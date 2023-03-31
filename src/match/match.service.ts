@@ -1,20 +1,12 @@
 import { MatchedUserProfile } from '../profile/dto/match-user-profile.dto';
 import { InjectMapper } from '@automapper/nestjs';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
-import {
-  Injectable,
-  BadRequestException,
-  HttpStatus,
-  HttpException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Brackets, DataSource, Repository } from 'typeorm';
-import { CreateMatchDto } from './dto/create-match.dto';
 import { FindMatchDto } from './dto/find-match.dto';
-import { UpdateMatchDto } from './dto/update-match.dto';
 import { Match } from './entities/match.entity';
 import { Mapper } from '@automapper/core';
-import { User } from 'src/user/entities/user.entity';
 import { Profile } from 'src/profile/entities/profile.entity';
 
 @Injectable()
@@ -179,7 +171,7 @@ export class MatchService {
       if (!isUserCreated) {
         return this.update(matchFinded);
       }
-      //Not user matched remove
+      //No user matched remove
       return this.remove(matchFinded);
     } catch (error) {
       throw new BadRequestException(error.message);
