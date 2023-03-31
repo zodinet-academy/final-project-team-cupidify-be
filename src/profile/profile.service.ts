@@ -91,6 +91,7 @@ export class ProfileService {
       //   UpdateProfileDto,
       //   ProfileDto,
       // );
+      console.log('updating', updateProfileDto);
 
       await this._profileRepository.update({ userId }, updateProfileDto);
 
