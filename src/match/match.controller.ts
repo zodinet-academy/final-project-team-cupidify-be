@@ -24,12 +24,6 @@ import { UserDto } from '../user/dto/user.dto';
 export class MatchController {
   constructor(private readonly _matchService: MatchService) {}
 
-  // @ApiOperation({ summary: 'Create' })
-  // @Post('/create')
-  // create(@Body() matchEntity: Match) {
-  //   return this._matchService.create(matchEntity);
-  // }
-
   @ApiOperation({ summary: 'Matching' })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
@@ -40,29 +34,15 @@ export class MatchController {
     return this._matchService.match(findMatchDto);
   }
 
-  // @ApiOperation({ summary: 'Create Match' })
-  // @Post('/exist')
-  // checkExistMatch(@Body() findMatchDto: FindMatchDto) {
-  //   return this._matchService.checkIsMatch(findMatchDto);
-  // }
-
   @ApiOperation({ summary: 'Get user matches' })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
   async getAll(@User() user) {
     const { id } = user;
-    console.log(id);
+
     return await this._matchService.getMatches(id);
   }
-
-  // @ApiOperation({ summary: 'Get Match User' })
-  // @ApiBearerAuth()
-  // @UseGuards(AuthenticationGuard)
-  // @Post(@Body() findMatchDto: FindMatchDto)
-  // getMatch() {
-  //   return this.matchService.findAll();
-  // }
 
   @Delete()
   remove(@Body() match: Match) {

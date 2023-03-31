@@ -26,7 +26,6 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common/decorators';
-import { Photo } from './entities/photo.entity';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 
 @ApiTags('Photo')
@@ -47,13 +46,6 @@ export class PhotoController {
     const { id } = user;
     return this._photoService.getUserPhoto(id);
   }
-
-  // @ApiBearerAuth()
-  // @UseGuards(AuthenticationGuard)
-  // @Get('get-avatar')
-  // getAvatar(@User() user: UserDto) {
-  //   return this._photoService.getAvatar(user.id);
-  // }
 
   @ApiOkResponse({
     description: 'Get photo URLs by userId',

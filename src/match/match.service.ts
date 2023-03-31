@@ -182,7 +182,7 @@ export class MatchService {
         });
         return this.update(matchFinded);
       }
-      //Not user matched remove
+      //No user matched remove
       return this.remove(matchFinded);
     } catch (error) {
       throw new BadRequestException(error.message);
