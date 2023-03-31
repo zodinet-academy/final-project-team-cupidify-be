@@ -5,7 +5,6 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { NotificationDto } from './dto/notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { Notification } from './entities/notification.entity';
 
 @Injectable()
@@ -36,26 +35,8 @@ export class NotificationService {
       const result = await this._notificationRepository.findAndCount({
         where: { userFromId: userId, userToId: userId },
       });
-
-      console.log('Notification count: ', result);
     } catch (err) {
       throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
     }
-  }
-
-  findAll() {
-    return `This action returns all notification`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} notification`;
-  }
-
-  update(id: number, updateNotificationDto: UpdateNotificationDto) {
-    return `This action updates a #${id} notification`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} notification`;
   }
 }

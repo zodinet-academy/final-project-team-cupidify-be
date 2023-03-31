@@ -25,21 +25,12 @@ export class PhotoService {
     @InjectRepository(Photo)
     private readonly _photo: Repository<Photo>,
     private readonly _cloudinaryService: CloudinaryService,
-    private readonly _userService: UserService,
     private readonly _profileService: ProfileService,
     @InjectMapper() private readonly _classMapper: Mapper,
   ) {}
 
   async getUserPhoto(userId: string): Promise<THttpResponse<PhotoDto[]>> {
     try {
-      // const photos = await this._photo.find({
-      //   where: { userId },
-      //   order: {
-      //     isFavorite: 'DESC',
-      //     updatedAt: 'DESC',
-      //   },
-      // });
-
       const photos = await this._classMapper.mapArrayAsync(
         await this._photo.find({
           where: { userId },
@@ -84,7 +75,7 @@ export class PhotoService {
     }
   }
 
-  async storeImages(userId: string, images: ICloudinaryData[]) {
+  async storeImages(userId: string, images: ICloudinaryData[]): Promise<void> {
     try {
       for (let i = 0; i < images.length; i++) {
         await this._photo.save({
@@ -131,7 +122,7 @@ export class PhotoService {
     publicId: string,
   ): Promise<THttpResponse<void>> {
     try {
-      await this._photo.delete({ publicId });
+      await this._photo.delete({ userId, publicId });
 
       await this._cloudinaryService.updateImagesInCloudinary(publicId, file);
 
@@ -148,13 +139,13 @@ export class PhotoService {
   }
 
   async updateFavorite(
-    userId,
+    userId: string,
     updateFavoriteDto: UpdateFavoriteDto,
   ): Promise<THttpResponse<boolean>> {
     try {
       const { publicId } = updateFavoriteDto;
 
-      const photo = await this._photo.findOne({ where: { publicId } });
+      const photo = await this._photo.findOne({ where: { userId, publicId } });
 
       const updatedRes = await this._photo.update(
         {
@@ -179,7 +170,7 @@ export class PhotoService {
   }
 
   async setAvatar(
-    userId,
+    userId: string,
     setAvatarDto: SetAvatarDto,
   ): Promise<THttpResponse<void>> {
     try {
@@ -200,32 +191,4 @@ export class PhotoService {
       );
     }
   }
-
-  // async getAvatar(userId: string) {
-  //   try {
-  //     const { data: photos } = await this.getUserPhoto(userId);
-  //     // const convertDatePhotos = photosRes.data.map(
-  //     //   (photo) => (photo.createdAt = new Date(photo.createdAt)),
-  //     // );
-  //     const favoritePhoto = photos.filter((photo) => photo.isFavorite === true);
-  //     if (favoritePhoto.length === 0) {
-  //       photos.sort((a, b) => {
-  //         const c = new Date(a.createdAt);
-  //         const d = new Date(b.createdAt);
-  //         return d.getTime() - c.getTime();
-  //       });
-  //       return photos[0];
-  //     }
-
-  //     favoritePhoto.sort((a, b) => {
-  //       const c = new Date(a.updatedAt);
-  //       const d = new Date(b.updatedAt);
-  //       return d.getTime() - c.getTime();
-  //     });
-
-  //     return favoritePhoto[0];
-  //   } catch (err) {
-  //     throw new BadRequestException(HttpStatus.NOT_FOUND, 'No photos found!');
-  //   }
-  // }
 }

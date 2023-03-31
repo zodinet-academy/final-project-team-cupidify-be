@@ -9,9 +9,7 @@ import {
 } from '@nestjs/websockets';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { UpdateNotificationDto } from './dto/update-notification.dto';
 import { Server } from 'socket.io';
-import { User } from 'src/user/decorator/user.decorator';
 
 @WebSocketGateway()
 export class NotificationGateway {
@@ -39,28 +37,5 @@ export class NotificationGateway {
       message: 'Hello',
       data: notification,
     };
-  }
-
-  @SubscribeMessage('findAllNotification')
-  findAll(@User() user) {
-    return this._notificationService.totalNotificationByUser(user.id);
-  }
-
-  @SubscribeMessage('findOneNotification')
-  findOne(@MessageBody() id: number) {
-    return this._notificationService.findOne(id);
-  }
-
-  @SubscribeMessage('updateNotification')
-  update(@MessageBody() updateNotificationDto: UpdateNotificationDto) {
-    return this._notificationService.update(
-      updateNotificationDto.id,
-      updateNotificationDto,
-    );
-  }
-
-  @SubscribeMessage('removeNotification')
-  remove(@MessageBody() id: number) {
-    return this._notificationService.remove(id);
   }
 }

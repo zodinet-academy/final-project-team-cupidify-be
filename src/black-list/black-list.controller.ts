@@ -1,3 +1,4 @@
+import { UserDto } from './../user/dto/user.dto';
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { BlackListService } from './black-list.service';
 import { AddBlockedUserDto } from './dto/add-blocked-user.dto';
@@ -14,7 +15,10 @@ export class BlackListController {
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Post()
-  async addBlockedUser(@User() user, @Body() addBlockUser: AddBlockedUserDto) {
+  async addBlockedUser(
+    @User() user: UserDto,
+    @Body() addBlockUser: AddBlockedUserDto,
+  ): Promise<THttpResponse<{ id: string }>> {
     const { id } = user;
     return await this.blackListService.addBlockedUser(id, addBlockUser);
   }
@@ -23,7 +27,7 @@ export class BlackListController {
   @UseGuards(AuthenticationGuard)
   @Get()
   async getBlockedUser(
-    @User() user,
+    @User() user: UserDto,
   ): Promise<
     THttpResponse<{ sourceUsers: BlackListDto[]; targetUsers: BlackListDto[] }>
   > {
