@@ -7,6 +7,8 @@ import { Brackets, DataSource, Repository } from 'typeorm';
 import { FindMatchDto } from './dto/find-match.dto';
 import { Match } from './entities/match.entity';
 import { Mapper } from '@automapper/core';
+import { NotiType } from 'src/shared/enums';
+import { NotificationGateway } from 'src/notification/notification.gateway';
 import { Profile } from 'src/profile/entities/profile.entity';
 
 @Injectable()
@@ -17,6 +19,7 @@ export class MatchService {
     private _dataSource: DataSource,
     @InjectMapper()
     private readonly _classMapper: Mapper,
+    private readonly _notificationGateway: NotificationGateway,
   ) {}
 
   async create(matchEntity: FindMatchDto) {
@@ -166,9 +169,17 @@ export class MatchService {
         return this.create(findMatch);
       }
       const matchFinded = responseIsMatch.data;
+      // console.log('match find', matchFinded);
       const isUserCreated = matchFinded.userId === userId;
+      // console.log('is created', isUserCreated);
       // If it is user matched updated status
       if (!isUserCreated) {
+        this._notificationGateway.create({
+          userFromId: matchFinded.userId,
+          userToId: matchFinded.matchedId,
+          isSeen: false,
+          type: NotiType.MATCHING,
+        });
         return this.update(matchFinded);
       }
       //No user matched remove

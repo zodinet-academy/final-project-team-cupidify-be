@@ -14,12 +14,7 @@ export class NotificationProfile extends AutomapperProfile {
   override get profile() {
     return (mapper) => {
       createMap(mapper, Notification, NotificationDto);
-      createMap(
-        mapper,
-        CreateNotificationDto,
-        Notification,
-        forMember((dest) => dest.id, ignore()),
-      );
+      createMap(mapper, CreateNotificationDto, Notification);
     };
   }
 }

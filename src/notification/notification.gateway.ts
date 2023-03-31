@@ -9,9 +9,18 @@ import {
 } from '@nestjs/websockets';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-import { Server } from 'socket.io';
+import { Server, Socket } from 'socket.io';
+import { JwtService } from '@nestjs/jwt';
+import * as dotenv from 'dotenv';
+import { Notification } from './entities/notification.entity';
 
-@WebSocketGateway()
+dotenv.config();
+
+@WebSocketGateway({
+  cors: {
+    origin: '*',
+  },
+})
 export class NotificationGateway {
   @WebSocketServer()
   server: Server;
@@ -19,15 +28,10 @@ export class NotificationGateway {
   constructor(private readonly _notificationService: NotificationService) {}
 
   @SubscribeMessage('createNotification')
-  async create(
-    @MessageBody() createNotificationDto: CreateNotificationDto,
-  ): Promise<THttpResponse<NotificationDto>> {
-    console.log('Create notification');
+  async create(@MessageBody() createNotificationDto: CreateNotificationDto) {
     const notification = await this._notificationService.create(
       createNotificationDto,
     );
-
-    this.server.emit('testNotification', 'Hello World');
 
     this.server.emit(`noti-${notification.userFromId}`, notification);
     this.server.emit(`noti-${notification.userToId}`, notification);
@@ -38,4 +42,23 @@ export class NotificationGateway {
       data: notification,
     };
   }
+
+  // @UseGuards(WsGuard)
+  // @SubscribeMessage('findAllNotification')
+  // async findAll(socket: Socket): Promise<THttpResponse<Notification[]>> {
+  //   let token = socket.handshake.headers.authorization;
+  //   console.log('jwt', socket.handshake.headers);
+  //   token = token.split(' ')[1];
+
+  //   const jwt = new JwtService();
+  //   const { id: userId } = jwt.verify(token, {
+  //     secret: process.env.SECRET_KEY,
+  //   });
+
+  //   const notification =
+  //     await this._notificationService.totalNotificationByUser(userId);
+  //   // console.log('notis:   ', notification);
+
+  //   return notification;
+  // }
 }

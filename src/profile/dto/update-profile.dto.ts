@@ -34,7 +34,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @IsString()
   @MaxLength(255)
   @IsNotEmpty()
-  avatar?: string;
+  avatar?: string | null;
 
   @AutoMap()
   @ApiPropertyOptional({
