@@ -9,7 +9,7 @@ import { Photo } from '../../photo/entities/photo.entity';
 import { Profile } from '../../profile/entities/profile.entity';
 import { Base } from '../../shared/base.entity';
 
-@Entity({ name: 'user', synchronize: true })
+@Entity({ name: 'user', synchronize: false })
 export class User extends Base {
   @Column({ name: 'phone', unique: true })
   @MinLength(15)
