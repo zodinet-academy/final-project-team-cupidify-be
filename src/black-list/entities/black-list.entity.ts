@@ -3,7 +3,7 @@ import { Base } from '../../shared/base.entity';
 import { User } from '../../user/entities/user.entity';
 import { AutoMap } from '@automapper/classes';
 
-@Entity({ name: 'black_list', synchronize: true })
+@Entity({ name: 'black_list', synchronize: false })
 export class BlackList extends Base {
   @AutoMap()
   @Column({ name: 'user_id' })

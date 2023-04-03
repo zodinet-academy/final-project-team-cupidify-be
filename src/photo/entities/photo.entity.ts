@@ -3,7 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne } from 'typeorm';
 import { Base } from '../../shared/base.entity';
 import { User } from '../../user/entities/user.entity';
 
-@Entity({ name: 'photo', synchronize: true })
+@Entity({ name: 'photo', synchronize: false })
 export class Photo extends Base {
   @AutoMap()
   @Column({ name: 'public_id' })

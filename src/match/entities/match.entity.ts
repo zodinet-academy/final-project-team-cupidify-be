@@ -4,7 +4,7 @@ import { Base } from '../../shared/base.entity';
 import { User } from '../../user/entities/user.entity';
 import { AutoMap } from '@automapper/classes';
 
-@Entity({ name: 'match', synchronize: true })
+@Entity({ name: 'match', synchronize: false })
 export class Match extends Base {
   @AutoMap()
   @ApiProperty()

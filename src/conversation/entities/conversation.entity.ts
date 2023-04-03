@@ -4,7 +4,7 @@ import { Message } from '../../message/entities/message.entity';
 import { Base } from '../../shared/base.entity';
 import { User } from '../../user/entities/user.entity';
 
-@Entity({ name: 'conversation', synchronize: true })
+@Entity({ name: 'conversation', synchronize: false })
 export class Conversation extends Base {
   @Column({ name: 'from_id' })
   userFromId: string;
