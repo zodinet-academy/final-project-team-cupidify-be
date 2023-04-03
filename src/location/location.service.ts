@@ -9,7 +9,14 @@ import { Point, Repository } from 'typeorm';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { Location } from './entities/location.entity';
 import { ProfileService } from '../profile/profile.service';
+import { BlackListService } from '../black-list/black-list.service';
 import { IUserFinded, IUserLocation } from './interface/IUserFinded';
+import { THttpResponse } from '../shared/common/http-response.dto';
+import { BlackListDto } from '../black-list/dto/black-list.dto';
+import { GetUserWithinDto } from './dto/get-user-within.dto';
+import { FindMatchDto } from '../match/dto/find-match.dto';
+import { MatchService } from '../match/match.service';
+import { MatchedUserProfile } from '../profile/dto/match-user-profile.dto';
 
 @Injectable()
 export class LocationService {
@@ -17,9 +24,11 @@ export class LocationService {
     @InjectRepository(Location)
     private readonly _locationRepository: Repository<Location>,
     private readonly _profileService: ProfileService,
+    private readonly _matchService: MatchService,
+    private readonly _blackListService: BlackListService,
   ) {}
 
-  async create(createLocationDto: Location) {
+  async create(createLocationDto: Location): Promise<THttpResponse<Location>> {
     try {
       const userExist = await this._locationRepository.findOne({
         where: { userId: createLocationDto.userId },
@@ -44,13 +53,20 @@ export class LocationService {
 
       const location = await this._locationRepository.save(createdLocation);
 
-      return { data: location, statusCode: HttpStatus.CREATED };
+      return {
+        data: location,
+        statusCode: HttpStatus.CREATED,
+        message: 'create success!',
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
   }
 
-  async update(userId: string, updateLocationDto: UpdateLocationDto) {
+  async update(
+    userId: string,
+    updateLocationDto: UpdateLocationDto,
+  ): Promise<THttpResponse<Location>> {
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -68,8 +84,13 @@ export class LocationService {
         lat,
         location: pointObj,
       });
+      await this._locationRepository.save(updatedLocation);
 
-      return { data: updatedLocation, statusCode: HttpStatus.OK };
+      return {
+        data: updatedLocation,
+        statusCode: HttpStatus.OK,
+        message: 'update success',
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
     }
@@ -77,7 +98,9 @@ export class LocationService {
 
   async findUsersWithin(
     userId: string,
-  ): Promise<{ data: IUserFinded[]; statusCode: number }> {
+    getUserWithinDto: GetUserWithinDto,
+  ): Promise<THttpResponse<IUserFinded[]>> {
+    const { range } = getUserWithinDto;
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -92,6 +115,8 @@ export class LocationService {
         .createQueryBuilder('location')
         .select([
           'location.user_id AS user',
+          'location.long AS long',
+          'location.lat AS lat',
           'ST_Distance(location, ST_SetSRID(ST_GeomFromGeoJSON(:origin), ST_SRID(location)))/1000 AS distance',
         ])
         .where(
@@ -101,7 +126,7 @@ export class LocationService {
         .setParameters({
           // stringify GeoJSON
           origin: JSON.stringify(origin),
-          range: 0.4 * 1000, //KM conversion
+          range: range, //KM conversion
         })
         .getRawMany();
 
@@ -109,23 +134,118 @@ export class LocationService {
       if (locationUsers.length === 1) {
         throw new HttpException('Không có người dùng nào lân cận', 201);
       }
-      const listLocationUser = locationUsers.filter(
+      let listLocationUser: IUserLocation[] = locationUsers.filter(
         (location: IUserLocation) => location.user !== userId,
       );
+
+      listLocationUser = await this.filterListUser(userId, listLocationUser);
+
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {
         const response = await this._profileService.findOneByUserId(
           listLocationUser[i].user,
         );
+
         const userFinded: IUserFinded = {
           user: response.data,
-          distance: this.round10(listLocationUser[i].distance, -1),
+          distance: this.round10(listLocationUser[i].distance, -1) * 1000,
+          long: listLocationUser[i].long,
+          lat: listLocationUser[i].lat,
         };
+
         listUserFinded.push(userFinded);
       }
-      return { data: listUserFinded, statusCode: HttpStatus.OK };
+
+      return {
+        data: listUserFinded,
+        statusCode: HttpStatus.OK,
+        message: 'success',
+      };
     } catch (err) {
       throw new BadRequestException(err.message);
+    }
+  }
+
+  async filterListUser(userId: string, listLocationUser: IUserLocation[]) {
+    // Filter: Array Not Contains Block User
+    listLocationUser = await this.filterListUserNotContainBlackList(
+      userId,
+      listLocationUser,
+    );
+
+    // Filter: Array Not Contains Match User
+    listLocationUser = await this.filterListUserNotContainMatchList(
+      userId,
+      listLocationUser,
+    );
+    return listLocationUser;
+  }
+
+  async filterListUserNotContainBlackList(
+    userId: string,
+    listUser: IUserLocation[],
+  ): Promise<IUserLocation[]> {
+    try {
+      const resBlockUSer: THttpResponse<{
+        sourceUsers: BlackListDto[];
+        targetUsers: BlackListDto[];
+      }> = await this._blackListService.getBlockedUser(userId);
+      const listUserBlock = resBlockUSer.data.sourceUsers;
+      listUserBlock.forEach((userBlock) => {
+        listUser.forEach((user, index) => {
+          if (userBlock.blockedId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      const listUserBlockMe = resBlockUSer.data.targetUsers;
+      listUserBlockMe.forEach((userBlock) => {
+        listUser.forEach((user, index) => {
+          if (userBlock.userId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      return listUser;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async filterListUserNotContainMatchList(
+    userId: string,
+    listUser: IUserLocation[],
+  ): Promise<IUserLocation[]> {
+    try {
+      const resMatchUSer: THttpResponse<FindMatchDto[]> =
+        await this._matchService.getListMacthByID(userId);
+      const resMatchedUser: THttpResponse<MatchedUserProfile[]> =
+        await this._matchService.getMatches(userId);
+
+      const listUserMatched = resMatchedUser.data;
+
+      const listUserMatch = resMatchUSer.data;
+      listUserMatch.forEach((userMatch) => {
+        listUser.forEach((user, index) => {
+          if (userMatch.matchedId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      listUserMatched.forEach((userMatched) => {
+        listUser.forEach((user, index) => {
+          if (userMatched.userId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      return listUser;
+    } catch (error) {
+      throw new BadRequestException(error.message);
     }
   }
 

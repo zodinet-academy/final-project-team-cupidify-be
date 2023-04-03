@@ -1,55 +1,19 @@
+import { AutoMap } from '@automapper/classes';
 import { PartialType } from '@nestjs/mapped-types';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import {
   IsBoolean,
-  IsDateString,
   IsEnum,
   IsNotEmpty,
   IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
-import { Education, Gender, Reason, Religion } from 'src/shared/enums';
+import { Education, Religion } from 'src/shared/enums';
 import { CreateProfileDto } from './create-profile.dto';
 
 export class UpdateProfileDto extends PartialType(CreateProfileDto) {
-  @ApiPropertyOptional({
-    default: 'Jonas Schmedtmann',
-    type: String,
-  })
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  @IsOptional()
-  @IsString()
-  @IsNotEmpty()
-  @MaxLength(255)
-  name: string;
-
-  @ApiPropertyOptional({
-    default: Gender.MALE,
-    type: String,
-  })
-  @IsOptional()
-  @IsEnum(Gender)
-  gender: Gender;
-
-  @ApiPropertyOptional({
-    default: Reason.DATE,
-    type: String,
-  })
-  @IsOptional()
-  @IsEnum(Reason)
-  reason: Reason;
-
-  @ApiPropertyOptional({
-    default: '2001-11-16',
-    type: String,
-  })
-  @IsOptional()
-  @IsDateString()
-  birthday: string;
-
+  @AutoMap()
   @ApiPropertyOptional({
     default: 'Anh đẹp trai nhưng chưa có ngừi eo',
     type: String,
@@ -60,6 +24,19 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @IsNotEmpty()
   description?: string;
 
+  @AutoMap()
+  @ApiPropertyOptional({
+    default:
+      'http://res.cloudinary.com/dtra2soty/image/upload/v1679476089/ycmo2vjymmt9oo5gmao5.png',
+    type: String,
+  })
+  @IsOptional()
+  @IsString()
+  @MaxLength(255)
+  @IsNotEmpty()
+  avatar?: string | null;
+
+  @AutoMap()
   @ApiPropertyOptional({
     default: 180,
     type: Number,
@@ -68,6 +45,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @IsNotEmpty()
   height?: number;
 
+  @AutoMap()
   @ApiPropertyOptional({
     default: Religion.CHRISTIAN,
     type: String,
@@ -76,6 +54,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @IsEnum(Religion)
   religion?: Religion;
 
+  @AutoMap()
   @ApiPropertyOptional({
     default: true,
     type: Boolean,
@@ -84,6 +63,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @IsBoolean()
   drinking?: boolean;
 
+  @AutoMap()
   @ApiPropertyOptional({
     default: Education.HIGH_SCHOOL,
     type: String,
@@ -92,6 +72,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @IsEnum(Education)
   education?: Education;
 
+  @AutoMap()
   @ApiPropertyOptional({
     default: false,
     type: Boolean,
@@ -100,6 +81,7 @@ export class UpdateProfileDto extends PartialType(CreateProfileDto) {
   @IsBoolean()
   haveChildren?: boolean;
 
+  @AutoMap()
   @ApiPropertyOptional({
     default: [],
     type: Array,

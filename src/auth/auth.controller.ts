@@ -15,6 +15,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { GoogleTokenDto } from './dto/gg-token.dto';
 import { Request } from 'express';
 import { ApiCreatedResponse, ApiTags } from '@nestjs/swagger';
+import { LogInNOTPDto } from './dto/log-in-notp.dto';
 
 @ApiTags('Authentication')
 @Controller('auth')
@@ -50,6 +51,14 @@ export class AuthController {
   @Post('login')
   login(@Body() logInDto: LogInDto) {
     return this._authService.login(logInDto);
+  }
+
+  @ApiCreatedResponse({
+    description: 'Log in not-otp',
+  })
+  @Post('login-otp')
+  loginNotOTP(@Body() logInDto: LogInNOTPDto) {
+    return this._authService.loginNotOTP(logInDto.phone);
   }
 
   @ApiCreatedResponse({

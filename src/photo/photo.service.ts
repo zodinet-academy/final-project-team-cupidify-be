@@ -1,4 +1,3 @@
-import { UserDto } from './../user/dto/user.dto';
 import { THttpResponse } from './../shared/common/http-response.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CloudinaryService } from './../cloudinary/cloudinary.service';
@@ -12,8 +11,13 @@ import {
 import { Photo } from './entities/photo.entity';
 import { Repository } from 'typeorm';
 import { ICloudinaryData } from '../shared/interfaces/cloudinary.interface';
-import { PhotoDto } from './dto/photo.dto';
 import { UserService } from 'src/user/user.service';
+import { UpdateFavoriteDto } from './dto/update-favorite.dto';
+import { SetAvatarDto } from './dto/set-avatar.dto';
+import { ProfileService } from 'src/profile/profile.service';
+import { InjectMapper } from '@automapper/nestjs';
+import { Mapper } from '@automapper/core';
+import { PhotoDto } from './dto/photo.dto';
 
 @Injectable()
 export class PhotoService {
@@ -21,27 +25,30 @@ export class PhotoService {
     @InjectRepository(Photo)
     private readonly _photo: Repository<Photo>,
     private readonly _cloudinaryService: CloudinaryService,
-    private readonly _userService: UserService,
+    private readonly _profileService: ProfileService,
+    @InjectMapper() private readonly _classMapper: Mapper,
   ) {}
 
-  async getUserPhoto(
-    userId: string,
-  ): Promise<THttpResponse<PhotoDto | PhotoDto[]>> {
+  async getUserPhoto(userId: string): Promise<THttpResponse<PhotoDto[]>> {
     try {
-      const checkUserExist = await this._userService.isUserExist(userId);
-
-      if (!checkUserExist) {
-        throw new BadRequestException(HttpStatus.NOT_FOUND, 'User Not Found');
-      }
-
-      const result = await this._photo.find({ where: { userId } });
+      const photos = await this._classMapper.mapArrayAsync(
+        await this._photo.find({
+          where: { userId },
+          order: {
+            isFavorite: 'DESC',
+            updatedAt: 'DESC',
+          },
+        }),
+        Photo,
+        PhotoDto,
+      );
 
       return {
         statusCode: HttpStatus.OK,
-        data: result,
+        data: photos,
       };
     } catch (err) {
-      throw new BadRequestException(HttpStatus.NOT_FOUND, 'User Not Found');
+      throw new BadRequestException(HttpStatus.NOT_FOUND, 'Photo not found!');
     }
   }
 
@@ -68,7 +75,7 @@ export class PhotoService {
     }
   }
 
-  async storeImages(userId: string, images: ICloudinaryData[]) {
+  async storeImages(userId: string, images: ICloudinaryData[]): Promise<void> {
     try {
       for (let i = 0; i < images.length; i++) {
         await this._photo.save({
@@ -115,7 +122,7 @@ export class PhotoService {
     publicId: string,
   ): Promise<THttpResponse<void>> {
     try {
-      await this._photo.delete({ publicId });
+      await this._photo.delete({ userId, publicId });
 
       await this._cloudinaryService.updateImagesInCloudinary(publicId, file);
 
@@ -131,26 +138,56 @@ export class PhotoService {
     }
   }
 
-  async updateFavorite(userId, publicId): Promise<THttpResponse<void>> {
+  async updateFavorite(
+    userId: string,
+    updateFavoriteDto: UpdateFavoriteDto,
+  ): Promise<THttpResponse<boolean>> {
     try {
-      await this._photo.update(
+      const { publicId } = updateFavoriteDto;
+
+      const photo = await this._photo.findOne({ where: { userId, publicId } });
+
+      const updatedRes = await this._photo.update(
         {
-          isFavorite: true,
+          publicId,
         },
         {
-          userId,
-          publicId,
+          isFavorite: !photo.isFavorite,
         },
       );
 
       return {
         statusCode: HttpStatus.NO_CONTENT,
         message: 'Updated favorite',
+        data: updatedRes.affected !== 0 ? true : false,
       };
     } catch (err) {
       throw new BadRequestException(
         HttpStatus.BAD_REQUEST,
         'Update favorite failed',
+      );
+    }
+  }
+
+  async setAvatar(
+    userId: string,
+    setAvatarDto: SetAvatarDto,
+  ): Promise<THttpResponse<void>> {
+    try {
+      const { publicId } = setAvatarDto;
+
+      const photo = await this._photo.findOne({ where: { publicId } });
+
+      await this._profileService.update(userId, { avatar: photo.photoUrl });
+
+      return {
+        statusCode: HttpStatus.NO_CONTENT,
+        message: 'Set avatar succesfully',
+      };
+    } catch (err) {
+      throw new BadRequestException(
+        HttpStatus.BAD_REQUEST,
+        'Set avatar failed!',
       );
     }
   }

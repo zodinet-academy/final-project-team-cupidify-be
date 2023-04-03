@@ -4,7 +4,7 @@ import { AppService } from './app.service';
 import { UserModule } from './user/user.module';
 import { ProfileModule } from './profile/profile.module';
 
-import { NotificationModule } from './notification/notification.module';
+// import { NotificationModule } from './notification/notification.module';
 
 import { ConversationModule } from './conversation/conversation.module';
 import { MessageModule } from './message/message.module';
@@ -27,6 +27,9 @@ import { Message } from './message/entities/message.entity';
 import { BlackList } from './black-list/entities/black-list.entity';
 import { Photo } from './photo/entities/photo.entity';
 import { CloudinaryModule } from './cloudinary/cloudinary.module';
+import { AutomapperModule } from '@automapper/nestjs';
+import { classes } from '@automapper/classes';
+import { NotificationModule } from './notification/notification.module';
 config();
 
 const entities = [
@@ -56,6 +59,9 @@ const entities = [
         // entities: ['src/**/entities/*.entity{.ts,.js}'],
         // autoLoadEntities: true,
       }),
+    }),
+    AutomapperModule.forRoot({
+      strategyInitializer: classes(),
     }),
     UserModule,
     ProfileModule,

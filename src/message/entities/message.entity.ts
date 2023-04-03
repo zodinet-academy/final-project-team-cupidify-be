@@ -6,7 +6,7 @@ import { ManyToOne } from 'typeorm/decorator/relations/ManyToOne';
 import { Conversation } from '../../conversation/entities/conversation.entity';
 import { Base } from '../../shared/base.entity';
 
-@Entity({ name: 'message', synchronize: true })
+@Entity({ name: 'message', synchronize: false })
 export class Message extends Base {
   @Column({ name: 'conversation_id' })
   conversationId: string;

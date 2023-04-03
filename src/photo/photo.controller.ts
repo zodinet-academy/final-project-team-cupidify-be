@@ -21,9 +21,14 @@ import { User } from '../user/decorator/user.decorator';
 import { UserDto } from '../user/dto/user.dto';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
-import { UploadedFiles, UseInterceptors } from '@nestjs/common/decorators';
+import {
+  Body,
+  UploadedFiles,
+  UseInterceptors,
+} from '@nestjs/common/decorators';
+import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 
-@ApiTags('photo')
+@ApiTags('Photo')
 @Controller('photo')
 export class PhotoController {
   constructor(private readonly _photoService: PhotoService) {}
@@ -37,7 +42,7 @@ export class PhotoController {
   @Get()
   async getUserPhoto(
     @User() user: UserDto,
-  ): Promise<THttpResponse<PhotoDto | PhotoDto[]>> {
+  ): Promise<THttpResponse<PhotoDto[]>> {
     const { id } = user;
     return this._photoService.getUserPhoto(id);
   }
@@ -86,6 +91,34 @@ export class PhotoController {
   }
 
   @ApiNoContentResponse({
+    description: 'Updated favorite',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Put('favorite')
+  async updateFavorite(
+    @User() user: UserDto,
+    @Body() updateFavoriteDto: UpdateFavoriteDto,
+  ): Promise<THttpResponse<boolean>> {
+    const { id } = user;
+    return this._photoService.updateFavorite(id, updateFavoriteDto);
+  }
+
+  @ApiNoContentResponse({
+    description: 'Set avatar succesfully!',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Put('set-avatar')
+  async setAvatar(
+    @User() user: UserDto,
+    @Body() updateFavoriteDto: UpdateFavoriteDto,
+  ): Promise<THttpResponse<void>> {
+    const { id } = user;
+    return this._photoService.setAvatar(id, updateFavoriteDto);
+  }
+
+  @ApiNoContentResponse({
     description: 'Updated',
   })
   @ApiBearerAuth()
@@ -100,19 +133,5 @@ export class PhotoController {
     const { id } = user;
     console.log(file);
     return this._photoService.updateImage(file, id, publicId);
-  }
-
-  @ApiNoContentResponse({
-    description: 'Updated favorite',
-  })
-  @ApiBearerAuth()
-  @UseGuards(AuthenticationGuard)
-  @Put('favorite')
-  async updateFavorite(
-    @User() user: UserDto,
-    @Param('id') publicId: string,
-  ): Promise<THttpResponse<void>> {
-    const { id } = user;
-    return this._photoService.updateFavorite(id, publicId);
   }
 }
