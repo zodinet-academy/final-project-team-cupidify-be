@@ -43,6 +43,11 @@ export class NotificationGateway {
     };
   }
 
+  @SubscribeMessage('test')
+  test(client: Socket) {
+    this.server.to(client.id).emit('test', 'hello');
+  }
+
   // @UseGuards(WsGuard)
   // @SubscribeMessage('findAllNotification')
   // async findAll(socket: Socket): Promise<THttpResponse<Notification[]>> {

@@ -1,26 +1,41 @@
-import { Injectable } from '@nestjs/common';
+import { Mapper } from '@automapper/core';
+import { InjectMapper } from '@automapper/nestjs';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { THttpResponse } from 'src/shared/common/http-response.dto';
+import { Repository } from 'typeorm';
+import { ConversationDto } from './dto/conversation.dto';
 import { CreateConversationDto } from './dto/create-conversation.dto';
-import { UpdateConversationDto } from './dto/update-conversation.dto';
+import { Conversation } from './entities/conversation.entity';
 
 @Injectable()
 export class ConversationService {
-  create(createConversationDto: CreateConversationDto) {
-    return 'This action adds a new conversation';
-  }
+  constructor(
+    @InjectRepository(Conversation)
+    private readonly _conversationRepository: Repository<Conversation>,
+    @InjectMapper() private readonly _classMapper: Mapper,
+  ) {}
 
-  findAll() {
-    return `This action returns all conversation`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} conversation`;
-  }
-
-  update(id: number, updateConversationDto: UpdateConversationDto) {
-    return `This action updates a #${id} conversation`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} conversation`;
+  async create(
+    createConversationDto: CreateConversationDto,
+  ): Promise<THttpResponse<ConversationDto>> {
+    try {
+      const toSaveConversation = this._classMapper.map(
+        createConversationDto,
+        CreateConversationDto,
+        Conversation,
+      );
+      const conversation = await this._classMapper.mapAsync(
+        await this._conversationRepository.save(toSaveConversation),
+        Conversation,
+        ConversationDto,
+      );
+      return {
+        statusCode: HttpStatus.CREATED,
+        data: conversation,
+      };
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
   }
 }
