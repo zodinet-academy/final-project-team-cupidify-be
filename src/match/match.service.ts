@@ -51,17 +51,18 @@ export class MatchService {
           new Brackets((query) => {
             query
               .where('match.userId = :userId', { userId })
-              .andWhere('profile.userId = match.matchedId');
+              .andWhere('profile.userId = match.matchedId')
+              .andWhere('match.status = true');
           }),
         )
         .orWhere(
           new Brackets((query) => {
             query
               .where('match.matchedId = :userId', { userId })
-              .andWhere('profile.userId = match.userId');
+              .andWhere('profile.userId = match.userId')
+              .andWhere('match.status = true');
           }),
         )
-        .andWhere('match.status = true')
         .getMany();
 
       const data = await this._classMapper.mapArrayAsync(

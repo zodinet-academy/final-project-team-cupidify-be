@@ -1,8 +1,6 @@
-import { join } from 'path';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { BadGatewayException, HttpStatus, UseGuards } from '@nestjs/common';
 import {
-  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -20,7 +18,12 @@ import { UserDto } from '../user/dto/user.dto';
 
 dotenv.config();
 
-@WebSocketGateway()
+interface IOnlineUser {
+  socketId: string;
+  userId: string;
+}
+
+@WebSocketGateway({ path: '/chat' })
 export class MessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -29,7 +32,7 @@ export class MessageGateway
     private readonly _jwtService: JwtService,
   ) {}
 
-  private _online: any = [];
+  private _onlineUser: IOnlineUser[] = [];
 
   @WebSocketServer() server;
   handleConnection(socket: Socket): void {
@@ -38,6 +41,7 @@ export class MessageGateway
     console.log(`New connecting socket id:`, socketId);
 
     const token: any = socket.handshake.query['token'];
+
     if (!token) {
       throw new BadGatewayException(
         HttpStatus.UNAUTHORIZED,
@@ -52,12 +56,12 @@ export class MessageGateway
       throw new BadGatewayException(HttpStatus.UNAUTHORIZED, 'Invalid Token');
     }
 
-    const socketUser = {
+    const onlineUser = {
       socketId,
       userId: user.id,
     };
 
-    this._online.push(socketUser);
+    this._onlineUser.push(onlineUser);
   }
 
   handleDisconnect(socket: Socket): void {
@@ -65,20 +69,24 @@ export class MessageGateway
 
     console.log(`Disconnection socket id:`, socketId);
 
-    this._online = this._online.filter((i) => i.socketId !== socket.id);
+    this._onlineUser = this._onlineUser.filter((i) => i.socketId !== socket.id);
   }
 
   @UseGuards(GatewayGuard)
   @SubscribeMessage('send-message')
   async sendMessage(@MessageBody() message: CreateMessageDto) {
     try {
-      const socketIdReceiverId = this._online.find(
+      const result = await this._messageService.create(message);
+
+      const socketIdReceiverId = this._onlineUser.find(
         (i) => i.userId === message.receiverId,
       );
 
-      this.server.to(socketIdReceiverId.socketId).emit(`message`, message);
+      if (!socketIdReceiverId) {
+        return;
+      }
 
-      const result = await this._messageService.create(message);
+      this.server.to(socketIdReceiverId.socketId).emit(`message`, message);
     } catch (err) {
       throw new BadGatewayException(
         HttpStatus.BAD_GATEWAY,
