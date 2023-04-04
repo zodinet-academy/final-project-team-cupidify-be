@@ -1,5 +1,9 @@
+import { join } from 'path';
+import { CreateMessageDto } from './dto/create-message.dto';
 import { BadGatewayException, HttpStatus, UseGuards } from '@nestjs/common';
 import {
+  ConnectedSocket,
+  MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
   SubscribeMessage,
@@ -11,6 +15,8 @@ import { JwtService } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
 import { SocketUser } from '../user/decorator/user.decorator';
 import { GatewayGuard } from '../auth/guards/gateway.guard';
+import { MessageService } from './message.service';
+import { UserDto } from '../user/dto/user.dto';
 
 dotenv.config();
 
@@ -18,7 +24,12 @@ dotenv.config();
 export class MessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly _messageService: MessageService,
+    private readonly _jwtService: JwtService,
+  ) {}
+
+  private _online: any = [];
 
   @WebSocketServer() server;
   handleConnection(socket: Socket): void {
@@ -33,96 +44,46 @@ export class MessageGateway
         'No Token Provided',
       );
     }
-    const user = this.jwtService.verify(token, {
+    const user = this._jwtService.verify(token, {
       secret: process.env.SECRET_KEY,
     });
 
     if (!user) {
       throw new BadGatewayException(HttpStatus.UNAUTHORIZED, 'Invalid Token');
     }
+
+    const socketUser = {
+      socketId,
+      userId: user.id,
+    };
+
+    this._online.push(socketUser);
   }
 
   handleDisconnect(socket: Socket): void {
     const socketId = socket.id;
+
     console.log(`Disconnection socket id:`, socketId);
+
+    this._online = this._online.filter((i) => i.socketId !== socket.id);
   }
 
   @UseGuards(GatewayGuard)
-  @SubscribeMessage('current-user')
-  async currentUser(@SocketUser() user) {
-    console.log('User: ', user);
+  @SubscribeMessage('send-message')
+  async sendMessage(@MessageBody() message: CreateMessageDto) {
+    try {
+      const socketIdReceiverId = this._online.find(
+        (i) => i.userId === message.receiverId,
+      );
+
+      this.server.to(socketIdReceiverId.socketId).emit(`message`, message);
+
+      const result = await this._messageService.create(message);
+    } catch (err) {
+      throw new BadGatewayException(
+        HttpStatus.BAD_GATEWAY,
+        'Unable to send message',
+      );
+    }
   }
-
-  // @SubscribeMessage('participants')
-  // async onParticipate(socket: Socket, participant: Participant) {
-  //   const socketId = socket.id;
-  //   console.log(
-  //     `Registering new participant... socket id: %s and participant: `,
-  //     socketId,
-  //     participant,
-  //   );
-
-  //   const roomId = participant.roomId;
-  //   if (!ChatWebsocketGateway.rooms.has(roomId)) {
-  //     console.error(
-  //       'Room with id: %s was not found, disconnecting the participant',
-  //       roomId,
-  //     );
-  //     socket.disconnect();
-  //     throw new ForbiddenException('The access is forbidden');
-  //   }
-
-  //   const room = ChatWebsocketGateway.rooms.get(roomId);
-  //   ChatWebsocketGateway.participants.set(socketId, roomId);
-  //   participant.connected = true;
-  //   room.participants.set(socketId, participant);
-  //   // when received new participant we notify the chatter by room
-  //   this.server.emit(
-  //     `participants/${roomId}`,
-  //     Array.from(room.participants.values()),
-  //   );
-  // }
-
-  // @SubscribeMessage('exchanges')
-  // async onMessage(socket: Socket, message: ChatDto) {
-  //   const socketId = socket.id;
-  //   message.socketId = socketId;
-  //   console.log(
-  //     'Received new message... socketId: %s, message: ',
-  //     socketId,
-  //     message,
-  //   );
-  //   const roomId = message.roomId;
-  //   const roomData = ChatWebsocketGateway.rooms.get(roomId);
-  //   message.order = roomData.messages.length + 1;
-  //   roomData.messages.push(message);
-  //   ChatWebsocketGateway.rooms.set(roomId, roomData);
-  //   // when received message we notify the chatter by room
-  //   this.server.emit(roomId, toMessageDto(message));
-  // }
-
-  // static get(roomId: string): RoomData {
-  //   return this.rooms.get(roomId);
-  // }
-
-  // static createRoom(roomDto: RoomDto): void {
-  //   const roomId = roomDto.roomId;
-  //   if (this.rooms.has(roomId)) {
-  //     throw new ConflictException({
-  //       code: 'room.conflict',
-  //       message: `Room with '${roomId}' already exists`,
-  //     });
-  //   }
-  //   this.rooms.set(roomId, new RoomData(roomDto.creatorUsername));
-  // }
-
-  // static close(roomId: string) {
-  //   if (!this.rooms.has(roomId)) {
-  //     throw new NotFoundException({
-  //       code: 'room.not-fond',
-  //       message: `Room with '${roomId}' not found`,
-  //     });
-  //   }
-  //   this.rooms.delete(roomId);
-  // }
 }
