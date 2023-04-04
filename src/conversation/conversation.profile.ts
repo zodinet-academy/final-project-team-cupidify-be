@@ -32,7 +32,7 @@ export class ConversationProfile extends AutomapperProfile {
         mapper,
         CreateConversationDto,
         Conversation,
-        forMember((dest) => dest.id, ignore()),
+        // forMember((dest) => dest.id, ignore()),
       );
     };
   }

@@ -10,6 +10,7 @@ import { Mapper } from '@automapper/core';
 import { NotiType } from 'src/shared/enums';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 import { Profile } from 'src/profile/entities/profile.entity';
+import { CreateMatchDto } from './dto/create-match.dto';
 
 @Injectable()
 export class MatchService {
@@ -45,7 +46,7 @@ export class MatchService {
       const matches = await this._dataSource.manager
         .createQueryBuilder()
         .from(Match, 'match')
-        .select('profile')
+        .select('profile', 'match')
         .from(Profile, 'profile')
         .where(
           new Brackets((query) => {
@@ -101,10 +102,6 @@ export class MatchService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} match`;
-  }
-
   async update(match: Match) {
     try {
       const matchUpdate: Match = { ...match, status: !match.status };
@@ -114,6 +111,24 @@ export class MatchService {
         data: response,
         statusCode: HttpStatus.OK,
         message: 'matching!',
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async updateIsChat(findMatch: CreateMatchDto) {
+    try {
+      const responseIsMatch = await this.checkIsMatch(findMatch);
+      const matchFinded = responseIsMatch.data;
+
+      const matchUpdate: Match = { ...matchFinded, isChat: true };
+
+      const response = await this._matchRepository.save(matchUpdate);
+      return {
+        data: response,
+        statusCode: HttpStatus.OK,
+        message: 'Update success',
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -134,7 +149,7 @@ export class MatchService {
     }
   }
 
-  async checkIsMatch(findMatchDto: FindMatchDto) {
+  async checkIsMatch(findMatchDto: CreateMatchDto) {
     const { userId, matchedId } = findMatchDto;
     try {
       const response = await this._matchRepository.findOne({
@@ -169,9 +184,8 @@ export class MatchService {
         return this.create(findMatch);
       }
       const matchFinded = responseIsMatch.data;
-      // console.log('match find', matchFinded);
       const isUserCreated = matchFinded.userId === userId;
-      // console.log('is created', isUserCreated);
+
       // If it is user matched updated status
       if (!isUserCreated) {
         this._notificationGateway.create({

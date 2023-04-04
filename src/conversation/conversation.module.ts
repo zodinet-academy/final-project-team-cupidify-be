@@ -4,9 +4,10 @@ import { ConversationService } from './conversation.service';
 import { ConversationController } from './conversation.controller';
 import { ConversationProfile } from './conversation.profile';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { MatchModule } from '../match/match.module';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Conversation])],
+  imports: [TypeOrmModule.forFeature([Conversation]), MatchModule],
   controllers: [ConversationController],
   providers: [ConversationService, ConversationProfile],
 })

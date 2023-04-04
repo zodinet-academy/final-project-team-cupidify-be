@@ -24,8 +24,6 @@ export class MessageGateway
   handleConnection(socket: Socket): void {
     const socketId = socket.id;
 
-    console.log(`New connecting socket id:`, socketId);
-
     const token: any = socket.handshake.query['token'];
     if (!token) {
       throw new BadGatewayException(
