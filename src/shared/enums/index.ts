@@ -25,3 +25,8 @@ export enum Reason {
   CHAT = 'CHAT',
   FRIEND = 'FRIEND',
 }
+
+export enum MessageType {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
+}

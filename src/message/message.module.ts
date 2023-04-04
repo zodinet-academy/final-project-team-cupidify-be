@@ -2,14 +2,15 @@ import { Message } from './entities/message.entity';
 import { Module } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { MessageController } from './message.controller';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConversationModule } from 'src/conversation/conversation.module';
 import { MessageGateway } from './message.gateway';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { MessageProfile } from './message.profile';
+import { CloudinaryModule } from 'src/cloudinary/cloudinary.module';
 import { JwtModule } from '@nestjs/jwt';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Message]), ConversationModule, JwtModule],
+  imports: [TypeOrmModule.forFeature([Message]), CloudinaryModule, JwtModule],
   controllers: [MessageController],
-  providers: [MessageService, MessageGateway],
+  providers: [MessageService, MessageGateway, MessageProfile],
 })
 export class MessageModule {}

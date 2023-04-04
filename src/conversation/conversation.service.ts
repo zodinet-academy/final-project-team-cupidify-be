@@ -1,29 +1,41 @@
-import { Injectable, BadRequestException, HttpStatus } from '@nestjs/common';
-import { Conversation } from './entities/conversation.entity';
+import { Mapper } from '@automapper/core';
+import { InjectMapper } from '@automapper/nestjs';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
+import { Repository } from 'typeorm';
+import { ConversationDto } from './dto/conversation.dto';
+import { CreateConversationDto } from './dto/create-conversation.dto';
+import { Conversation } from './entities/conversation.entity';
 
 @Injectable()
 export class ConversationService {
   constructor(
     @InjectRepository(Conversation)
-    private readonly _conversation: Repository<Conversation>,
+    private readonly _conversationRepository: Repository<Conversation>,
+    @InjectMapper() private readonly _classMapper: Mapper,
   ) {}
 
-  async createConversation(
-    userFromId: string,
-    userToId: string,
-  ): Promise<THttpResponse<void>> {
+  async create(
+    createConversationDto: CreateConversationDto,
+  ): Promise<THttpResponse<ConversationDto>> {
     try {
-      const result = await this._conversation.save({ userFromId, userToId });
-
+      const toSaveConversation = this._classMapper.map(
+        createConversationDto,
+        CreateConversationDto,
+        Conversation,
+      );
+      const conversation = await this._classMapper.mapAsync(
+        await this._conversationRepository.save(toSaveConversation),
+        Conversation,
+        ConversationDto,
+      );
       return {
         statusCode: HttpStatus.CREATED,
-        message: 'Conversation created',
+        data: conversation,
       };
     } catch (err) {
-      throw new BadRequestException('Error Creating Conversation');
+      throw new BadRequestException(err.message);
     }
   }
 }
