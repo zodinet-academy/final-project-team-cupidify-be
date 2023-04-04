@@ -1,26 +1,29 @@
-import { Injectable } from '@nestjs/common';
-import { CreateConversationDto } from './dto/create-conversation.dto';
-import { UpdateConversationDto } from './dto/update-conversation.dto';
+import { Injectable, BadRequestException, HttpStatus } from '@nestjs/common';
+import { Conversation } from './entities/conversation.entity';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { THttpResponse } from 'src/shared/common/http-response.dto';
 
 @Injectable()
 export class ConversationService {
-  create(createConversationDto: CreateConversationDto) {
-    return 'This action adds a new conversation';
-  }
+  constructor(
+    @InjectRepository(Conversation)
+    private readonly _conversation: Repository<Conversation>,
+  ) {}
 
-  findAll() {
-    return `This action returns all conversation`;
-  }
+  async createConversation(
+    userFromId: string,
+    userToId: string,
+  ): Promise<THttpResponse<void>> {
+    try {
+      const result = await this._conversation.save({ userFromId, userToId });
 
-  findOne(id: number) {
-    return `This action returns a #${id} conversation`;
-  }
-
-  update(id: number, updateConversationDto: UpdateConversationDto) {
-    return `This action updates a #${id} conversation`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} conversation`;
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Conversation created',
+      };
+    } catch (err) {
+      throw new BadRequestException('Error Creating Conversation');
+    }
   }
 }
