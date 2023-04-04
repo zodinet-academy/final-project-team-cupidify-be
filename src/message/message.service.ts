@@ -73,11 +73,11 @@ export class MessageService {
     }
   }
 
-  async findAll(roomId: string): Promise<THttpResponse<MessageDto[]>> {
+  async findAll(conversationId: string): Promise<THttpResponse<MessageDto[]>> {
     try {
       const messages = await this._classMapper.mapArrayAsync(
         await this._messageRepository.find({
-          where: { conversationId: roomId },
+          where: { conversationId },
         }),
         Message,
         MessageDto,
