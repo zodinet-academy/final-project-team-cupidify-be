@@ -1,3 +1,5 @@
+import { ProfileConversationDto } from './dto/profile-conversation.dto';
+import { ProfileService } from './../profile/profile.service';
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
@@ -10,6 +12,7 @@ import { Conversation } from './entities/conversation.entity';
 import { MatchService } from '../match/match.service';
 import { CreateMatchDto } from '../match/dto/create-match.dto';
 import { Profile } from '../profile/entities/profile.entity';
+import { User } from '../user/entities/user.entity';
 
 @Injectable()
 export class ConversationService {
@@ -18,6 +21,7 @@ export class ConversationService {
     private readonly _conversationRepository: Repository<Conversation>,
     private _dataSource: DataSource,
     private readonly _matchService: MatchService,
+    private readonly _profileService: ProfileService,
     @InjectMapper() private readonly _classMapper: Mapper,
   ) {}
 
@@ -51,52 +55,56 @@ export class ConversationService {
       throw new BadRequestException(err.message);
     }
   }
-  async getConversationsById(userId: string) {
+  async getConversationsById(userId: string): Promise<
+    THttpResponse<
+      {
+        conversationId: string;
+        userProfile: ProfileConversationDto;
+      }[]
+    >
+  > {
     try {
-      // const conversations = await this._conversationRepository.find({
-      //   where: [{ userFromId: userId }, { userToId: userId }],
-      // });
+      const conversations = await this._conversationRepository.find({
+        where: [{ userFromId: userId }, { userToId: userId }],
+        order: {
+          updatedAt: 'DESC',
+        },
+      });
 
-      console.log('User Id: ', userId);
+      const otherUserIds = conversations.map((c) => {
+        return {
+          conversationId: c.id,
+          userId: c.userFromId === userId ? c.userToId : c.userFromId,
+        };
+      });
 
-      const conUserProfile = await this._dataSource.manager
-        .createQueryBuilder(Conversation, 'con')
-        .leftJoinAndSelect(
-          'con.userTo',
-          'user',
-          'user.id = con.userFromId OR user.id = con.userToId',
-        )
-        .leftJoinAndSelect('user.profile', 'pro')
-        .where(
-          new Brackets((query) => {
-            query
-              .where('con.userFromId = :userId', { userId })
-              .orWhere('con.userToId = :userId', { userId });
-          }),
-        )
-        // .select('con')
-        // .select('pro')
-        // .from(Profile, 'pro')
-        // .where(
-        //   new Brackets((query) => {
-        //     query
-        //       .where('con.userFromId = :userId', { userId })
-        //       .andWhere('pro.userId = con.userToId');
-        //   }),
-        // )
-        // .orWhere(
-        //   new Brackets((query) => {
-        //     query
-        //       .where('con.userToId = :userId', { userId })
-        //       .andWhere('pro.userId = con.userFromId');
-        //   }),
-        // )
+      const profiles = await this._dataSource.manager
+        .createQueryBuilder(Profile, 'pro')
+        .where('pro.userId IN (:...userIds)', {
+          userIds: otherUserIds.map((u) => u.userId),
+        })
         .getMany();
 
-      console.log('Conversation profile: ', conUserProfile);
+      const mapProfile = await this._classMapper.mapArrayAsync(
+        profiles,
+        Profile,
+        ProfileConversationDto,
+      );
+
+      const result = otherUserIds.map((u) => {
+        return {
+          conversationId: u.conversationId,
+          userProfile: mapProfile.find((p) => {
+            if (p.userId === u.userId) {
+              return p;
+            }
+          }),
+        };
+      });
+
       return {
         statusCode: HttpStatus.OK,
-        data: conUserProfile,
+        data: result,
       };
     } catch (error) {
       console.log(error);

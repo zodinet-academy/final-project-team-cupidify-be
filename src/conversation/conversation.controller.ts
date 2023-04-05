@@ -7,6 +7,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthenticationGuard } from '../auth/guards/auth.guard';
 import { User } from '../user/decorator/user.decorator';
 import { UserDto } from '../user/dto/user.dto';
+import { ProfileConversationDto } from './dto/profile-conversation.dto';
 @ApiTags('Conversation')
 @Controller('conversation')
 export class ConversationController {
@@ -31,7 +32,16 @@ export class ConversationController {
   @Get()
   getConversationsById(
     @User() user: UserDto, // : Promise<THttpResponse<ConversationDto>>
-  ) {
+  ): Promise<
+    THttpResponse<
+      {
+        conversationId: string;
+        userProfile: ProfileConversationDto;
+      }[]
+    >
+  > {
+    console.log('User Id: ', user.id);
+
     return this.conversationService.getConversationsById(user.id);
   }
 }
