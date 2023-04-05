@@ -5,10 +5,16 @@ import { ConversationController } from './conversation.controller';
 import { ConversationProfile } from './conversation.profile';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { MatchModule } from '../match/match.module';
+import { ProfileModule } from 'src/profile/profile.module';
+import { ProfileProfile } from 'src/profile/profile.profile';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Conversation]), MatchModule],
+  imports: [
+    TypeOrmModule.forFeature([Conversation]),
+    MatchModule,
+    ProfileModule,
+  ],
   controllers: [ConversationController],
-  providers: [ConversationService, ConversationProfile],
+  providers: [ConversationService, ConversationProfile, ProfileProfile],
 })
 export class ConversationModule {}

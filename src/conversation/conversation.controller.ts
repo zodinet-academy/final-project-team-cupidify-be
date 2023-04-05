@@ -32,6 +32,8 @@ export class ConversationController {
   getConversationsById(
     @User() user: UserDto, // : Promise<THttpResponse<ConversationDto>>
   ) {
+    console.log('User Id: ', user.id);
+
     return this.conversationService.getConversationsById(user.id);
   }
 }
