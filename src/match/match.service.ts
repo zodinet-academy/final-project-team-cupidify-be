@@ -165,8 +165,11 @@ export class MatchService {
       // False: Create
       // True: Check Is User Created
       const responseIsMatch = await this.checkIsMatch(findMatch);
+      console.log(responseIsMatch);
       if (!responseIsMatch.isExist) {
-        return this.create(findMatch);
+        const newMatch = await this.create(findMatch);
+        console.log(newMatch);
+        return newMatch;
       }
       const matchFinded = responseIsMatch.data;
       // console.log('match find', matchFinded);

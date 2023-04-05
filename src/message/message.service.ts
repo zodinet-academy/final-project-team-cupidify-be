@@ -42,28 +42,38 @@ export class MessageService {
   }
 
   async create(
+    @UploadedFile() file: Express.Multer.File,
     createMessageDto: CreateMessageDto,
   ): Promise<THttpResponse<MessageDto>> {
     try {
-      // if (file) {
-      //   const image = await this._cloudinaryService.uploadImageToCloudinary(
-      //     file,
-      //   );
-      //   createMessageDto.content = image.data.photoUrl;
-      //   createMessageDto.type = MessageType.IMAGE;
-      // }
+      if (createMessageDto.isSeen === 'false') createMessageDto.isSeen = false;
+      if (createMessageDto.isSeen === 'true') createMessageDto.isSeen = true;
 
-      const toSaveMessage = this._classMapper.map(
-        createMessageDto,
-        CreateMessageDto,
-        Message,
-      );
+      if (file) {
+        const image = await this._cloudinaryService.uploadImageToCloudinary(
+          file,
+        );
+        createMessageDto.content = image.data.photoUrl;
+        createMessageDto.type = MessageType.IMAGE;
+      }
+      console.log(createMessageDto);
 
-      const message = await this._classMapper.mapAsync(
-        await this._messageRepository.save(toSaveMessage),
-        Message,
-        MessageDto,
-      );
+      // const toSaveMessage = this._classMapper.map(
+      //   createMessageDto,
+      //   CreateMessageDto,
+      //   Message,
+      // );
+
+      // console.log('to save', toSaveMessage);
+
+      // const message = await this._classMapper.mapAsync(
+      //   await this._messageRepository.save(toSaveMessage),
+      //   Message,
+      //   MessageDto,
+      // );
+
+      const message = await this._messageRepository.save(createMessageDto);
+
       return {
         statusCode: HttpStatus.CREATED,
         data: message,

@@ -1,8 +1,6 @@
-import { join } from 'path';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { BadGatewayException, HttpStatus, UseGuards } from '@nestjs/common';
 import {
-  ConnectedSocket,
   MessageBody,
   OnGatewayConnection,
   OnGatewayDisconnect,
@@ -13,14 +11,12 @@ import {
 import { Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
-import { SocketUser } from '../user/decorator/user.decorator';
 import { GatewayGuard } from '../auth/guards/gateway.guard';
 import { MessageService } from './message.service';
-import { UserDto } from '../user/dto/user.dto';
 
 dotenv.config();
 
-@WebSocketGateway()
+@WebSocketGateway({ path: '/chat' })
 export class MessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -58,6 +54,7 @@ export class MessageGateway
     };
 
     this._online.push(socketUser);
+    console.log('current online', this._online);
   }
 
   handleDisconnect(socket: Socket): void {
@@ -66,11 +63,16 @@ export class MessageGateway
     console.log(`Disconnection socket id:`, socketId);
 
     this._online = this._online.filter((i) => i.socketId !== socket.id);
+
+    console.log(this._online);
   }
 
   @UseGuards(GatewayGuard)
   @SubscribeMessage('send-message')
-  async sendMessage(@MessageBody() message: CreateMessageDto) {
+  async sendMessage(
+    @MessageBody() message: CreateMessageDto,
+    // @UploadedFile() file: Express.Multer.File,
+  ) {
     try {
       const socketIdReceiverId = this._online.find(
         (i) => i.userId === message.receiverId,
@@ -78,7 +80,7 @@ export class MessageGateway
 
       this.server.to(socketIdReceiverId.socketId).emit(`message`, message);
 
-      const result = await this._messageService.create(message);
+      // const result = await this._messageService.create(file, message);
     } catch (err) {
       throw new BadGatewayException(
         HttpStatus.BAD_GATEWAY,

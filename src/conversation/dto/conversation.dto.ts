@@ -3,6 +3,9 @@ import { Message } from 'src/message/entities/message.entity';
 
 export class ConversationDto {
   @AutoMap()
+  id: string;
+
+  @AutoMap()
   userFromId: string;
 
   @AutoMap()

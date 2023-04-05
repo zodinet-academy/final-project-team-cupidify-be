@@ -38,8 +38,8 @@ export class CreateMessageDto {
     default: false,
     type: Boolean,
   })
-  @IsBoolean()
-  isSeen: boolean;
+  // @IsBoolean()
+  isSeen: any;
 
   @AutoMap()
   @ApiProperty({
