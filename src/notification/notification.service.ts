@@ -65,6 +65,18 @@ export class NotificationService {
     return transformedNoti;
   }
 
+  async updateNotiRead(updateNotiDto) {
+    try {
+      console.log('alo', updateNotiDto);
+      await this._notificationRepository.update(
+        { id: updateNotiDto.notiId },
+        { isSeen: true },
+      );
+    } catch (err) {
+      throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
+    }
+  }
+
   async totalNotificationByUser(userId: string) {
     try {
       const result = await this._notificationRepository.find({

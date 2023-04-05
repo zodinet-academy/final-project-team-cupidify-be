@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Put, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
 import { User } from 'src/user/decorator/user.decorator';
@@ -18,5 +18,15 @@ export class NotificationController {
   @Get()
   getNotifications(@User() user: UserDto) {
     return this._notificationService.totalNotificationByUser(user.id);
+  }
+
+  @ApiOkResponse({
+    description: 'Update notification sucessfully!',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Put()
+  updateRead(@Body() updateNotiDto) {
+    return this._notificationService.updateNotiRead(updateNotiDto);
   }
 }
