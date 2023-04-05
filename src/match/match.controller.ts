@@ -39,6 +39,8 @@ export class MatchController {
   @UseGuards(AuthenticationGuard)
   @Get()
   async getAll(@User() user) {
+    console.log('user: ', user);
+
     const { id } = user;
 
     return await this._matchService.getMatches(id);

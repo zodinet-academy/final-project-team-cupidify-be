@@ -43,6 +43,7 @@ export class MatchService {
     userId: string,
   ): Promise<THttpResponse<MatchedUserProfile[]>> {
     try {
+      console.log('matches: ');
       const matches = await this._dataSource.manager
         .createQueryBuilder()
         .from(Match, 'match')
@@ -53,7 +54,8 @@ export class MatchService {
             query
               .where('match.userId = :userId', { userId })
               .andWhere('profile.userId = match.matchedId')
-              .andWhere('match.status = true');
+              .andWhere('match.status = true')
+              .andWhere('match.isChat = false');
           }),
         )
         .orWhere(
@@ -61,10 +63,13 @@ export class MatchService {
             query
               .where('match.matchedId = :userId', { userId })
               .andWhere('profile.userId = match.userId')
-              .andWhere('match.status = true');
+              .andWhere('match.status = true')
+              .andWhere('match.isChat = false');
           }),
         )
         .getMany();
+
+      console.log('matches: ', matches);
 
       const data = await this._classMapper.mapArrayAsync(
         matches,
