@@ -56,7 +56,14 @@ export class ConversationService {
       throw new BadRequestException(err.message);
     }
   }
-  async getConversationsById(userId: string) {
+  async getConversationsById(userId: string): Promise<
+    THttpResponse<
+      {
+        conversationId: string;
+        userProfile: ProfileConversationDto;
+      }[]
+    >
+  > {
     try {
       const conversations = await this._conversationRepository.find({
         where: [{ userFromId: userId }, { userToId: userId }],
