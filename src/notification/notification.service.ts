@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from 'src/profile/entities/profile.entity';
 import { ProfileService } from 'src/profile/profile.service';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
+import { NotiType } from 'src/shared/enums';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { NotificationDto } from './dto/notification.dto';
@@ -67,7 +68,11 @@ export class NotificationService {
   async totalNotificationByUser(userId: string) {
     try {
       const result = await this._notificationRepository.find({
-        where: [{ userFromId: userId }, { userToId: userId }],
+        where: [
+          { userFromId: userId, type: NotiType.MATCHING },
+          { userToId: userId, type: NotiType.MATCHING },
+          { type: NotiType.LIKED, userToId: userId },
+        ],
       });
 
       // const notifisPro = result.map(async (item, index) => {

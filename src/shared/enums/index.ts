@@ -5,6 +5,7 @@ export enum Gender {
 }
 
 export enum NotiType {
+  LIKED = 'LIKED',
   MATCHING = 'MATCHING',
   MESSAGE = 'MESSAGE',
 }

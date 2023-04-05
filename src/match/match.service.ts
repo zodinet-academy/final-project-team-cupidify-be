@@ -165,10 +165,16 @@ export class MatchService {
       // False: Create
       // True: Check Is User Created
       const responseIsMatch = await this.checkIsMatch(findMatch);
-      console.log(responseIsMatch);
+
       if (!responseIsMatch.isExist) {
         const newMatch = await this.create(findMatch);
-        console.log(newMatch);
+        this._notificationGateway.create({
+          userFromId: newMatch.data.userId,
+          userToId: newMatch.data.matchedId,
+          isSeen: false,
+          type: NotiType.LIKED,
+        });
+        console.log('new match', newMatch);
         return newMatch;
       }
       const matchFinded = responseIsMatch.data;
