@@ -43,7 +43,6 @@ export class MatchService {
     userId: string,
   ): Promise<THttpResponse<MatchedUserProfile[]>> {
     try {
-      console.log('matches: ');
       const matches = await this._dataSource.manager
         .createQueryBuilder()
         .from(Match, 'match')
@@ -69,8 +68,6 @@ export class MatchService {
         )
         .getMany();
 
-      console.log('matches: ', matches);
-
       const data = await this._classMapper.mapArrayAsync(
         matches,
         Profile,
@@ -82,7 +79,6 @@ export class MatchService {
         data,
       };
     } catch (err) {
-      console.log(err);
       throw new BadRequestException(HttpStatus.NOT_FOUND, 'Not Found Matches');
     }
   }

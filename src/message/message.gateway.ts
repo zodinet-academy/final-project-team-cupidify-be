@@ -23,7 +23,12 @@ interface IOnlineUser {
   userId: string;
 }
 
-@WebSocketGateway({ path: '/chat' })
+@WebSocketGateway({
+  path: '/chat',
+  cors: {
+    origin: '*',
+  },
+})
 export class MessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -60,6 +65,7 @@ export class MessageGateway
     };
 
     this._onlineUser.push(onlineUser);
+    console.log(`online user:`, this._onlineUser);
   }
 
   handleDisconnect(socket: Socket): void {
@@ -79,12 +85,16 @@ export class MessageGateway
       const socketIdReceiverId = this._onlineUser.find(
         (i) => i.userId === message.receiverId,
       );
+      console.log('socketIdReceiverId: ', socketIdReceiverId);
+      console.log('socketIdReceiverId: ', socketIdReceiverId);
 
       if (!socketIdReceiverId) {
         return;
       }
 
-      this.server.to(socketIdReceiverId.socketId).emit(`message`, message);
+      this.server
+        .to(socketIdReceiverId.socketId)
+        .emit(`receive-message`, message);
     } catch (err) {
       throw new BadGatewayException(
         HttpStatus.BAD_GATEWAY,

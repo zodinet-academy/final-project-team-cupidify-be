@@ -40,7 +40,6 @@ export class ConversationService {
       const responseUpdateMatch = await this._matchService.updateIsChat(
         findMatch,
       );
-      console.log(conversation);
 
       return {
         statusCode: HttpStatus.CREATED,
