@@ -89,15 +89,15 @@ export class NotificationService {
         take: limit,
       });
 
-      const allNotis = await this._notificationRepository.find({
-        where: [
-          { userFromId: userId, type: NotiType.MATCHING },
-          { userToId: userId, type: NotiType.MATCHING },
-          { type: NotiType.LIKED, userToId: userId },
-        ],
-      });
+      // const allNotis = await this._notificationRepository.find({
+      //   where: [
+      //     { userFromId: userId, type: NotiType.MATCHING },
+      //     { userToId: userId, type: NotiType.MATCHING },
+      //     { type: NotiType.LIKED, userToId: userId },
+      //   ],
+      // });
 
-      const unreadNotis = allNotis.filter((noti) => !noti.isSeen).length;
+      // const unreadNotis = allNotis.filter((noti) => !noti.isSeen).length;
 
       const totalPages = Math.ceil(total / limit);
 
@@ -163,7 +163,7 @@ export class NotificationService {
 
       return {
         statusCode: HttpStatus.OK,
-        data: { noti, totalPages, unreadNotis },
+        data: { noti, totalPages },
       };
     } catch (err) {
       throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
