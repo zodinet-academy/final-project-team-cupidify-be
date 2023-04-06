@@ -10,6 +10,8 @@ import { Injectable } from '@nestjs/common';
 import { ConversationDto } from './dto/conversation.dto';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { Conversation } from './entities/conversation.entity';
+import { ProfileConversationDto } from './dto/profile-conversation.dto';
+import { Profile } from '../profile/entities/profile.entity';
 
 @Injectable()
 export class ConversationProfile extends AutomapperProfile {
@@ -32,8 +34,9 @@ export class ConversationProfile extends AutomapperProfile {
         mapper,
         CreateConversationDto,
         Conversation,
-        forMember((dest) => dest.id, ignore()),
+        // forMember((dest) => dest.id, ignore()),
       );
+      createMap(mapper, Profile, ProfileConversationDto);
     };
   }
 }

@@ -6,15 +6,18 @@ import {
   UseGuards,
   UploadedFile,
   UseInterceptors,
+  Query,
 } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
 import { MessageDto } from './dto/message-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
+import { findMessagePaginationQuery } from './dto/find-message.dto';
+@ApiTags('Message')
 @Controller('message')
 export class MessageController {
   constructor(private readonly messageService: MessageService) {}
@@ -30,10 +33,13 @@ export class MessageController {
     return this.messageService.create(file, createMessageDto);
   }
 
+  @ApiOperation({ summary: 'Get All message' })
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
-  findAll(roomId: string): Promise<THttpResponse<MessageDto[]>> {
-    return this.messageService.findAll(roomId);
+  findAll(
+    @Query() paginationQuery: findMessagePaginationQuery,
+  ): Promise<THttpResponse<MessageDto[]>> {
+    return this.messageService.findAll(paginationQuery.conversationId);
   }
 }

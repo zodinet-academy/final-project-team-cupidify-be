@@ -5,7 +5,7 @@ import { Message } from '../../message/entities/message.entity';
 import { Base } from '../../shared/base.entity';
 import { User } from '../../user/entities/user.entity';
 
-@Entity({ name: 'conversation', synchronize: false })
+@Entity({ name: 'conversation', synchronize: true })
 export class Conversation extends Base {
   @AutoMap()
   @Column({ name: 'from_id' })

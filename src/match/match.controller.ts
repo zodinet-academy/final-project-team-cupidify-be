@@ -48,4 +48,14 @@ export class MatchController {
   remove(@Body() match: Match) {
     return this._matchService.remove(match);
   }
+
+  @ApiOperation({ summary: 'Update Matching' })
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Post('/update-matching')
+  updateMatching(@User() user: UserDto, @Body() findMatch: FindMatchDto) {
+    findMatch.userId = user.id;
+
+    return this._matchService.match(findMatch);
+  }
 }

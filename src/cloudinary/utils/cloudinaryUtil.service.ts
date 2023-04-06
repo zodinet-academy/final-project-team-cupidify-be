@@ -54,7 +54,6 @@ export class CloudinaryUtilService {
 
       const res = await this.upload(file[0]);
     } catch (err) {
-      console.log(err);
       throw new BadRequestException('Update failed');
     }
   }

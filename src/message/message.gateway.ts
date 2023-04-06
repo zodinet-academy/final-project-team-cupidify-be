@@ -17,7 +17,12 @@ import { MessageType } from 'src/shared/enums';
 
 dotenv.config();
 
-@WebSocketGateway({ path: '/chat' })
+@WebSocketGateway({
+  path: '/chat',
+  cors: {
+    origin: '*',
+  },
+})
 export class MessageGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
@@ -79,7 +84,9 @@ export class MessageGateway
         (i) => i.userId === message.receiverId,
       );
 
-      this.server.to(socketIdReceiverId.socketId).emit(`message`, message);
+      this.server
+        .to(socketIdReceiverId.socketId)
+        .emit(`receive-message`, message);
 
       if (message.type === MessageType.IMAGE) return;
       const result = await this._messageService.create(null, message);
