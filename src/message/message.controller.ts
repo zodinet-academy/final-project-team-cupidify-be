@@ -17,20 +17,28 @@ import { MessageDto } from './dto/message-dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 
 import { findMessagePaginationQuery } from './dto/find-message.dto';
+import { MessageGateway } from './message.gateway';
 @ApiTags('Message')
 @Controller('message')
 export class MessageController {
-  constructor(private readonly messageService: MessageService) {}
+  constructor(
+    private readonly messageService: MessageService,
+    private readonly _messageGateway: MessageGateway,
+  ) {}
 
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Post()
   @UseInterceptors(FileInterceptor('file'))
-  create(
+  async create(
     @UploadedFile() file: Express.Multer.File,
     @Body() createMessageDto: CreateMessageDto,
   ) {
-    return this.messageService.create(file, createMessageDto);
+    const res = await this.messageService.create(file, createMessageDto);
+
+    await this._messageGateway.sendMessage(res.data);
+
+    return res;
   }
 
   @ApiOperation({ summary: 'Get All message' })

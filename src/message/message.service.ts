@@ -23,7 +23,7 @@ export class MessageService {
     @InjectRepository(Message)
     private readonly _messageRepository: Repository<Message>,
     @InjectMapper() private readonly _classMapper: Mapper,
-    private readonly _cloudinaryService: CloudinaryService, // private readonly _messageGateway: MessageGateway,
+    private readonly _cloudinaryService: CloudinaryService,
   ) {}
 
   async sendMessage(
@@ -45,7 +45,7 @@ export class MessageService {
   async create(
     @UploadedFile() file: Express.Multer.File,
     createMessageDto: CreateMessageDto,
-  ): Promise<THttpResponse<MessageDto>> {
+  ): Promise<THttpResponse<CreateMessageDto>> {
     try {
       if (createMessageDto.isSeen === 'false') createMessageDto.isSeen = false;
       if (createMessageDto.isSeen === 'true') createMessageDto.isSeen = true;
@@ -57,7 +57,6 @@ export class MessageService {
         createMessageDto.content = image.data.photoUrl;
         createMessageDto.type = MessageType.IMAGE;
       }
-      console.log(createMessageDto);
 
       // const toSaveMessage = this._classMapper.map(
       //   createMessageDto,
@@ -74,8 +73,6 @@ export class MessageService {
       // );
 
       const message = await this._messageRepository.save(createMessageDto);
-
-      // await this._messageGateway.sendMessage(message);
 
       return {
         statusCode: HttpStatus.CREATED,

@@ -14,6 +14,7 @@ import * as dotenv from 'dotenv';
 import { GatewayGuard } from '../auth/guards/gateway.guard';
 import { MessageService } from './message.service';
 import { MessageType } from 'src/shared/enums';
+import { MessageDto } from './dto/message-dto';
 
 dotenv.config();
 
