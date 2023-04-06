@@ -67,7 +67,6 @@ export class NotificationService {
 
   async updateNotiRead(updateNotiDto) {
     try {
-      console.log('alo', updateNotiDto);
       await this._notificationRepository.update(
         { id: updateNotiDto.notiId },
         { isSeen: true },
@@ -77,15 +76,20 @@ export class NotificationService {
     }
   }
 
-  async totalNotificationByUser(userId: string) {
+  async totalNotificationByUser(userId: string, page: number, limit: number) {
     try {
-      const result = await this._notificationRepository.find({
+      const [result, total] = await this._notificationRepository.findAndCount({
         where: [
           { userFromId: userId, type: NotiType.MATCHING },
           { userToId: userId, type: NotiType.MATCHING },
           { type: NotiType.LIKED, userToId: userId },
         ],
+        order: { createdAt: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
       });
+
+      const totalPages = Math.ceil(total / limit);
 
       // const notifisPro = result.map(async (item, index) => {
       //   const userFromId = result[index].userFromId;
@@ -149,7 +153,7 @@ export class NotificationService {
 
       return {
         statusCode: HttpStatus.OK,
-        data: noti,
+        data: { noti, totalPages },
       };
     } catch (err) {
       throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);

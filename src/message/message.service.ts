@@ -15,6 +15,7 @@ import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { MessageType } from 'src/shared/enums';
+import { MessageGateway } from './message.gateway';
 
 @Injectable()
 export class MessageService {
@@ -23,6 +24,7 @@ export class MessageService {
     private readonly _messageRepository: Repository<Message>,
     @InjectMapper() private readonly _classMapper: Mapper,
     private readonly _cloudinaryService: CloudinaryService,
+    private readonly _messageGateway: MessageGateway,
   ) {}
 
   async sendMessage(
@@ -73,6 +75,8 @@ export class MessageService {
       // );
 
       const message = await this._messageRepository.save(createMessageDto);
+
+      await this._messageGateway.sendMessage(message);
 
       return {
         statusCode: HttpStatus.CREATED,
