@@ -13,6 +13,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
 import { GatewayGuard } from '../auth/guards/gateway.guard';
 import { MessageService } from './message.service';
+import { MessageType } from 'src/shared/enums';
 
 dotenv.config();
 
@@ -80,7 +81,9 @@ export class MessageGateway
 
       this.server.to(socketIdReceiverId.socketId).emit(`message`, message);
 
-      // const result = await this._messageService.create(file, message);
+      if (message.type === MessageType.IMAGE) return;
+      const result = await this._messageService.create(null, message);
+      return result;
     } catch (err) {
       throw new BadGatewayException(
         HttpStatus.BAD_GATEWAY,

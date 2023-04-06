@@ -23,8 +23,7 @@ export class MessageService {
     @InjectRepository(Message)
     private readonly _messageRepository: Repository<Message>,
     @InjectMapper() private readonly _classMapper: Mapper,
-    private readonly _cloudinaryService: CloudinaryService,
-    private readonly _messageGateway: MessageGateway,
+    private readonly _cloudinaryService: CloudinaryService, // private readonly _messageGateway: MessageGateway,
   ) {}
 
   async sendMessage(
@@ -76,7 +75,7 @@ export class MessageService {
 
       const message = await this._messageRepository.save(createMessageDto);
 
-      await this._messageGateway.sendMessage(message);
+      // await this._messageGateway.sendMessage(message);
 
       return {
         statusCode: HttpStatus.CREATED,
