@@ -68,7 +68,7 @@ export class MatchController {
   // }
 
   @Delete()
-  remove(@Body() match: Match) {
+  remove(@Body() match) {
     return this._matchService.remove(match);
   }
 }

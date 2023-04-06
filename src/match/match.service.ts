@@ -16,6 +16,7 @@ import { Match } from './entities/match.entity';
 import { Mapper } from '@automapper/core';
 import { User } from 'src/user/entities/user.entity';
 import { Profile } from 'src/profile/entities/profile.entity';
+import { DeleteMatchDto } from './dto/delete-match.dto';
 
 @Injectable()
 export class MatchService {
@@ -106,6 +107,32 @@ export class MatchService {
     }
   }
 
+  async removeMatch(userId: string, matchedId: string) {
+    try {
+      const result = await this._matchRepository.findOne({
+        where: [
+          {
+            userId,
+            matchedId,
+            status: true,
+          },
+          {
+            userId: matchedId,
+            matchedId: userId,
+            status: true,
+          },
+        ],
+      });
+
+      await this._matchRepository.delete({
+        userId: result.userId,
+        matchedId: result.matchedId,
+      });
+    } catch (err) {
+      throw new BadRequestException('Not Found Match');
+    }
+  }
+
   async remove(matchDelete: Match) {
     try {
       const response = await this._matchRepository.remove(matchDelete);
@@ -117,6 +144,19 @@ export class MatchService {
       };
     } catch (error) {
       throw new BadRequestException(error.message);
+    }
+  }
+
+  async deleteMatch(userId: string, matchedId: string) {
+    try {
+      const result = await this._matchRepository.delete({
+        userId,
+        matchedId,
+        status: true,
+      });
+    } catch (err) {
+      console.log(err.message);
+      throw new BadRequestException('Unable to delete match');
     }
   }
 
