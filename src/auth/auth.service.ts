@@ -98,6 +98,35 @@ export class AuthService {
     }
   }
 
+  async loginNotOTP(phone: string): Promise<AuthDto> {
+    try {
+      const user = await this._userService.isPhoneExist(phone);
+
+      if (!user.data.checked)
+        throw new HttpException(
+          'Phone number does not exist. Please sign up!',
+          HttpStatus.NOT_FOUND,
+        );
+
+      const userPayload = {
+        id: user.data.data.id,
+        phone: user.data.data.phone,
+        email: user.data.data.email,
+      };
+
+      const token = this.signToken(userPayload);
+
+      return {
+        statusCode: HttpStatus.CREATED,
+        data: {
+          token,
+        },
+      };
+    } catch (err) {
+      throw err;
+    }
+  }
+
   googleLogin(req) {
     if (!req.user) {
       return 'No user found!';
@@ -136,8 +165,6 @@ export class AuthService {
         idToken: accessToken,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
-
-      console.log(ticket.getPayload());
     } catch (err) {
       throw err;
     }

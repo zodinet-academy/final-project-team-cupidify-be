@@ -11,12 +11,15 @@ export class Base {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
+  @AutoMap()
   @CreateDateColumn({ name: 'created_at', type: 'timestamptz' })
   createdAt: Date;
 
+  @AutoMap()
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
+  @AutoMap()
   @DeleteDateColumn({ name: 'deleted_at' })
   deletedAt: Date;
 }

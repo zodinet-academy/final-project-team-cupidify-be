@@ -3,7 +3,7 @@ import { Column, Entity, Index, JoinColumn, OneToOne, Point } from 'typeorm';
 import { Base } from '../../shared/base.entity';
 import { User } from './../../user/entities/user.entity';
 
-@Entity({ name: 'location', synchronize: true })
+@Entity({ name: 'location', synchronize: false })
 export class Location extends Base {
   @Column({ name: 'user_id' })
   userId: string;

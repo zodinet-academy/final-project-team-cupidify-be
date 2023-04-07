@@ -5,7 +5,7 @@ import { Base } from '../../shared/base.entity';
 import { Education, Gender, Reason, Religion } from '../../shared/enums/index';
 import { AutoMap } from '@automapper/classes';
 
-@Entity({ name: 'profile', synchronize: true })
+@Entity({ name: 'profile', synchronize: false })
 export class Profile extends Base {
   @AutoMap()
   @Column({ name: 'user_id' })

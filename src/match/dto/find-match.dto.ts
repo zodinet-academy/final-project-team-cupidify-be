@@ -13,4 +13,12 @@ export class FindMatchDto {
   @AutoMap()
   @ApiProperty()
   matchedId: string;
+
+  @AutoMap()
+  @ApiProperty()
+  status: boolean;
+
+  @AutoMap()
+  @ApiProperty()
+  isChat: boolean;
 }

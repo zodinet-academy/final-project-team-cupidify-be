@@ -9,10 +9,14 @@ import { Point, Repository } from 'typeorm';
 import { UpdateLocationDto } from './dto/update-location.dto';
 import { Location } from './entities/location.entity';
 import { ProfileService } from '../profile/profile.service';
+import { BlackListService } from '../black-list/black-list.service';
 import { IUserFinded, IUserLocation } from './interface/IUserFinded';
 import { THttpResponse } from '../shared/common/http-response.dto';
-import { BlackListService } from '../black-list/black-list.service';
 import { BlackListDto } from '../black-list/dto/black-list.dto';
+import { GetUserWithinDto } from './dto/get-user-within.dto';
+import { FindMatchDto } from '../match/dto/find-match.dto';
+import { MatchService } from '../match/match.service';
+import { MatchedUserProfile } from '../profile/dto/match-user-profile.dto';
 
 @Injectable()
 export class LocationService {
@@ -20,6 +24,7 @@ export class LocationService {
     @InjectRepository(Location)
     private readonly _locationRepository: Repository<Location>,
     private readonly _profileService: ProfileService,
+    private readonly _matchService: MatchService,
     private readonly _blackListService: BlackListService,
   ) {}
 
@@ -91,7 +96,11 @@ export class LocationService {
     }
   }
 
-  async findUsersWithin(userId: string): Promise<THttpResponse<IUserFinded[]>> {
+  async findUsersWithin(
+    userId: string,
+    getUserWithinDto: GetUserWithinDto,
+  ): Promise<THttpResponse<IUserFinded[]>> {
+    const { range } = getUserWithinDto;
     try {
       const location = await this._locationRepository.findOne({
         where: { userId },
@@ -106,6 +115,8 @@ export class LocationService {
         .createQueryBuilder('location')
         .select([
           'location.user_id AS user',
+          'location.long AS long',
+          'location.lat AS lat',
           'ST_Distance(location, ST_SetSRID(ST_GeomFromGeoJSON(:origin), ST_SRID(location)))/1000 AS distance',
         ])
         .where(
@@ -115,11 +126,10 @@ export class LocationService {
         .setParameters({
           // stringify GeoJSON
           origin: JSON.stringify(origin),
-          range: 1000 * 1000, //KM conversion
+          range: range, //KM conversion
         })
         .getRawMany();
 
-      console.log('locations: ', locationUsers);
       // Filter: Array Not Contains User
       if (locationUsers.length === 1) {
         throw new HttpException('Không có người dùng nào lân cận', 201);
@@ -127,22 +137,22 @@ export class LocationService {
       let listLocationUser: IUserLocation[] = locationUsers.filter(
         (location: IUserLocation) => location.user !== userId,
       );
-      // Filter: Array Not Contains Block User
-      listLocationUser = await this.filterListUserNotContainBlackList(
-        userId,
-        listLocationUser,
-      );
-      console.log('listLocationUser: ', listLocationUser);
+
+      listLocationUser = await this.filterListUser(userId, listLocationUser);
 
       const listUserFinded: IUserFinded[] = [];
       for (let i = 0; i < listLocationUser.length; i++) {
         const response = await this._profileService.findOneByUserId(
           listLocationUser[i].user,
         );
+
         const userFinded: IUserFinded = {
           user: response.data,
           distance: this.round10(listLocationUser[i].distance, -1) * 1000,
+          long: listLocationUser[i].long,
+          lat: listLocationUser[i].lat,
         };
+
         listUserFinded.push(userFinded);
       }
 
@@ -156,15 +166,30 @@ export class LocationService {
     }
   }
 
+  async filterListUser(userId: string, listLocationUser: IUserLocation[]) {
+    // Filter: Array Not Contains Block User
+    listLocationUser = await this.filterListUserNotContainBlackList(
+      userId,
+      listLocationUser,
+    );
+
+    // Filter: Array Not Contains Match User
+    listLocationUser = await this.filterListUserNotContainMatchList(
+      userId,
+      listLocationUser,
+    );
+    return listLocationUser;
+  }
+
   async filterListUserNotContainBlackList(
-    idUser: string,
+    userId: string,
     listUser: IUserLocation[],
   ): Promise<IUserLocation[]> {
     try {
       const resBlockUSer: THttpResponse<{
         sourceUsers: BlackListDto[];
         targetUsers: BlackListDto[];
-      }> = await this._blackListService.getBlockedUser(idUser);
+      }> = await this._blackListService.getBlockedUser(userId);
       const listUserBlock = resBlockUSer.data.sourceUsers;
       listUserBlock.forEach((userBlock) => {
         listUser.forEach((user, index) => {
@@ -178,6 +203,41 @@ export class LocationService {
       listUserBlockMe.forEach((userBlock) => {
         listUser.forEach((user, index) => {
           if (userBlock.userId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      return listUser;
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async filterListUserNotContainMatchList(
+    userId: string,
+    listUser: IUserLocation[],
+  ): Promise<IUserLocation[]> {
+    try {
+      const resMatchUSer: THttpResponse<FindMatchDto[]> =
+        await this._matchService.getListMacthByID(userId);
+      const resMatchedUser: THttpResponse<MatchedUserProfile[]> =
+        await this._matchService.getMatches(userId);
+
+      const listUserMatched = resMatchedUser.data;
+
+      const listUserMatch = resMatchUSer.data;
+      listUserMatch.forEach((userMatch) => {
+        listUser.forEach((user, index) => {
+          if (userMatch.matchedId === user.user) {
+            listUser.splice(index, 1);
+          }
+        });
+      });
+
+      listUserMatched.forEach((userMatched) => {
+        listUser.forEach((user, index) => {
+          if (userMatched.userId === user.user) {
             listUser.splice(index, 1);
           }
         });
@@ -212,29 +272,4 @@ export class LocationService {
   round10(value, exp) {
     return this.decimalAdjust('round', value, exp);
   }
-
-  // async updatetest(updateLocationDto: UpdateTest) {
-  //   try {
-  //     const location = await this._locationRepository.findOne({
-  //       where: { userId: updateLocationDto.userId },
-  //     });
-
-  //     const { long, lat } = updateLocationDto;
-
-  //     const pointObj: Point = {
-  //       type: 'Point',
-  //       coordinates: [long, lat],
-  //     };
-
-  //     const updatedLocation = Object.assign(location, {
-  //       long,
-  //       lat,
-  //       location: pointObj,
-  //     });
-  //     const response = await this._locationRepository.save(updatedLocation);
-  //     return { data: response, statusCode: HttpStatus.OK };
-  //   } catch (err) {
-  //     throw new BadRequestException(err.message);
-  //   }
-  // }
 }

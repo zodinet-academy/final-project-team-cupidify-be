@@ -27,4 +27,7 @@ export class Match extends Base {
   @AutoMap()
   @Column({ name: 'status' })
   status: boolean;
+
+  @Column({ name: 'isChat' })
+  isChat: boolean;
 }

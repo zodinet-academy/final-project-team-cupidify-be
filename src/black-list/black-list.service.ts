@@ -25,8 +25,6 @@ export class BlackListService {
     try {
       addBlockUser.userId = userId;
 
-      console.log('Add blocked: ', addBlockUser);
-
       const resource = this._classMapper.map(
         addBlockUser,
         AddBlockedUserDto,

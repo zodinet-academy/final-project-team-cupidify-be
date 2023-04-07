@@ -26,7 +26,6 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common/decorators';
-import { Photo } from './entities/photo.entity';
 import { UpdateFavoriteDto } from './dto/update-favorite.dto';
 
 @ApiTags('Photo')
@@ -41,17 +40,12 @@ export class PhotoController {
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
-  async getUserPhoto(@User() user: UserDto): Promise<THttpResponse<Photo[]>> {
+  async getUserPhoto(
+    @User() user: UserDto,
+  ): Promise<THttpResponse<PhotoDto[]>> {
     const { id } = user;
     return this._photoService.getUserPhoto(id);
   }
-
-  // @ApiBearerAuth()
-  // @UseGuards(AuthenticationGuard)
-  // @Get('get-avatar')
-  // getAvatar(@User() user: UserDto) {
-  //   return this._photoService.getAvatar(user.id);
-  // }
 
   @ApiOkResponse({
     description: 'Get photo URLs by userId',
@@ -78,7 +72,6 @@ export class PhotoController {
     @User() user: UserDto,
   ): Promise<THttpResponse<void>> {
     const { id } = user;
-    console.log(files);
     return this._photoService.uploadImages(files, id);
   }
 
@@ -137,7 +130,6 @@ export class PhotoController {
     @Param('id') publicId: string,
   ): Promise<THttpResponse<void>> {
     const { id } = user;
-    console.log(file);
     return this._photoService.updateImage(file, id, publicId);
   }
 }
