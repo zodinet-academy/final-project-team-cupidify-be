@@ -13,6 +13,7 @@ import { MatchService } from '../match/match.service';
 import { CreateMatchDto } from '../match/dto/create-match.dto';
 import { Profile } from '../profile/entities/profile.entity';
 import { User } from '../user/entities/user.entity';
+import { MessageGateway } from '../message/message.gateway';
 
 @Injectable()
 export class ConversationService {
@@ -23,6 +24,7 @@ export class ConversationService {
     private readonly _matchService: MatchService,
     private readonly _profileService: ProfileService,
     @InjectMapper() private readonly _classMapper: Mapper,
+    private readonly _messageGateway: MessageGateway,
   ) {}
 
   async create(
@@ -46,6 +48,16 @@ export class ConversationService {
       const responseUpdateMatch = await this._matchService.updateIsChat(
         findMatch,
       );
+      // get profile user
+      const profile = await this._profileService.findOneByUserId(
+        createConversationDto.userToId,
+      );
+      const sendConversation = {
+        conversation,
+        profile: profile.data,
+      };
+      // create conversation
+      this._messageGateway.sendConversation(sendConversation);
 
       return {
         statusCode: HttpStatus.CREATED,

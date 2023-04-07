@@ -12,5 +12,6 @@ import { JwtModule } from '@nestjs/jwt';
   imports: [TypeOrmModule.forFeature([Message]), CloudinaryModule, JwtModule],
   controllers: [MessageController],
   providers: [MessageService, MessageGateway, MessageProfile],
+  exports: [MessageGateway],
 })
 export class MessageModule {}

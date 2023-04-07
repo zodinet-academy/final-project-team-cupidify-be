@@ -15,6 +15,7 @@ import { GatewayGuard } from '../auth/guards/gateway.guard';
 import { MessageService } from './message.service';
 import { MessageType } from 'src/shared/enums';
 import { MessageDto } from './dto/message-dto';
+import { ConversationDto } from '../conversation/dto/conversation.dto';
 
 dotenv.config();
 
@@ -97,6 +98,34 @@ export class MessageGateway
       if (message.type === MessageType.IMAGE) return;
       const result = await this._messageService.create(null, message);
       return result;
+    } catch (err) {
+      throw new BadGatewayException(
+        HttpStatus.BAD_GATEWAY,
+        'Unable to send message',
+      );
+    }
+  }
+
+  @SubscribeMessage('send-message')
+  async sendConversation(@MessageBody() sendConversation: any) {
+    console.log('sendConversation: ', sendConversation);
+
+    try {
+      const socketIdReceiverId = this._online.find(
+        (i) => i.userId === sendConversation.conversation.userToId,
+      );
+
+      const conversation = {
+        conversationId: sendConversation.conversation.conversationId,
+        userProfile: {
+          userId: sendConversation.profile.userId,
+          name: sendConversation.profile.name,
+          avatar: sendConversation.profile.avatar,
+        },
+      };
+      this.server
+        .to(socketIdReceiverId.socketId)
+        .emit(`create-conversation`, conversation);
     } catch (err) {
       throw new BadGatewayException(
         HttpStatus.BAD_GATEWAY,

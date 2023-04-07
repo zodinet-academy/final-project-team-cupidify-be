@@ -7,12 +7,14 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { MatchModule } from '../match/match.module';
 import { ProfileModule } from 'src/profile/profile.module';
 import { ProfileProfile } from 'src/profile/profile.profile';
+import { MessageModule } from '../message/message.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Conversation]),
     MatchModule,
     ProfileModule,
+    MessageModule,
   ],
   controllers: [ConversationController],
   providers: [ConversationService, ConversationProfile, ProfileProfile],

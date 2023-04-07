@@ -22,7 +22,6 @@ export class ConversationController {
     @Body() createConversationDto: CreateConversationDto,
   ): Promise<THttpResponse<ConversationDto>> {
     createConversationDto.userFromId = user.id;
-
     return this.conversationService.create(createConversationDto);
   }
 
@@ -40,8 +39,6 @@ export class ConversationController {
       }[]
     >
   > {
-    console.log('User Id: ', user.id);
-
     return this.conversationService.getConversationsById(user.id);
   }
 }
