@@ -48,16 +48,35 @@ export class BlackListService {
     }
   }
 
-  async blockUser(userId: string, blockedId: string) {
+  async blockUser(
+    userId: string,
+    blockedId: string,
+  ): Promise<THttpResponse<void>> {
     try {
-      const match = await this._matchService.removeMatch(userId, blockedId);
+      const affectedResult = await this._matchService.removeMatch(
+        userId,
+        blockedId,
+      );
+
+      if (affectedResult === 0) {
+        throw new BadRequestException('Not Found Match');
+      }
 
       const result = await this._blackList.save({
         userId,
         blockedId,
       });
+
+      if (!result.id) {
+        throw new BadRequestException('Unable to add blocked user');
+      }
+
+      return {
+        statusCode: HttpStatus.CREATED,
+        message: 'Added blocked user',
+      };
     } catch (err) {
-      console.log(err.message);
+      throw new BadRequestException('Error in blocking');
     }
   }
 

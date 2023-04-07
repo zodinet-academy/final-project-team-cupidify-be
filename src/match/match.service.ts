@@ -119,9 +119,9 @@ export class MatchService {
     }
   }
 
-  async removeMatch(userId: string, matchedId: string) {
+  async removeMatch(userId: string, matchedId: string): Promise<number> {
     try {
-      const result = await this._matchRepository.findOne({
+      const match = await this._matchRepository.findOne({
         where: [
           {
             userId,
@@ -136,10 +136,16 @@ export class MatchService {
         ],
       });
 
-      await this._matchRepository.delete({
-        userId: result.userId,
-        matchedId: result.matchedId,
+      if (!match) {
+        throw new BadRequestException('Not Found Match');
+      }
+
+      const result = await this._matchRepository.delete({
+        userId: match.userId,
+        matchedId: match.matchedId,
       });
+
+      return result.affected;
     } catch (err) {
       throw new BadRequestException('Not Found Match');
     }
