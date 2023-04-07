@@ -55,6 +55,11 @@ export class MessageGateway
       throw new BadGatewayException(HttpStatus.UNAUTHORIZED, 'Invalid Token');
     }
 
+    const isExistUser = this._online.find(
+      (userOnline) => userOnline.id === user.id,
+    );
+    if (isExistUser) return;
+
     const socketUser = {
       socketId,
       userId: user.id,

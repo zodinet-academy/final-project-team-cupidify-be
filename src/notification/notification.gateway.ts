@@ -43,6 +43,8 @@ export class NotificationGateway {
       this.server.emit(`noti-${notification.userToId}`, notification);
     }
 
+    console.log('socket match: ', notification);
+
     return {
       statusCode: HttpStatus.OK,
       message: 'Hello',

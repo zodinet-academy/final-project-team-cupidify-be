@@ -191,7 +191,7 @@ export class MatchService {
           isSeen: false,
           type: NotiType.LIKED,
         });
-        console.log('new match', newMatch);
+
         return newMatch;
       }
       const matchFinded = responseIsMatch.data;
