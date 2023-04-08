@@ -20,7 +20,12 @@ export class ConversationController {
   create(
     @User() user: UserDto,
     @Body() createConversationDto: CreateConversationDto,
-  ): Promise<THttpResponse<ConversationDto>> {
+  ): Promise<
+    THttpResponse<{
+      conversationId: string;
+      userProfile: ProfileConversationDto;
+    }>
+  > {
     createConversationDto.userFromId = user.id;
     return this.conversationService.create(createConversationDto);
   }

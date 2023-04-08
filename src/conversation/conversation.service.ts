@@ -14,6 +14,7 @@ import { CreateMatchDto } from '../match/dto/create-match.dto';
 import { Profile } from '../profile/entities/profile.entity';
 import { User } from '../user/entities/user.entity';
 import { MessageGateway } from '../message/message.gateway';
+import { IConversation } from './interface';
 
 @Injectable()
 export class ConversationService {
@@ -29,7 +30,7 @@ export class ConversationService {
 
   async create(
     createConversationDto: CreateConversationDto,
-  ): Promise<THttpResponse<ConversationDto>> {
+  ): Promise<THttpResponse<IConversation>> {
     try {
       const findMatch: CreateMatchDto = {
         userId: createConversationDto.userFromId,
@@ -49,19 +50,25 @@ export class ConversationService {
         findMatch,
       );
       // get profile user
-      const profile = await this._profileService.findOneByUserId(
+      const res = await this._profileService.findOneByUserId(
         createConversationDto.userToId,
       );
-      const sendConversation = {
-        conversation,
-        profile: profile.data,
+      const profile = res.data;
+      const { userId, name, avatar } = profile;
+      const sendConversation: IConversation = {
+        conversationId: conversation.id,
+        userProfile: {
+          userId,
+          name,
+          avatar,
+        },
       };
       // create conversation
       this._messageGateway.sendConversation(sendConversation);
 
       return {
         statusCode: HttpStatus.CREATED,
-        data: conversation,
+        data: sendConversation,
       };
     } catch (err) {
       throw new BadRequestException(err.message);

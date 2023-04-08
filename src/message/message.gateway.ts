@@ -16,6 +16,7 @@ import { MessageService } from './message.service';
 import { MessageType } from 'src/shared/enums';
 import { MessageDto } from './dto/message-dto';
 import { ConversationDto } from '../conversation/dto/conversation.dto';
+import { IConversation } from '../conversation/interface';
 
 dotenv.config();
 
@@ -106,21 +107,19 @@ export class MessageGateway
     }
   }
 
-  @SubscribeMessage('send-message')
-  async sendConversation(@MessageBody() sendConversation: any) {
-    console.log('sendConversation: ', sendConversation);
-
+  @SubscribeMessage('create-conversation')
+  async sendConversation(@MessageBody() sendConversation: IConversation) {
     try {
       const socketIdReceiverId = this._online.find(
-        (i) => i.userId === sendConversation.conversation.userToId,
+        (i) => i.userId === sendConversation.userProfile.userId,
       );
 
       const conversation = {
-        conversationId: sendConversation.conversation.conversationId,
+        conversationId: sendConversation.conversationId,
         userProfile: {
-          userId: sendConversation.profile.userId,
-          name: sendConversation.profile.name,
-          avatar: sendConversation.profile.avatar,
+          userId: sendConversation.userProfile.userId,
+          name: sendConversation.userProfile.name,
+          avatar: sendConversation.userProfile.avatar,
         },
       };
       this.server
