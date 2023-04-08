@@ -14,7 +14,7 @@ import { CreateMatchDto } from '../match/dto/create-match.dto';
 import { Profile } from '../profile/entities/profile.entity';
 import { User } from '../user/entities/user.entity';
 import { MessageGateway } from '../message/message.gateway';
-import { IConversation } from './interface';
+import { IConversation, IConversationSocket } from './interface';
 
 @Injectable()
 export class ConversationService {
@@ -49,13 +49,31 @@ export class ConversationService {
       const responseUpdateMatch = await this._matchService.updateIsChat(
         findMatch,
       );
-      // get profile user
+      // Send data me to friend
+      const resProfileMe = await this._profileService.findOneByUserId(
+        createConversationDto.userFromId,
+      );
+      const profileMe = resProfileMe.data;
+      const sendConversation: IConversationSocket = {
+        conversationId: conversation.id,
+        userProfile: {
+          userId: profileMe.userId,
+          name: profileMe.name,
+          avatar: profileMe.avatar,
+        },
+        sendUserId: createConversationDto.userToId,
+      };
+
+      // create conversation
+      this._messageGateway.sendConversation(sendConversation);
+
+      // Send data user friend to me
       const res = await this._profileService.findOneByUserId(
         createConversationDto.userToId,
       );
       const profile = res.data;
       const { userId, name, avatar } = profile;
-      const sendConversation: IConversation = {
+      const conversationRes: IConversation = {
         conversationId: conversation.id,
         userProfile: {
           userId,
@@ -63,12 +81,10 @@ export class ConversationService {
           avatar,
         },
       };
-      // create conversation
-      this._messageGateway.sendConversation(sendConversation);
 
       return {
         statusCode: HttpStatus.CREATED,
-        data: sendConversation,
+        data: conversationRes,
       };
     } catch (err) {
       throw new BadRequestException(err.message);
@@ -130,4 +146,11 @@ export class ConversationService {
       throw new BadRequestException(error.message);
     }
   }
+
+  // async getConversationByConversationId(
+  //   paginationQueryConversation: PaginationQueryConversation,
+  // ) {
+
+  //   const
+  // }
 }

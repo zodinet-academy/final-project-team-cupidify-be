@@ -16,7 +16,7 @@ import { MessageService } from './message.service';
 import { MessageType } from 'src/shared/enums';
 import { MessageDto } from './dto/message-dto';
 import { ConversationDto } from '../conversation/dto/conversation.dto';
-import { IConversation } from '../conversation/interface';
+import { IConversation, IConversationSocket } from '../conversation/interface';
 
 dotenv.config();
 
@@ -108,10 +108,10 @@ export class MessageGateway
   }
 
   @SubscribeMessage('create-conversation')
-  async sendConversation(@MessageBody() sendConversation: IConversation) {
+  async sendConversation(@MessageBody() sendConversation: IConversationSocket) {
     try {
       const socketIdReceiverId = this._online.find(
-        (i) => i.userId === sendConversation.userProfile.userId,
+        (i) => i.userId === sendConversation.sendUserId,
       );
 
       const conversation = {

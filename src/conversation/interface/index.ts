@@ -9,3 +9,10 @@ export interface IConversation {
   userProfile: IConversationUser;
   //   updatedAt: string;
 }
+
+export interface IConversationSocket {
+  conversationId: string;
+  userProfile: IConversationUser;
+  //   updatedAt: string;
+  sendUserId: string;
+}

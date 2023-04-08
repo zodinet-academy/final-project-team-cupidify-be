@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, Query } from '@nestjs/common';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
 import { ConversationService } from './conversation.service';
 import { ConversationDto } from './dto/conversation.dto';
@@ -8,6 +8,7 @@ import { AuthenticationGuard } from '../auth/guards/auth.guard';
 import { User } from '../user/decorator/user.decorator';
 import { UserDto } from '../user/dto/user.dto';
 import { ProfileConversationDto } from './dto/profile-conversation.dto';
+import { PaginationQueryConversation } from './dto/PaginationQueryConversation.dto';
 @ApiTags('Conversation')
 @Controller('conversation')
 export class ConversationController {
@@ -46,4 +47,21 @@ export class ConversationController {
   > {
     return this.conversationService.getConversationsById(user.id);
   }
+
+  // @ApiOperation({ summary: 'Get Conversation Chat' })
+  // @ApiBearerAuth()
+  // @UseGuards(AuthenticationGuard)
+  // @Get()
+  // getConversationByConversationId(
+  //   @Query() paginationQueryConversation: PaginationQueryConversation,
+  // ): Promise<
+  //   THttpResponse<
+  //     {
+  //       conversationId: string;
+  //       userProfile: ProfileConversationDto;
+  //     }[]
+  //   >
+  // > {
+  //   return this.conversationService.getConversationsById(paginationQueryConversation);
+  // }
 }
