@@ -8,7 +8,7 @@ import { AuthenticationGuard } from '../auth/guards/auth.guard';
 import { User } from '../user/decorator/user.decorator';
 import { UserDto } from '../user/dto/user.dto';
 import { ProfileConversationDto } from './dto/profile-conversation.dto';
-import { PaginationQueryConversation } from './dto/PaginationQueryConversation.dto';
+// import { PaginationQueryConversation } from './dto/PaginationQueryConversation.dto';
 @ApiTags('Conversation')
 @Controller('conversation')
 export class ConversationController {
