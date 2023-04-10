@@ -1,10 +1,5 @@
 import { THttpResponse } from './../shared/common/http-response.dto';
-import {
-  BadRequestException,
-  HttpException,
-  HttpStatus,
-  Injectable,
-} from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { CreateProfileDto } from './dto/create-profile.dto';
@@ -91,7 +86,6 @@ export class ProfileService {
       //   UpdateProfileDto,
       //   ProfileDto,
       // );
-      console.log('updating', updateProfileDto);
 
       await this._profileRepository.update({ userId }, updateProfileDto);
 
