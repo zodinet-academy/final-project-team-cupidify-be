@@ -25,6 +25,7 @@ export class UserController {
   @UseGuards(AuthenticationGuard)
   @Get()
   async findById(@User() user: UserDto) {
+    console.log(user);
     return await this._userService.findById(user.id);
   }
 

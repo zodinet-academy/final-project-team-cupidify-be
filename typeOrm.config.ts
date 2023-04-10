@@ -6,6 +6,7 @@ config();
 import { join } from 'path';
 
 const configService = new ConfigService();
+console.log(join(__dirname, 'migrations/*{.ts,.js}'));
 
 export default new DataSource({
   type: 'postgres',
