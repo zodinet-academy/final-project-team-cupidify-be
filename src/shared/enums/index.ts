@@ -5,6 +5,7 @@ export enum Gender {
 }
 
 export enum NotiType {
+  LIKED = 'LIKED',
   MATCHING = 'MATCHING',
   MESSAGE = 'MESSAGE',
 }
@@ -24,4 +25,9 @@ export enum Reason {
   DATE = 'DATE',
   CHAT = 'CHAT',
   FRIEND = 'FRIEND',
+}
+
+export enum MessageType {
+  TEXT = 'TEXT',
+  IMAGE = 'IMAGE',
 }

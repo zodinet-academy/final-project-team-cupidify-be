@@ -1,3 +1,4 @@
+import { ConversationProfileDto } from './dto/conversation-profile.dto';
 import {
   createMap,
   forMember,
@@ -38,6 +39,7 @@ export class ProfileProfile extends AutomapperProfile {
       );
       createMap(mapper, UpdateProfileDto, Profile);
       createMap(mapper, Profile, MatchedUserProfile);
+      createMap(mapper, Profile, ConversationProfileDto);
     };
   }
 }

@@ -5,6 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from 'src/profile/entities/profile.entity';
 import { ProfileService } from 'src/profile/profile.service';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
+import { NotiType } from 'src/shared/enums';
 import { Brackets, DataSource, Repository } from 'typeorm';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { NotificationDto } from './dto/notification.dto';
@@ -64,11 +65,41 @@ export class NotificationService {
     return transformedNoti;
   }
 
-  async totalNotificationByUser(userId: string) {
+  async updateNotiRead(updateNotiDto) {
     try {
-      const result = await this._notificationRepository.find({
-        where: [{ userFromId: userId }, { userToId: userId }],
+      await this._notificationRepository.update(
+        { id: updateNotiDto.notiId },
+        { isSeen: true },
+      );
+    } catch (err) {
+      throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
+    }
+  }
+
+  async totalNotificationByUser(userId: string, page: number, limit: number) {
+    try {
+      const [result, total] = await this._notificationRepository.findAndCount({
+        where: [
+          { userFromId: userId, type: NotiType.MATCHING },
+          { userToId: userId, type: NotiType.MATCHING },
+          { type: NotiType.LIKED, userToId: userId },
+        ],
+        order: { createdAt: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
       });
+
+      const allNotis = await this._notificationRepository.find({
+        where: [
+          { userFromId: userId, type: NotiType.MATCHING },
+          { userToId: userId, type: NotiType.MATCHING },
+          { type: NotiType.LIKED, userToId: userId },
+        ],
+      });
+
+      const unreadNotis = allNotis.filter((noti) => !noti.isSeen).length;
+
+      const totalPages = Math.ceil(total / limit);
 
       // const notifisPro = result.map(async (item, index) => {
       //   const userFromId = result[index].userFromId;
@@ -132,7 +163,7 @@ export class NotificationService {
 
       return {
         statusCode: HttpStatus.OK,
-        data: noti,
+        data: { noti, totalPages, unreadNotis },
       };
     } catch (err) {
       throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
