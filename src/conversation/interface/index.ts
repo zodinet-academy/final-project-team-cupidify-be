@@ -16,3 +16,8 @@ export interface IConversationSocket {
   //   updatedAt: string;
   sendUserId: string;
 }
+
+export interface IConversationProfile {
+  conversationId: string;
+  userId: string;
+}

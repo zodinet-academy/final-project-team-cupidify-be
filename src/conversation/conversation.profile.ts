@@ -1,3 +1,4 @@
+import { MessageConversation } from './dto/message-conversation.dto';
 import {
   Mapper,
   createMap,
@@ -12,6 +13,7 @@ import { CreateConversationDto } from './dto/create-conversation.dto';
 import { Conversation } from './entities/conversation.entity';
 import { ProfileConversationDto } from './dto/profile-conversation.dto';
 import { Profile } from '../profile/entities/profile.entity';
+import { Message } from '../message/entities/message.entity';
 
 @Injectable()
 export class ConversationProfile extends AutomapperProfile {
@@ -37,6 +39,8 @@ export class ConversationProfile extends AutomapperProfile {
         // forMember((dest) => dest.id, ignore()),
       );
       createMap(mapper, Profile, ProfileConversationDto);
+
+      createMap(mapper, Message, MessageConversation);
     };
   }
 }
