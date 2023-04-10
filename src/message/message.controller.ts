@@ -1,53 +1,34 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  UseGuards,
-  UploadedFile,
-  UseInterceptors,
-  Query,
-} from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
-import { THttpResponse } from 'src/shared/common/http-response.dto';
-import { MessageDto } from './dto/message-dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateMessageDto } from './dto/update-message.dto';
 
-import { findMessagePaginationQuery } from './dto/find-message.dto';
-import { MessageGateway } from './message.gateway';
-@ApiTags('Message')
 @Controller('message')
 export class MessageController {
-  constructor(
-    private readonly messageService: MessageService,
-    private readonly _messageGateway: MessageGateway,
-  ) {}
+  constructor(private readonly messageService: MessageService) {}
 
-  @ApiBearerAuth()
-  @UseGuards(AuthenticationGuard)
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async create(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() createMessageDto: CreateMessageDto,
-  ) {
-    const res = await this.messageService.create(file, createMessageDto);
-
-    await this._messageGateway.sendMessage(res.data);
-
-    return res;
+  create(@Body() createMessageDto: CreateMessageDto) {
+    return this.messageService.create(createMessageDto);
   }
 
-  @ApiOperation({ summary: 'Get All message' })
-  @ApiBearerAuth()
-  @UseGuards(AuthenticationGuard)
   @Get()
-  findAll(
-    @Query() paginationQuery: findMessagePaginationQuery,
-  ): Promise<THttpResponse<MessageDto[]>> {
-    return this.messageService.findAll(paginationQuery.conversationId);
+  findAll() {
+    return this.messageService.findAll();
+  }
+
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.messageService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
+    return this.messageService.update(+id, updateMessageDto);
+  }
+
+  @Delete(':id')
+  remove(@Param('id') id: string) {
+    return this.messageService.remove(+id);
   }
 }
