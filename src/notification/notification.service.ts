@@ -71,6 +71,30 @@ export class NotificationService {
         { id: updateNotiDto.notiId },
         { isSeen: true },
       );
+      return {
+        statusCode: HttpStatus.OK,
+        data: {
+          notiId: updateNotiDto.notiId,
+        },
+      };
+    } catch (err) {
+      throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
+    }
+  }
+
+  async markAllRead(userId: string) {
+    try {
+      const allNotis = await this._notificationRepository.find({
+        where: [
+          { userFromId: userId, type: NotiType.MATCHING },
+          { userToId: userId, type: NotiType.MATCHING },
+          { type: NotiType.LIKED, userToId: userId },
+        ],
+      });
+
+      allNotis.forEach((noti) => {
+        this.updateNotiRead({ notiId: noti.id });
+      });
     } catch (err) {
       throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);
     }
