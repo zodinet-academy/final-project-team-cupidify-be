@@ -55,13 +55,6 @@ export class NotificationService {
       toAvatar: toProfile.avatar,
     };
 
-    // this.server.emit(`noti-${notification.userFromId}`, notification);
-    // this.server.emit(`noti-${notification.userToId}`, notification);
-
-    // const notification = await this._notificationRepository.save(
-    //   createNotificationDto,
-    // );
-
     return transformedNoti;
   }
 
@@ -102,7 +95,7 @@ export class NotificationService {
 
   async totalNotificationByUser(userId: string, page: number, limit: number) {
     try {
-      const [result, total] = await this._notificationRepository.findAndCount({
+      const limitNotiPromise = await this._notificationRepository.findAndCount({
         where: [
           { userFromId: userId, type: NotiType.MATCHING },
           { userToId: userId, type: NotiType.MATCHING },
@@ -113,7 +106,7 @@ export class NotificationService {
         take: limit,
       });
 
-      const allNotis = await this._notificationRepository.find({
+      const allNotisPromise = await this._notificationRepository.find({
         where: [
           { userFromId: userId, type: NotiType.MATCHING },
           { userToId: userId, type: NotiType.MATCHING },
@@ -121,45 +114,14 @@ export class NotificationService {
         ],
       });
 
+      const [[result, total], allNotis] = await Promise.all([
+        limitNotiPromise,
+        allNotisPromise,
+      ]);
+
       const unreadNotis = allNotis.filter((noti) => !noti.isSeen).length;
 
       const totalPages = Math.ceil(total / limit);
-
-      // const notifisPro = result.map(async (item, index) => {
-      //   const userFromId = result[index].userFromId;
-      //   const userToId = result[index].userToId;
-      //   const notisBd = await this._dataSource.manager
-      //     .createQueryBuilder()
-      //     .select([
-      //       'notification',
-      //       'profile.userId',
-      //       'profile.name',
-      //       'profile.avatar',
-      //     ])
-      //     .from(Notification, 'notification')
-      //     .from(Profile, 'profile')
-      //     .where(
-      //       new Brackets((query) => {
-      //         query
-      //           .where('notification.userFromId = :userFromId', { userFromId })
-      //           .andWhere('profile.userId = notification.userToId');
-      //       }),
-      //     )
-      //     .orWhere(
-      //       new Brackets((query) => {
-      //         query
-      //           .where('notification.userToId = :userToId', { userToId })
-      //           .andWhere('profile.userId = notification.userFromId');
-      //       }),
-      //     )
-      //     .getMany();
-      //   return { noti: item, notisBd };
-      //   // console.log('result:', notisBd);
-      // });
-
-      // const notifis = await Promise.all(notifisPro);
-
-      // console.log('result:', notifis);
 
       const notis = result.map(async (noti) => {
         const [fromProfileRes, toProfileRes] = await Promise.all([
