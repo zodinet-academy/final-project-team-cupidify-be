@@ -119,6 +119,38 @@ export class MatchService {
     }
   }
 
+  async removeMatch(userId: string, matchedId: string): Promise<number> {
+    try {
+      const match = await this._matchRepository.findOne({
+        where: [
+          {
+            userId,
+            matchedId,
+            status: true,
+          },
+          {
+            userId: matchedId,
+            matchedId: userId,
+            status: true,
+          },
+        ],
+      });
+
+      if (!match) {
+        throw new BadRequestException('Not Found Match');
+      }
+
+      const result = await this._matchRepository.delete({
+        userId: match.userId,
+        matchedId: match.matchedId,
+      });
+
+      return result.affected;
+    } catch (err) {
+      throw new BadRequestException('Not Found Match');
+    }
+  }
+
   async updateIsChat(findMatch: CreateMatchDto) {
     try {
       const responseIsMatch = await this.checkIsMatch(findMatch);
@@ -148,6 +180,19 @@ export class MatchService {
       };
     } catch (error) {
       throw new BadRequestException(error.message);
+    }
+  }
+
+  async deleteMatch(userId: string, matchedId: string) {
+    try {
+      const result = await this._matchRepository.delete({
+        userId,
+        matchedId,
+        status: true,
+      });
+    } catch (err) {
+      console.log(err.message);
+      throw new BadRequestException('Unable to delete match');
     }
   }
 

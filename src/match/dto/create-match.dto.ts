@@ -10,4 +10,7 @@ export class CreateMatchDto {
   @IsString()
   @IsNotEmpty()
   matchedId: string;
+
+  // @ApiProperty()
+  // status: boolean;
 }
