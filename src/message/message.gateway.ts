@@ -14,9 +14,7 @@ import * as dotenv from 'dotenv';
 import { GatewayGuard } from '../auth/guards/gateway.guard';
 import { MessageService } from './message.service';
 import { MessageType } from 'src/shared/enums';
-import { MessageDto } from './dto/message-dto';
-import { ConversationDto } from '../conversation/dto/conversation.dto';
-import { IConversation, IConversationSocket } from '../conversation/interface';
+import { IConversationSocket } from '../conversation/interface';
 
 dotenv.config();
 
@@ -91,6 +89,7 @@ export class MessageGateway
       const socketIdReceiverId = this._online.find(
         (i) => i.userId === message.receiverId,
       );
+      console.log('message: ', message);
 
       this.server
         .to(socketIdReceiverId.socketId)

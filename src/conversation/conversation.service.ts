@@ -165,6 +165,7 @@ export class ConversationService {
       {
         conversationId: string;
         userProfile: ProfileConversationDto;
+        lastMessage: MessageConversation;
       }[]
     >
   > {
@@ -183,6 +184,7 @@ export class ConversationService {
       const otherUserIds = conversations.map((c) => {
         return {
           conversationId: c.id,
+          createdAt: c.createdAt,
           userId: c.userFromId === userId ? c.userToId : c.userFromId,
         };
       });
@@ -195,11 +197,13 @@ export class ConversationService {
       const result = otherUserIds.map((u) => {
         return {
           conversationId: u.conversationId,
+          createdAt: u.createdAt,
           lastMessage: mapLastMessages.find((i) => {
             if (i.conversationId === u.conversationId) {
               return {
                 content: i.content,
                 senderId: i.senderId,
+                type: i.type,
               };
             }
           }),
@@ -210,6 +214,8 @@ export class ConversationService {
           }),
         };
       });
+
+      console.log(result);
 
       return {
         statusCode: HttpStatus.OK,
