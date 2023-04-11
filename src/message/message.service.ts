@@ -15,7 +15,6 @@ import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { CloudinaryService } from 'src/cloudinary/cloudinary.service';
 import { MessageType } from 'src/shared/enums';
-import { MessageGateway } from './message.gateway';
 
 @Injectable()
 export class MessageService {
@@ -32,7 +31,7 @@ export class MessageService {
   ): Promise<THttpResponse<MessageDto>> {
     try {
       const message = await this._messageRepository.save(createMessageDto);
-      // server.to(message.conversationId).emit('message', message);
+
       return {
         statusCode: HttpStatus.CREATED,
         data: message,
@@ -58,20 +57,6 @@ export class MessageService {
         createMessageDto.type = MessageType.IMAGE;
       }
 
-      // const toSaveMessage = this._classMapper.map(
-      //   createMessageDto,
-      //   CreateMessageDto,
-      //   Message,
-      // );
-
-      // console.log('to save', toSaveMessage);
-
-      // const message = await this._classMapper.mapAsync(
-      //   await this._messageRepository.save(toSaveMessage),
-      //   Message,
-      //   MessageDto,
-      // );
-
       const message = await this._messageRepository.save(createMessageDto);
 
       return {
@@ -83,18 +68,33 @@ export class MessageService {
     }
   }
 
-  async findAll(conversationId: string): Promise<THttpResponse<MessageDto[]>> {
+  async findAll(
+    conversationId: string,
+    page: number,
+    limit: number,
+  ): Promise<THttpResponse<{ totalPages: number; messages: MessageDto[] }>> {
     try {
-      const messages = await this._classMapper.mapArrayAsync(
-        await this._messageRepository.find({
-          where: { conversationId },
-        }),
+      const [messages, total] = await this._messageRepository.findAndCount({
+        where: { conversationId },
+        order: { createdAt: 'DESC' },
+        skip: (page - 1) * limit,
+        take: limit,
+      });
+
+      const mapMessages = await this._classMapper.mapArrayAsync(
+        messages,
         Message,
         MessageDto,
       );
+
+      const totalPages = Math.ceil(total / limit);
+
       return {
         statusCode: HttpStatus.OK,
-        data: messages,
+        data: {
+          totalPages,
+          messages: mapMessages,
+        },
       };
     } catch (err) {
       throw new BadRequestException(err.message);

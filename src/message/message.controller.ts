@@ -47,7 +47,13 @@ export class MessageController {
   @Get()
   findAll(
     @Query() paginationQuery: findMessagePaginationQuery,
-  ): Promise<THttpResponse<MessageDto[]>> {
-    return this.messageService.findAll(paginationQuery.conversationId);
+    @Query('page') page = 1,
+    @Query('limit') limit = 20,
+  ): Promise<THttpResponse<{ totalPages: number; messages: MessageDto[] }>> {
+    return this.messageService.findAll(
+      paginationQuery.conversationId,
+      page,
+      limit,
+    );
   }
 }
