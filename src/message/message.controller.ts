@@ -7,6 +7,7 @@ import {
   UploadedFile,
   UseInterceptors,
   Query,
+  Param,
 } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';

@@ -1,4 +1,5 @@
 import { AutoMap } from '@automapper/classes';
+import { MessageType } from '../../shared/enums';
 
 export class MessageConversation {
   @AutoMap()
@@ -9,4 +10,10 @@ export class MessageConversation {
 
   @AutoMap()
   senderId: string;
+
+  @AutoMap()
+  type: MessageType;
+
+  @AutoMap()
+  createdAt: Date;
 }

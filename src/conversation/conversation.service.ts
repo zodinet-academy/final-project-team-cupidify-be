@@ -200,6 +200,7 @@ export class ConversationService {
               return {
                 content: i.content,
                 senderId: i.senderId,
+                type: i.type,
               };
             }
           }),
