@@ -48,4 +48,11 @@ export class CreateMessageDto {
   })
   @IsEnum(MessageType)
   type: MessageType;
+
+  @AutoMap()
+  @ApiProperty({
+    type: Date,
+    default: Date.now(),
+  })
+  createdAt: Date;
 }

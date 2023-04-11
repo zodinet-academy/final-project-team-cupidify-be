@@ -91,6 +91,7 @@ export class MessageGateway
       const socketIdReceiverId = this._online.find(
         (i) => i.userId === message.receiverId,
       );
+      console.log('message: ', message);
 
       this.server
         .to(socketIdReceiverId.socketId)
