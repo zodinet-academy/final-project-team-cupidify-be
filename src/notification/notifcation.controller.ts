@@ -37,4 +37,14 @@ export class NotificationController {
   updateRead(@Body() updateNotiDto) {
     return this._notificationService.updateNotiRead(updateNotiDto);
   }
+
+  @ApiOkResponse({
+    description: 'Mark all notifications read',
+  })
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
+  @Put('markAllRead')
+  updateAllRead(@User() user: UserDto) {
+    return this._notificationService.markAllRead(user.id);
+  }
 }
