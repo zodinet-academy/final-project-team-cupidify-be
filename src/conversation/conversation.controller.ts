@@ -7,7 +7,7 @@ import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { AuthenticationGuard } from '../auth/guards/auth.guard';
 import { User } from '../user/decorator/user.decorator';
 import { UserDto } from '../user/dto/user.dto';
-import { ProfileConversationDto } from './dto/profile-conversation.dto';
+import { ProfileConversationDto } from '../profile/dto/profile-conversation.dto';
 // import { PaginationQueryConversation } from './dto/PaginationQueryConversation.dto';
 @ApiTags('Conversation')
 @Controller('conversation')

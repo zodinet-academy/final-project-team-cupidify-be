@@ -1,4 +1,4 @@
-import { MessageConversation } from './dto/message-conversation.dto';
+import { MessageConversation } from '../message/dto/message-conversation.dto';
 import {
   Mapper,
   createMap,
@@ -11,7 +11,7 @@ import { Injectable } from '@nestjs/common';
 import { ConversationDto } from './dto/conversation.dto';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { Conversation } from './entities/conversation.entity';
-import { ProfileConversationDto } from './dto/profile-conversation.dto';
+import { ProfileConversationDto } from '../profile/dto/profile-conversation.dto';
 import { Profile } from '../profile/entities/profile.entity';
 import { Message } from '../message/entities/message.entity';
 
@@ -38,7 +38,7 @@ export class ConversationProfile extends AutomapperProfile {
         Conversation,
         // forMember((dest) => dest.id, ignore()),
       );
-      createMap(mapper, Profile, ProfileConversationDto);
+      // createMap(mapper, Profile, ProfileConversationDto);
 
       createMap(mapper, Message, MessageConversation);
     };

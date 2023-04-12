@@ -18,5 +18,6 @@ import { MessageModule } from '../message/message.module';
   ],
   controllers: [ConversationController],
   providers: [ConversationService, ConversationProfile, ProfileProfile],
+  exports: [ConversationService],
 })
 export class ConversationModule {}
