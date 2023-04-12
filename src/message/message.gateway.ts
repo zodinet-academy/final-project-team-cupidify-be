@@ -86,17 +86,19 @@ export class MessageGateway
     // @UploadedFile() file: Express.Multer.File,
   ) {
     try {
+      if (message.type === MessageType.IMAGE) return;
+      const result = await this._messageService.create(null, message);
+      // Find user receiver
       const socketIdReceiverId = this._online.find(
         (i) => i.userId === message.receiverId,
       );
-      console.log('message: ', message);
+
+      if (!socketIdReceiverId) return;
 
       this.server
         .to(socketIdReceiverId.socketId)
         .emit(`receive-message`, message);
 
-      if (message.type === MessageType.IMAGE) return;
-      const result = await this._messageService.create(null, message);
       return result;
     } catch (err) {
       throw new BadGatewayException(
