@@ -222,7 +222,7 @@ export class LocationService {
       const resMatchUSer: THttpResponse<FindMatchDto[]> =
         await this._matchService.getListMacthByID(userId);
       const resMatchedUser: THttpResponse<MatchedUserProfile[]> =
-        await this._matchService.getMatches(userId);
+        await this._matchService.getMatched(userId);
 
       const listUserMatched = resMatchedUser.data;
 
