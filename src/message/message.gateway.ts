@@ -14,7 +14,7 @@ import * as dotenv from 'dotenv';
 import { GatewayGuard } from '../auth/guards/gateway.guard';
 import { MessageService } from './message.service';
 import { MessageType } from 'src/shared/enums';
-import { IConversationSocket } from '../shared/interfaces/conversation-profile.interface';
+import { IConversationSocket } from 'src/shared/interfaces/conversation-profile.interface';
 
 dotenv.config();
 
@@ -86,8 +86,10 @@ export class MessageGateway
     // @UploadedFile() file: Express.Multer.File,
   ) {
     try {
-      if (message.type === MessageType.IMAGE) return;
-      const result = await this._messageService.create(null, message);
+      let result;
+      if (message.type === MessageType.TEXT) {
+        result = await this._messageService.create(null, message);
+      }
       // Find user receiver
       const socketIdReceiverId = this._online.find(
         (i) => i.userId === message.receiverId,
