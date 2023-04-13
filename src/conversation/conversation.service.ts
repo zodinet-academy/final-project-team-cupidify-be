@@ -114,7 +114,11 @@ export class ConversationService {
       });
 
       if (conversations.length === 0) {
-        throw new NotFoundException('Not Found Conversations');
+        return {
+          statusCode: HttpStatus.OK,
+          message: 'no conversation',
+          data: [],
+        };
       }
 
       const otherUserIds = conversations.map((c) => {

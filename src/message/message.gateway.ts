@@ -1,5 +1,10 @@
 import { CreateMessageDto } from './dto/create-message.dto';
-import { BadGatewayException, HttpStatus, UseGuards } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import {
   MessageBody,
   OnGatewayConnection,
@@ -36,37 +41,42 @@ export class MessageGateway
 
   @WebSocketServer() server;
   handleConnection(socket: Socket): void {
-    const socketId = socket.id;
+    try {
+      const socketId = socket.id;
 
-    console.log(`New connecting socket id:`, socketId);
+      console.log(`New connecting socket id:`, socketId);
 
-    const token: any = socket.handshake.query['token'];
-    if (!token) {
-      throw new BadGatewayException(
-        HttpStatus.UNAUTHORIZED,
-        'No Token Provided',
+      const token: any = socket.handshake.query['token'];
+      if (!token) {
+        throw new BadGatewayException(
+          HttpStatus.UNAUTHORIZED,
+          'No Token Provided',
+        );
+      }
+      const user = this._jwtService.verify(token, {
+        secret: process.env.SECRET_KEY,
+      });
+
+      const isExistUser = this._online.find(
+        (userOnline) => userOnline.id === user.id,
       );
+      if (isExistUser) return;
+
+      const socketUser = {
+        socketId,
+        userId: user.id,
+      };
+
+      this._online.push(socketUser);
+      console.log('current online', this._online);
+    } catch (error) {
+      // console.log(error.message);
+      // throw new BadRequestException(
+      //   HttpStatus.UNAUTHORIZED,
+      //   'No token provided!',
+      // );
+      socket.disconnect(true);
     }
-    const user = this._jwtService.verify(token, {
-      secret: process.env.SECRET_KEY,
-    });
-
-    if (!user) {
-      throw new BadGatewayException(HttpStatus.UNAUTHORIZED, 'Invalid Token');
-    }
-
-    const isExistUser = this._online.find(
-      (userOnline) => userOnline.id === user.id,
-    );
-    if (isExistUser) return;
-
-    const socketUser = {
-      socketId,
-      userId: user.id,
-    };
-
-    this._online.push(socketUser);
-    console.log('current online', this._online);
   }
 
   handleDisconnect(socket: Socket): void {
