@@ -1,27 +1,32 @@
-import { ProfileConversationDto } from './dto/profile-conversation.dto';
+import { MessageService } from './../message/message.service';
+import { ProfileConversationDto } from '../profile/dto/profile-conversation.dto';
 import { ProfileService } from './../profile/profile.service';
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
-import { Brackets, DataSource, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 import { ConversationDto } from './dto/conversation.dto';
 import { CreateConversationDto } from './dto/create-conversation.dto';
 import { Conversation } from './entities/conversation.entity';
 import { MatchService } from '../match/match.service';
 import { CreateMatchDto } from '../match/dto/create-match.dto';
-import { Profile } from '../profile/entities/profile.entity';
-import { User } from '../user/entities/user.entity';
 import { MessageGateway } from '../message/message.gateway';
-import { IConversation, IConversationSocket } from './interface';
+import { IConversation, IConversationSocket } from '../profile/interfaces';
+import { MessageConversation } from 'src/message/dto/message-conversation.dto';
 
 @Injectable()
 export class ConversationService {
   constructor(
     @InjectRepository(Conversation)
     private readonly _conversationRepository: Repository<Conversation>,
-    private _dataSource: DataSource,
+    private readonly _messageService: MessageService,
     private readonly _matchService: MatchService,
     private readonly _profileService: ProfileService,
     @InjectMapper() private readonly _classMapper: Mapper,
@@ -90,11 +95,13 @@ export class ConversationService {
       throw new BadRequestException(err.message);
     }
   }
+
   async getConversationsById(userId: string): Promise<
     THttpResponse<
       {
         conversationId: string;
         userProfile: ProfileConversationDto;
+        lastMessage: MessageConversation;
       }[]
     >
   > {
@@ -106,29 +113,36 @@ export class ConversationService {
         },
       });
 
+      if (conversations.length === 0) {
+        return {
+          statusCode: HttpStatus.OK,
+          message: 'no conversation',
+          data: [],
+        };
+      }
+
       const otherUserIds = conversations.map((c) => {
         return {
           conversationId: c.id,
+          createdAt: c.createdAt,
           userId: c.userFromId === userId ? c.userToId : c.userFromId,
         };
       });
 
-      const profiles = await this._dataSource.manager
-        .createQueryBuilder(Profile, 'pro')
-        .where('pro.userId IN (:...userIds)', {
-          userIds: otherUserIds.map((u) => u.userId),
-        })
-        .getMany();
-
-      const mapProfile = await this._classMapper.mapArrayAsync(
-        profiles,
-        Profile,
-        ProfileConversationDto,
-      );
+      const [mapLastMessages, mapProfile] = await Promise.all([
+        await this._messageService.getLastMessage(otherUserIds),
+        await this._profileService.getConversationProfile(otherUserIds),
+      ]);
 
       const result = otherUserIds.map((u) => {
         return {
           conversationId: u.conversationId,
+          createdAt: u.createdAt,
+          lastMessage: mapLastMessages.find((i) => {
+            if (i.conversationId === u.conversationId) {
+              return i;
+            }
+          }),
           userProfile: mapProfile.find((p) => {
             if (p.userId === u.userId) {
               return p;
@@ -146,11 +160,4 @@ export class ConversationService {
       throw new BadRequestException(error.message);
     }
   }
-
-  // async getConversationByConversationId(
-  //   paginationQueryConversation: PaginationQueryConversation,
-  // ) {
-
-  //   const
-  // }
 }

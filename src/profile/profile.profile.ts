@@ -13,6 +13,7 @@ import { ProfileDto } from './dto/profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Profile } from './entities/profile.entity';
 import { MatchedUserProfile } from './dto/match-user-profile.dto';
+import { ProfileConversationDto } from './dto/profile-conversation.dto';
 
 @Injectable()
 export class ProfileProfile extends AutomapperProfile {
@@ -40,6 +41,7 @@ export class ProfileProfile extends AutomapperProfile {
       createMap(mapper, UpdateProfileDto, Profile);
       createMap(mapper, Profile, MatchedUserProfile);
       createMap(mapper, Profile, ConversationProfileDto);
+      createMap(mapper, Profile, ProfileConversationDto);
     };
   }
 }

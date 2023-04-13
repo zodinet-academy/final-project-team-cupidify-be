@@ -83,6 +83,48 @@ export class MatchService {
     }
   }
 
+  async getMatched(
+    userId: string,
+  ): Promise<THttpResponse<MatchedUserProfile[]>> {
+    try {
+      const matches = await this._dataSource.manager
+        .createQueryBuilder()
+        .from(Match, 'match')
+        .select('profile')
+        .from(Profile, 'profile')
+        .where(
+          new Brackets((query) => {
+            query
+              .where('match.userId = :userId', { userId })
+              .andWhere('profile.userId = match.matchedId');
+          }),
+        )
+        .orWhere(
+          new Brackets((query) => {
+            query
+              .where('match.matchedId = :userId', { userId })
+              .andWhere('profile.userId = match.userId');
+          }),
+        )
+        .andWhere('match.status = true')
+        .getMany();
+
+      const data = await this._classMapper.mapArrayAsync(
+        matches,
+        Profile,
+        MatchedUserProfile,
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        data,
+      };
+    } catch (err) {
+      console.log(err);
+      throw new BadRequestException(HttpStatus.NOT_FOUND, 'Not Found Matches');
+    }
+  }
+
   async getListMacthByID(
     userId: string,
   ): Promise<THttpResponse<FindMatchDto[]>> {

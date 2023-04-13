@@ -1,5 +1,10 @@
 import { CreateMessageDto } from './dto/create-message.dto';
-import { BadGatewayException, HttpStatus, UseGuards } from '@nestjs/common';
+import {
+  BadGatewayException,
+  BadRequestException,
+  HttpStatus,
+  UseGuards,
+} from '@nestjs/common';
 import {
   MessageBody,
   OnGatewayConnection,
@@ -14,9 +19,7 @@ import * as dotenv from 'dotenv';
 import { GatewayGuard } from '../auth/guards/gateway.guard';
 import { MessageService } from './message.service';
 import { MessageType } from 'src/shared/enums';
-import { MessageDto } from './dto/message-dto';
-import { ConversationDto } from '../conversation/dto/conversation.dto';
-import { IConversation, IConversationSocket } from '../conversation/interface';
+import { IConversationSocket } from 'src/shared/interfaces/conversation-profile.interface';
 
 dotenv.config();
 
@@ -38,37 +41,42 @@ export class MessageGateway
 
   @WebSocketServer() server;
   handleConnection(socket: Socket): void {
-    const socketId = socket.id;
+    try {
+      const socketId = socket.id;
 
-    console.log(`New connecting socket id:`, socketId);
+      console.log(`New connecting socket id:`, socketId);
 
-    const token: any = socket.handshake.query['token'];
-    if (!token) {
-      throw new BadGatewayException(
-        HttpStatus.UNAUTHORIZED,
-        'No Token Provided',
+      const token: any = socket.handshake.query['token'];
+      if (!token) {
+        throw new BadGatewayException(
+          HttpStatus.UNAUTHORIZED,
+          'No Token Provided',
+        );
+      }
+      const user = this._jwtService.verify(token, {
+        secret: process.env.SECRET_KEY,
+      });
+
+      const isExistUser = this._online.find(
+        (userOnline) => userOnline.id === user.id,
       );
+      if (isExistUser) return;
+
+      const socketUser = {
+        socketId,
+        userId: user.id,
+      };
+
+      this._online.push(socketUser);
+      console.log('current online', this._online);
+    } catch (error) {
+      // console.log(error.message);
+      // throw new BadRequestException(
+      //   HttpStatus.UNAUTHORIZED,
+      //   'No token provided!',
+      // );
+      socket.disconnect(true);
     }
-    const user = this._jwtService.verify(token, {
-      secret: process.env.SECRET_KEY,
-    });
-
-    if (!user) {
-      throw new BadGatewayException(HttpStatus.UNAUTHORIZED, 'Invalid Token');
-    }
-
-    const isExistUser = this._online.find(
-      (userOnline) => userOnline.id === user.id,
-    );
-    if (isExistUser) return;
-
-    const socketUser = {
-      socketId,
-      userId: user.id,
-    };
-
-    this._online.push(socketUser);
-    console.log('current online', this._online);
   }
 
   handleDisconnect(socket: Socket): void {
@@ -88,16 +96,21 @@ export class MessageGateway
     // @UploadedFile() file: Express.Multer.File,
   ) {
     try {
+      let result;
+      if (message.type === MessageType.TEXT) {
+        result = await this._messageService.create(null, message);
+      }
+      // Find user receiver
       const socketIdReceiverId = this._online.find(
         (i) => i.userId === message.receiverId,
       );
+
+      if (!socketIdReceiverId) return;
 
       this.server
         .to(socketIdReceiverId.socketId)
         .emit(`receive-message`, message);
 
-      if (message.type === MessageType.IMAGE) return;
-      const result = await this._messageService.create(null, message);
       return result;
     } catch (err) {
       throw new BadGatewayException(

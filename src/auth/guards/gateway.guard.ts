@@ -1,4 +1,10 @@
-import { Injectable, ExecutionContext, CanActivate } from '@nestjs/common';
+import {
+  Injectable,
+  ExecutionContext,
+  CanActivate,
+  BadRequestException,
+  HttpStatus,
+} from '@nestjs/common';
 import * as dotenv from 'dotenv';
 import * as jwt from 'jsonwebtoken';
 
@@ -8,8 +14,13 @@ dotenv.config();
 export class GatewayGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const socket = context.switchToWs().getClient();
-    const token = socket.handshake.query.token;
     try {
+      const token = socket.handshake.query.token;
+      if (!token)
+        throw new BadRequestException(
+          HttpStatus.UNAUTHORIZED,
+          'No token provided',
+        );
       const decoded = jwt.verify(token, process.env.SECRET_KEY);
       socket.data.user = decoded;
       return true;
