@@ -16,12 +16,14 @@ export class CloudinaryUtilService {
     try {
       const result = await Promise.all(files.map((f) => this.upload(f)));
 
+      console.log(result);
+
       return {
         statusCode: HttpStatus.CREATED,
         data: result.map((i) => {
           return {
             publicId: i.public_id,
-            photoUrl: i.url,
+            photoUrl: i.secure_url,
           };
         }),
       };
@@ -40,7 +42,7 @@ export class CloudinaryUtilService {
         statusCode: HttpStatus.CREATED,
         data: {
           publicId: result.public_id,
-          photoUrl: result.url,
+          photoUrl: result.secure_url,
         },
       };
     } catch (err) {
