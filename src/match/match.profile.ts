@@ -3,6 +3,7 @@ import { Injectable } from '@nestjs/common';
 import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Mapper, createMap } from '@automapper/core';
 import { FindMatchDto } from './dto/find-match.dto';
+import { DeleteMatchDto } from './dto/delete-match.dto';
 
 @Injectable()
 export class MatchProfile extends AutomapperProfile {
@@ -13,6 +14,7 @@ export class MatchProfile extends AutomapperProfile {
   override get profile() {
     return (mapper) => {
       createMap(mapper, Match, FindMatchDto);
+      createMap(mapper, DeleteMatchDto, Match);
     };
   }
 }

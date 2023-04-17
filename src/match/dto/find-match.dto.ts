@@ -17,4 +17,8 @@ export class FindMatchDto {
   @AutoMap()
   @ApiProperty()
   status: boolean;
+
+  @AutoMap()
+  @ApiProperty()
+  isChat: boolean;
 }
