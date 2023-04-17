@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsString, IsNotEmpty } from 'class-validator';
+import { IsString, IsNotEmpty, IsOptional } from 'class-validator';
 export class findMessagePaginationQuery {
   @ApiProperty({
     type: String,
@@ -8,4 +8,13 @@ export class findMessagePaginationQuery {
   @IsString()
   @IsNotEmpty()
   conversationId: string;
+
+  @ApiProperty({
+    type: String,
+    title: 'last message Id',
+  })
+  @IsOptional()
+  @IsString()
+  @IsNotEmpty()
+  lastMessageId: string;
 }

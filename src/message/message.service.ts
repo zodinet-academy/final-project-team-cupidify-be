@@ -6,7 +6,7 @@ import {
   UploadedFile,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Brackets, DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, LessThan, Repository } from 'typeorm';
 import { CreateMessageDto } from './dto/create-message.dto';
 import { Message } from './entities/message.entity';
 import { Server } from 'socket.io';
@@ -18,6 +18,8 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { MessageType } from '../shared/enums';
 import { IConversationProfile } from '../profile/interfaces';
 import { MessageConversation } from './dto/message-conversation.dto';
+import { LIMIT_MSG_RESULTS } from 'src/shared/constants/constants';
+import { findMessagePaginationQuery } from './dto/find-message.dto';
 
 @Injectable()
 export class MessageService {
@@ -73,17 +75,35 @@ export class MessageService {
   }
 
   async findAll(
-    conversationId: string,
-    page: number,
-    limit: number,
+    paginationQuery: findMessagePaginationQuery,
   ): Promise<THttpResponse<{ totalPages: number; messages: MessageDto[] }>> {
+    const { conversationId, lastMessageId } = paginationQuery;
     try {
-      const [messages, total] = await this._messageRepository.findAndCount({
-        where: { conversationId },
-        order: { createdAt: 'DESC' },
-        skip: (page - 1) * limit,
-        take: limit,
-      });
+      let messages;
+      let total;
+      if (!lastMessageId) {
+        [messages, total] = await this._messageRepository.findAndCount({
+          where: { conversationId },
+          order: { createdAt: 'DESC' },
+          take: LIMIT_MSG_RESULTS,
+        });
+      } else {
+        const lastMessage = await this._messageRepository.findOne({
+          where: { id: lastMessageId },
+        });
+
+        const messagesPro = this._messageRepository.find({
+          where: { conversationId, createdAt: LessThan(lastMessage.createdAt) },
+          order: { createdAt: 'DESC' },
+          take: LIMIT_MSG_RESULTS,
+        });
+
+        const totalPro = this._messageRepository.count({
+          where: { conversationId },
+        });
+
+        [messages, total] = await Promise.all([messagesPro, totalPro]);
+      }
 
       const mapMessages = await this._classMapper.mapArrayAsync(
         messages,
@@ -91,7 +111,7 @@ export class MessageService {
         MessageDto,
       );
 
-      const totalPages = Math.ceil(total / limit);
+      const totalPages = Math.ceil(total / LIMIT_MSG_RESULTS);
 
       return {
         statusCode: HttpStatus.OK,
