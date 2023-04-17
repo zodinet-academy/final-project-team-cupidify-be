@@ -7,7 +7,6 @@ import { ApiBearerAuth } from '@nestjs/swagger';
 import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
 import { THttpResponse } from '../shared/common/http-response.dto';
 import { BlackListDto } from './dto/black-list.dto';
-import { BlockDto } from './dto/block.dto';
 
 @Controller('black-list')
 export class BlackListController {
@@ -22,14 +21,6 @@ export class BlackListController {
   ): Promise<THttpResponse<{ id: string }>> {
     const { id } = user;
     return await this.blackListService.addBlockedUser(id, addBlockUser);
-  }
-
-  @ApiBearerAuth()
-  @UseGuards(AuthenticationGuard)
-  @Post('/block-user')
-  async blockUser(@User() user, @Body() block: BlockDto) {
-    const { id } = user;
-    return await this.blackListService.blockUser(id, block.blockedId);
   }
 
   @ApiBearerAuth()

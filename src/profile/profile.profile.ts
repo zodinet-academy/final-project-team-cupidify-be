@@ -1,4 +1,3 @@
-import { ConversationProfileDto } from './dto/conversation-profile.dto';
 import {
   createMap,
   forMember,

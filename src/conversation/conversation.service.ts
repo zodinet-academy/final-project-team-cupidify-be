@@ -151,13 +151,7 @@ export class ConversationService {
         };
       });
 
-      return {
-        statusCode: HttpStatus.OK,
-        data: result,
-      };
-    } catch (error) {
-      console.log(error);
-      throw new BadRequestException(error.message);
-    }
+  findOne(id: number) {
+    return `This action returns a #${id} conversation`;
   }
 }

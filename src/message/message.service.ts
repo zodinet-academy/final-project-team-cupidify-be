@@ -63,13 +63,8 @@ export class MessageService {
 
       const message = await this._messageRepository.save(createMessageDto);
 
-      return {
-        statusCode: HttpStatus.CREATED,
-        data: message,
-      };
-    } catch (err) {
-      throw new BadRequestException(err.message);
-    }
+  update(id: number, updateMessageDto: UpdateMessageDto) {
+    return `This action updates a #${id} message`;
   }
 
   async findAll(

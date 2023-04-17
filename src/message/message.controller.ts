@@ -11,35 +11,30 @@ import {
 } from '@nestjs/common';
 import { MessageService } from './message.service';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
-import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
-import { THttpResponse } from 'src/shared/common/http-response.dto';
-import { MessageDto } from './dto/message-dto';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { UpdateMessageDto } from './dto/update-message.dto';
 
-import { findMessagePaginationQuery } from './dto/find-message.dto';
-import { MessageGateway } from './message.gateway';
-@ApiTags('Message')
 @Controller('message')
 export class MessageController {
-  constructor(
-    private readonly messageService: MessageService,
-    private readonly _messageGateway: MessageGateway,
-  ) {}
+  constructor(private readonly messageService: MessageService) {}
 
-  @ApiBearerAuth()
-  @UseGuards(AuthenticationGuard)
   @Post()
-  @UseInterceptors(FileInterceptor('file'))
-  async create(
-    @UploadedFile() file: Express.Multer.File,
-    @Body() createMessageDto: CreateMessageDto,
-  ) {
-    const res = await this.messageService.create(file, createMessageDto);
+  create(@Body() createMessageDto: CreateMessageDto) {
+    return this.messageService.create(createMessageDto);
+  }
 
-    await this._messageGateway.sendMessage(res.data);
+  @Get()
+  findAll() {
+    return this.messageService.findAll();
+  }
 
-    return res;
+  @Get(':id')
+  findOne(@Param('id') id: string) {
+    return this.messageService.findOne(+id);
+  }
+
+  @Patch(':id')
+  update(@Param('id') id: string, @Body() updateMessageDto: UpdateMessageDto) {
+    return this.messageService.update(+id, updateMessageDto);
   }
 
   @ApiOperation({ summary: 'Get All message' })

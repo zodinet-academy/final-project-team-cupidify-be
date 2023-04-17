@@ -7,7 +7,6 @@ import { Repository } from 'typeorm';
 import { InjectMapper } from '@automapper/nestjs';
 import { Mapper } from '@automapper/core';
 import { AddBlockedUserDto } from './dto/add-blocked-user.dto';
-import { MatchService } from '../match/match.service';
 
 @Injectable()
 export class BlackListService {
@@ -15,7 +14,6 @@ export class BlackListService {
     @InjectRepository(BlackList)
     private readonly _blackList: Repository<BlackList>,
     @InjectMapper() private readonly _classMapper: Mapper,
-    private readonly _matchService: MatchService,
   ) {}
 
   async addBlockedUser(
@@ -40,43 +38,10 @@ export class BlackListService {
         },
       };
     } catch (err) {
-      console.log(err.message);
       throw new BadRequestException(
         HttpStatus.BAD_REQUEST,
         'Add blocked user failed',
       );
-    }
-  }
-
-  async blockUser(
-    userId: string,
-    blockedId: string,
-  ): Promise<THttpResponse<void>> {
-    try {
-      const affectedResult = await this._matchService.removeMatch(
-        userId,
-        blockedId,
-      );
-
-      if (affectedResult === 0) {
-        throw new BadRequestException('Not Found Match');
-      }
-
-      const result = await this._blackList.save({
-        userId,
-        blockedId,
-      });
-
-      if (!result.id) {
-        throw new BadRequestException('Unable to add blocked user');
-      }
-
-      return {
-        statusCode: HttpStatus.CREATED,
-        message: 'Added blocked user',
-      };
-    } catch (err) {
-      throw new BadRequestException('Error in blocking');
     }
   }
 
