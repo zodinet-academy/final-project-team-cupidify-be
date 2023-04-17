@@ -4,10 +4,6 @@ import { AutoMap } from '@automapper/classes';
 export class MatchedUserProfile {
   @AutoMap()
   @ApiProperty()
-  id: string;
-
-  @AutoMap()
-  @ApiProperty()
   userId: string;
 
   @AutoMap()
