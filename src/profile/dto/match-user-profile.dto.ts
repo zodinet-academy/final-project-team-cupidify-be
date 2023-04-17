@@ -10,6 +10,7 @@ export class MatchedUserProfile {
   @ApiProperty()
   name: string;
 
+  // avatar
   @AutoMap()
   @ApiProperty()
   avatar: string;
