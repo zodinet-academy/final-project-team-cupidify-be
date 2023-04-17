@@ -5,9 +5,11 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Profile } from 'src/profile/entities/profile.entity';
 import { ProfileService } from 'src/profile/profile.service';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
+import { LIMIT_NOTI_RESULTS } from 'src/shared/constants/constants';
 import { NotiType } from 'src/shared/enums';
-import { Brackets, DataSource, Repository } from 'typeorm';
+import { Brackets, DataSource, LessThan, Repository } from 'typeorm';
 import { CreateNotificationDto } from './dto/create-notification.dto';
+import { FindNotiDto } from './dto/find-notification.dto';
 import { NotificationDto } from './dto/notification.dto';
 import { Notification } from './entities/notification.entity';
 
@@ -93,35 +95,77 @@ export class NotificationService {
     }
   }
 
-  async totalNotificationByUser(userId: string, page: number, limit: number) {
+  async totalNotificationByUser(userId: string, findNotiDto: FindNotiDto) {
+    const { lastNotiId } = findNotiDto;
     try {
-      const limitNotiPromise = await this._notificationRepository.findAndCount({
+      let result;
+      let total;
+      if (!lastNotiId) {
+        [result, total] = await this._notificationRepository.findAndCount({
+          where: [
+            { userFromId: userId, type: NotiType.MATCHING },
+            { userToId: userId, type: NotiType.MATCHING },
+            { userToId: userId, type: NotiType.LIKED },
+          ],
+          order: { createdAt: 'DESC' },
+          take: LIMIT_NOTI_RESULTS,
+        });
+      } else {
+        const lastNoti = await this._notificationRepository.findOne({
+          where: { id: lastNotiId },
+        });
+
+        const resultPro = this._notificationRepository.find({
+          where: [
+            {
+              userFromId: userId,
+              type: NotiType.MATCHING,
+              createdAt: LessThan(lastNoti.createdAt),
+            },
+            {
+              userToId: userId,
+              type: NotiType.MATCHING,
+              createdAt: LessThan(lastNoti.createdAt),
+            },
+            {
+              userToId: userId,
+              type: NotiType.LIKED,
+              createdAt: LessThan(lastNoti.createdAt),
+            },
+          ],
+          order: { createdAt: 'DESC' },
+          take: LIMIT_NOTI_RESULTS,
+        });
+
+        const totalPro = this._notificationRepository.count({
+          where: [
+            {
+              userFromId: userId,
+              type: NotiType.MATCHING,
+            },
+            {
+              userToId: userId,
+              type: NotiType.MATCHING,
+            },
+            {
+              userToId: userId,
+              type: NotiType.LIKED,
+            },
+          ],
+        });
+
+        [result, total] = await Promise.all([resultPro, totalPro]);
+      }
+
+      const unreadNotis = await this._notificationRepository.find({
         where: [
-          { userFromId: userId, type: NotiType.MATCHING },
-          { userToId: userId, type: NotiType.MATCHING },
-          { type: NotiType.LIKED, userToId: userId },
+          { userFromId: userId, type: NotiType.MATCHING, isSeen: false },
+          { userToId: userId, type: NotiType.MATCHING, isSeen: false },
+          { userToId: userId, type: NotiType.LIKED, isSeen: false },
         ],
-        order: { createdAt: 'DESC' },
-        skip: (page - 1) * limit,
-        take: limit,
       });
 
-      const allNotisPromise = await this._notificationRepository.find({
-        where: [
-          { userFromId: userId, type: NotiType.MATCHING },
-          { userToId: userId, type: NotiType.MATCHING },
-          { type: NotiType.LIKED, userToId: userId },
-        ],
-      });
-
-      const [[result, total], allNotis] = await Promise.all([
-        limitNotiPromise,
-        allNotisPromise,
-      ]);
-
-      const unreadNotis = allNotis.filter((noti) => !noti.isSeen).length;
-
-      const totalPages = Math.ceil(total / limit);
+      const totalPages = Math.ceil(total / LIMIT_NOTI_RESULTS);
 
       const notis = result.map(async (noti) => {
         const [fromProfileRes, toProfileRes] = await Promise.all([
@@ -149,7 +193,7 @@ export class NotificationService {
 
       return {
         statusCode: HttpStatus.OK,
-        data: { noti, totalPages, unreadNotis },
+        data: { noti, totalPages, unreadNotis: unreadNotis.length },
       };
     } catch (err) {
       throw new BadRequestException(HttpStatus.BAD_REQUEST, err.message);

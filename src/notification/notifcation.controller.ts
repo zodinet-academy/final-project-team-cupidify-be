@@ -3,6 +3,7 @@ import { ApiBearerAuth, ApiOkResponse, ApiTags } from '@nestjs/swagger';
 import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
 import { User } from 'src/user/decorator/user.decorator';
 import { UserDto } from 'src/user/dto/user.dto';
+import { FindNotiDto } from './dto/find-notification.dto';
 import { NotificationService } from './notification.service';
 
 @ApiTags('Notification')
@@ -16,15 +17,10 @@ export class NotificationController {
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
   @Get()
-  getNotifications(
-    @User() user: UserDto,
-    @Query('page') page = 1,
-    @Query('limit') limit = 3,
-  ) {
+  getNotifications(@User() user: UserDto, @Query() findNotiDto: FindNotiDto) {
     return this._notificationService.totalNotificationByUser(
       user.id,
-      page,
-      limit,
+      findNotiDto,
     );
   }
 
