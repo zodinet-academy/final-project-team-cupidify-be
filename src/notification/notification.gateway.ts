@@ -13,7 +13,6 @@ import { Server, Socket } from 'socket.io';
 import { JwtService } from '@nestjs/jwt';
 import * as dotenv from 'dotenv';
 import { Notification } from './entities/notification.entity';
-import { NotiType } from 'src/shared/enums';
 
 dotenv.config();
 
@@ -34,27 +33,14 @@ export class NotificationGateway {
       createNotificationDto,
     );
 
-    if (notification.type === NotiType.LIKED) {
-      this.server.emit(`noti-${notification.userToId}`, notification);
-    }
-
-    if (notification.type === NotiType.MATCHING) {
-      this.server.emit(`noti-${notification.userFromId}`, notification);
-      this.server.emit(`noti-${notification.userToId}`, notification);
-    }
-
-    console.log('socket match: ', notification);
+    this.server.emit(`noti-${notification.userFromId}`, notification);
+    this.server.emit(`noti-${notification.userToId}`, notification);
 
     return {
       statusCode: HttpStatus.OK,
       message: 'Hello',
       data: notification,
     };
-  }
-
-  @SubscribeMessage('test')
-  test(client: Socket) {
-    this.server.to(client.id).emit('test', 'hello');
   }
 
   // @UseGuards(WsGuard)

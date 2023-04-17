@@ -1,4 +1,3 @@
-import { ConversationProfileDto } from './dto/conversation-profile.dto';
 import {
   createMap,
   forMember,
@@ -14,6 +13,7 @@ import { UpdateProfileDto } from './dto/update-profile.dto';
 import { Profile } from './entities/profile.entity';
 import { MatchedUserProfile } from './dto/match-user-profile.dto';
 import { ProfileConversationDto } from './dto/profile-conversation.dto';
+import { ConversationProfileDto } from './dto/conversation-profile.dto';
 
 @Injectable()
 export class ProfileProfile extends AutomapperProfile {

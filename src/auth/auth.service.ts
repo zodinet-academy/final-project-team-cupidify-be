@@ -100,7 +100,10 @@ export class AuthService {
 
   async loginNotOTP(phone: string): Promise<AuthDto> {
     try {
+      console.log(phone);
+
       const user = await this._userService.isPhoneExist(phone);
+      console.log(user);
 
       if (!user.data.checked)
         throw new HttpException(
@@ -165,6 +168,8 @@ export class AuthService {
         idToken: accessToken,
         audience: process.env.GOOGLE_CLIENT_ID,
       });
+
+      console.log(ticket.getPayload());
     } catch (err) {
       throw err;
     }

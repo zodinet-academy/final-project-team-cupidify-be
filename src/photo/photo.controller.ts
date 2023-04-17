@@ -72,6 +72,7 @@ export class PhotoController {
     @User() user: UserDto,
   ): Promise<THttpResponse<void>> {
     const { id } = user;
+    console.log(files);
     return this._photoService.uploadImages(files, id);
   }
 
@@ -130,6 +131,7 @@ export class PhotoController {
     @Param('id') publicId: string,
   ): Promise<THttpResponse<void>> {
     const { id } = user;
+    console.log(file);
     return this._photoService.updateImage(file, id, publicId);
   }
 }
