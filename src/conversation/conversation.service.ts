@@ -37,40 +37,56 @@ export class ConversationService {
     createConversationDto: CreateConversationDto,
   ): Promise<THttpResponse<IConversation>> {
     try {
-      const findMatch: CreateMatchDto = {
-        userId: createConversationDto.userFromId,
-        matchedId: createConversationDto.userToId,
-      };
-      const toSaveConversation = this._classMapper.map(
-        createConversationDto,
-        CreateConversationDto,
-        Conversation,
-      );
-      const conversation = await this._classMapper.mapAsync(
-        await this._conversationRepository.save(toSaveConversation),
-        Conversation,
-        ConversationDto,
-      );
-      const responseUpdateMatch = await this._matchService.updateIsChat(
-        findMatch,
-      );
-      // Send data me to friend
-      const resProfileMe = await this._profileService.findOneByUserId(
-        createConversationDto.userFromId,
-      );
-      const profileMe = resProfileMe.data;
-      const sendConversation: IConversationSocket = {
-        conversationId: conversation.id,
-        userProfile: {
-          userId: profileMe.userId,
-          name: profileMe.name,
-          avatar: profileMe.avatar,
-        },
-        sendUserId: createConversationDto.userToId,
-      };
+      const { userFromId, userToId } = createConversationDto;
+      // check conversation
+      const conversationFinded = await this._conversationRepository.find({
+        where: [
+          { userFromId: userFromId, userToId: userToId },
+          { userFromId: userToId, userToId: userFromId },
+        ],
+      });
 
-      // create conversation
-      this._messageGateway.sendConversation(sendConversation);
+      let conversationId: string;
+
+      if (conversationFinded.length > 0) {
+        conversationId = conversationFinded[0].id;
+      } else {
+        const findMatch: CreateMatchDto = {
+          userId: createConversationDto.userFromId,
+          matchedId: createConversationDto.userToId,
+        };
+        const toSaveConversation = this._classMapper.map(
+          createConversationDto,
+          CreateConversationDto,
+          Conversation,
+        );
+        const conversation = await this._classMapper.mapAsync(
+          await this._conversationRepository.save(toSaveConversation),
+          Conversation,
+          ConversationDto,
+        );
+        conversationId = conversation.id;
+        const responseUpdateMatch = await this._matchService.updateIsChat(
+          findMatch,
+        );
+        // Send data me to friend
+        const resProfileMe = await this._profileService.findOneByUserId(
+          createConversationDto.userFromId,
+        );
+        const profileMe = resProfileMe.data;
+        const sendConversation: IConversationSocket = {
+          conversationId: conversation.id,
+          userProfile: {
+            userId: profileMe.userId,
+            name: profileMe.name,
+            avatar: profileMe.avatar,
+          },
+          sendUserId: createConversationDto.userToId,
+        };
+
+        // socket send conversation
+        this._messageGateway.sendConversation(sendConversation);
+      }
 
       // Send data user friend to me
       const res = await this._profileService.findOneByUserId(
@@ -79,7 +95,7 @@ export class ConversationService {
       const profile = res.data;
       const { userId, name, avatar } = profile;
       const conversationRes: IConversation = {
-        conversationId: conversation.id,
+        conversationId,
         userProfile: {
           userId,
           name,
