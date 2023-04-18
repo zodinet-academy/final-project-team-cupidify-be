@@ -2,6 +2,9 @@ import { AutoMap } from '@automapper/classes';
 
 export class MessageDto {
   @AutoMap()
+  id: string;
+
+  @AutoMap()
   conversationId: string;
 
   @AutoMap()
