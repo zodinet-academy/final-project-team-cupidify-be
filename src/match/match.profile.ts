@@ -12,7 +12,7 @@ export class MatchProfile extends AutomapperProfile {
   }
 
   override get profile() {
-    return (mapper) => {
+    return (mapper: Mapper) => {
       createMap(mapper, Match, FindMatchDto);
       createMap(mapper, DeleteMatchDto, Match);
     };

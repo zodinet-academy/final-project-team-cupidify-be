@@ -1,10 +1,5 @@
 import { CreateMessageDto } from './dto/create-message.dto';
-import {
-  BadGatewayException,
-  BadRequestException,
-  HttpStatus,
-  UseGuards,
-} from '@nestjs/common';
+import { BadGatewayException, HttpStatus, UseGuards } from '@nestjs/common';
 import {
   MessageBody,
   OnGatewayConnection,
@@ -20,11 +15,13 @@ import { GatewayGuard } from '../auth/guards/gateway.guard';
 import { MessageService } from './message.service';
 import { MessageType } from 'src/shared/enums';
 import { IConversationSocket } from 'src/shared/interfaces/conversation-profile.interface';
+import { IOnlineUser } from './interfaces';
 
 dotenv.config();
 
 @WebSocketGateway({
   path: '/chat',
+  maxHttpBufferSize: 1e7,
   cors: {
     origin: '*',
   },
@@ -37,14 +34,12 @@ export class MessageGateway
     private readonly _jwtService: JwtService,
   ) {}
 
-  private _online: any = [];
+  private _onlineUsers: IOnlineUser[] = [];
 
   @WebSocketServer() server;
   handleConnection(socket: Socket): void {
     try {
       const socketId = socket.id;
-
-      console.log(`New connecting socket id:`, socketId);
 
       const token: any = socket.handshake.query['token'];
       if (!token) {
@@ -57,8 +52,8 @@ export class MessageGateway
         secret: process.env.SECRET_KEY,
       });
 
-      const isExistUser = this._online.find(
-        (userOnline) => userOnline.id === user.id,
+      const isExistUser = this._onlineUsers.find(
+        (userOnline) => userOnline.userId === user.id,
       );
       if (isExistUser) return;
 
@@ -67,14 +62,8 @@ export class MessageGateway
         userId: user.id,
       };
 
-      this._online.push(socketUser);
-      console.log('current online', this._online);
+      this._onlineUsers.push(socketUser);
     } catch (error) {
-      // console.log(error.message);
-      // throw new BadRequestException(
-      //   HttpStatus.UNAUTHORIZED,
-      //   'No token provided!',
-      // );
       socket.disconnect(true);
     }
   }
@@ -82,26 +71,21 @@ export class MessageGateway
   handleDisconnect(socket: Socket): void {
     const socketId = socket.id;
 
-    console.log(`Disconnection socket id:`, socketId);
-
-    this._online = this._online.filter((i) => i.socketId !== socket.id);
-
-    console.log(this._online);
+    this._onlineUsers = this._onlineUsers.filter(
+      (i) => i.socketId !== socketId,
+    );
   }
 
   @UseGuards(GatewayGuard)
   @SubscribeMessage('send-message')
-  async sendMessage(
-    @MessageBody() message: CreateMessageDto,
-    // @UploadedFile() file: Express.Multer.File,
-  ) {
+  async sendMessage(@MessageBody() message: CreateMessageDto) {
     try {
       let result;
       if (message.type === MessageType.TEXT) {
         result = await this._messageService.create(null, message);
       }
       // Find user receiver
-      const socketIdReceiverId = this._online.find(
+      const socketIdReceiverId = this._onlineUsers.find(
         (i) => i.userId === message.receiverId,
       );
 
@@ -123,7 +107,7 @@ export class MessageGateway
   @SubscribeMessage('create-conversation')
   async sendConversation(@MessageBody() sendConversation: IConversationSocket) {
     try {
-      const socketIdReceiverId = this._online.find(
+      const socketIdReceiverId = this._onlineUsers.find(
         (i) => i.userId === sendConversation.sendUserId,
       );
 

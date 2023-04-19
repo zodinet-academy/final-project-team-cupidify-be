@@ -2,12 +2,10 @@ import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
 import { Injectable, BadRequestException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Profile } from 'src/profile/entities/profile.entity';
 import { ProfileService } from 'src/profile/profile.service';
-import { THttpResponse } from 'src/shared/common/http-response.dto';
 import { LIMIT_NOTI_RESULTS } from 'src/shared/constants/constants';
 import { NotiType } from 'src/shared/enums';
-import { Brackets, DataSource, LessThan, Repository } from 'typeorm';
+import { DataSource, LessThan, Repository } from 'typeorm';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { FindNotiDto } from './dto/find-notification.dto';
 import { NotificationDto } from './dto/notification.dto';
@@ -18,7 +16,6 @@ export class NotificationService {
   constructor(
     @InjectRepository(Notification)
     private readonly _notificationRepository: Repository<Notification>,
-    private _dataSource: DataSource,
     @InjectMapper() private readonly _classMapper: Mapper,
     private readonly _profileService: ProfileService,
   ) {}
@@ -99,7 +96,7 @@ export class NotificationService {
     const { lastNotiId } = findNotiDto;
     try {
       let result;
-      let total;
+      let total: number;
       if (!lastNotiId) {
         [result, total] = await this._notificationRepository.findAndCount({
           where: [
