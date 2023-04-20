@@ -16,8 +16,6 @@ export class CloudinaryUtilService {
     try {
       const result = await Promise.all(files.map((f) => this.upload(f)));
 
-      console.log(result);
-
       return {
         statusCode: HttpStatus.CREATED,
         data: result.map((i) => {
