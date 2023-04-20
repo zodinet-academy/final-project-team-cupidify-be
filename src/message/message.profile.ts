@@ -12,7 +12,7 @@ export class MessageProfile extends AutomapperProfile {
   }
 
   override get profile() {
-    return (mapper) => {
+    return (mapper: Mapper) => {
       createMap(mapper, Message, MessageDto);
       createMap(
         mapper,

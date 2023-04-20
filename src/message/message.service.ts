@@ -80,7 +80,7 @@ export class MessageService {
     const { conversationId, lastMessageId } = paginationQuery;
     try {
       let messages;
-      let total;
+      let total: number;
       if (!lastMessageId) {
         [messages, total] = await this._messageRepository.findAndCount({
           where: { conversationId },

@@ -38,7 +38,6 @@ export class CreateMessageDto {
     default: false,
     type: Boolean,
   })
-  // @IsBoolean()
   isSeen: any;
 
   @AutoMap()

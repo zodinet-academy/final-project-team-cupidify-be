@@ -1,4 +1,4 @@
-import { createMap, forMember, ignore, Mapper } from '@automapper/core';
+import { createMap, Mapper } from '@automapper/core';
 import { AutomapperProfile, InjectMapper } from '@automapper/nestjs';
 import { Injectable } from '@nestjs/common';
 import { CreateNotificationDto } from './dto/create-notification.dto';
