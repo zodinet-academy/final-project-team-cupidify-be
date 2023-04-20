@@ -1,26 +1,161 @@
-import { Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  HttpStatus,
+  Injectable,
+  NotFoundException,
+  UploadedFile,
+} from '@nestjs/common';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Brackets, DataSource, LessThan, Repository } from 'typeorm';
 import { CreateMessageDto } from './dto/create-message.dto';
-import { UpdateMessageDto } from './dto/update-message.dto';
+import { Message } from './entities/message.entity';
+import { Server } from 'socket.io';
+import { MessageDto } from './dto/message-dto';
+import { THttpResponse } from 'src/shared/common/http-response.dto';
+import { Mapper } from '@automapper/core';
+import { InjectMapper } from '@automapper/nestjs';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import { MessageType } from '../shared/enums';
+import { IConversationProfile } from '../profile/interfaces';
+import { MessageConversation } from './dto/message-conversation.dto';
+import { LIMIT_MSG_RESULTS } from 'src/shared/constants/constants';
+import { findMessagePaginationQuery } from './dto/find-message.dto';
 
 @Injectable()
 export class MessageService {
-  create(createMessageDto: CreateMessageDto) {
-    return 'This action adds a new message';
+  constructor(
+    @InjectRepository(Message)
+    private readonly _messageRepository: Repository<Message>,
+    @InjectMapper() private readonly _classMapper: Mapper,
+    private readonly _cloudinaryService: CloudinaryService,
+    private readonly _dataSource: DataSource,
+  ) {}
+
+  async sendMessage(
+    server: Server,
+    createMessageDto: CreateMessageDto,
+  ): Promise<THttpResponse<MessageDto>> {
+    try {
+      const message = await this._messageRepository.save(createMessageDto);
+
+      return {
+        statusCode: HttpStatus.CREATED,
+        data: message,
+      };
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
   }
 
-  findAll() {
-    return `This action returns all message`;
+  async create(
+    @UploadedFile() file: Express.Multer.File,
+    createMessageDto: CreateMessageDto,
+  ): Promise<THttpResponse<CreateMessageDto>> {
+    try {
+      if (createMessageDto.isSeen === 'false') createMessageDto.isSeen = false;
+      if (createMessageDto.isSeen === 'true') createMessageDto.isSeen = true;
+
+      if (file) {
+        const image = await this._cloudinaryService.uploadImageToCloudinary(
+          file,
+        );
+        createMessageDto.content = image.data.photoUrl;
+        createMessageDto.type = MessageType.IMAGE;
+      }
+
+      const message = await this._messageRepository.save(createMessageDto);
+
+      return {
+        statusCode: HttpStatus.CREATED,
+        data: message,
+      };
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} message`;
+  async findAll(
+    paginationQuery: findMessagePaginationQuery,
+  ): Promise<THttpResponse<{ totalPages: number; messages: MessageDto[] }>> {
+    const { conversationId, lastMessageId } = paginationQuery;
+    try {
+      let messages;
+      let total: number;
+      if (!lastMessageId) {
+        [messages, total] = await this._messageRepository.findAndCount({
+          where: { conversationId },
+          order: { createdAt: 'DESC' },
+          take: LIMIT_MSG_RESULTS,
+        });
+      } else {
+        const lastMessage = await this._messageRepository.findOne({
+          where: { id: lastMessageId },
+        });
+
+        const messagesPro = this._messageRepository.find({
+          where: { conversationId, createdAt: LessThan(lastMessage.createdAt) },
+          order: { createdAt: 'DESC' },
+          take: LIMIT_MSG_RESULTS,
+        });
+
+        const totalPro = this._messageRepository.count({
+          where: { conversationId },
+        });
+
+        [messages, total] = await Promise.all([messagesPro, totalPro]);
+      }
+
+      const mapMessages = await this._classMapper.mapArrayAsync(
+        messages,
+        Message,
+        MessageDto,
+      );
+
+      const totalPages = Math.ceil(total / LIMIT_MSG_RESULTS);
+
+      return {
+        statusCode: HttpStatus.OK,
+        data: {
+          totalPages,
+          messages: mapMessages,
+        },
+      };
+    } catch (err) {
+      throw new BadRequestException(err.message);
+    }
   }
 
-  update(id: number, updateMessageDto: UpdateMessageDto) {
-    return `This action updates a #${id} message`;
-  }
+  async getLastMessage(otherUserIds: IConversationProfile[]) {
+    try {
+      const lastMessages = await Promise.all(
+        otherUserIds.map(async (u) => {
+          return await this._dataSource
+            .createQueryBuilder(Message, 'mess')
+            .where(
+              new Brackets((query) =>
+                query.where('mess.conversationId = :conversationId', {
+                  conversationId: u.conversationId,
+                }),
+              ),
+            )
+            .orderBy('mess.updatedAt', 'DESC')
+            .getOne();
+        }),
+      );
 
-  remove(id: number) {
-    return `This action removes a #${id} message`;
+      if (!lastMessages) {
+        throw new NotFoundException('Not Found Messages');
+      }
+
+      const mapLastMessages = await this._classMapper.mapArrayAsync(
+        lastMessages,
+        Message,
+        MessageConversation,
+      );
+
+      return mapLastMessages;
+    } catch (err) {
+      throw new BadRequestException('Error Get Last Message');
+    }
   }
 }

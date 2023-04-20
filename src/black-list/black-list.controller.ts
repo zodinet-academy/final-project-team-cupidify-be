@@ -25,6 +25,15 @@ export class BlackListController {
 
   @ApiBearerAuth()
   @UseGuards(AuthenticationGuard)
+  @Post('/block-user')
+  async blockUser(@User() user: UserDto, @Body() block: AddBlockedUserDto) {
+    const { id } = user;
+    const { blockedId } = block;
+    return await this.blackListService.blockUser(id, blockedId);
+  }
+
+  @ApiBearerAuth()
+  @UseGuards(AuthenticationGuard)
   @Get()
   async getBlockedUser(
     @User() user: UserDto,

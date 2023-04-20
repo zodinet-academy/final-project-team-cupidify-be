@@ -21,7 +21,7 @@ export class CloudinaryUtilService {
         data: result.map((i) => {
           return {
             publicId: i.public_id,
-            photoUrl: i.url,
+            photoUrl: i.secure_url,
           };
         }),
       };
@@ -40,7 +40,7 @@ export class CloudinaryUtilService {
         statusCode: HttpStatus.CREATED,
         data: {
           publicId: result.public_id,
-          photoUrl: result.url,
+          photoUrl: result.secure_url,
         },
       };
     } catch (err) {

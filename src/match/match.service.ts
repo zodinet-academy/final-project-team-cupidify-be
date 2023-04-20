@@ -10,6 +10,7 @@ import { Mapper } from '@automapper/core';
 import { NotiType } from 'src/shared/enums';
 import { NotificationGateway } from 'src/notification/notification.gateway';
 import { Profile } from 'src/profile/entities/profile.entity';
+import { CreateMatchDto } from './dto/create-match.dto';
 
 @Injectable()
 export class MatchService {
@@ -39,6 +40,50 @@ export class MatchService {
   }
 
   async getMatches(
+    userId: string,
+  ): Promise<THttpResponse<MatchedUserProfile[]>> {
+    try {
+      const matches = await this._dataSource.manager
+        .createQueryBuilder()
+        .from(Match, 'match')
+        .select('profile', 'match')
+        .from(Profile, 'profile')
+        .where(
+          new Brackets((query) => {
+            query
+              .where('match.userId = :userId', { userId })
+              .andWhere('profile.userId = match.matchedId')
+              .andWhere('match.status = true')
+              .andWhere('match.isChat = false');
+          }),
+        )
+        .orWhere(
+          new Brackets((query) => {
+            query
+              .where('match.matchedId = :userId', { userId })
+              .andWhere('profile.userId = match.userId')
+              .andWhere('match.status = true')
+              .andWhere('match.isChat = false');
+          }),
+        )
+        .getMany();
+
+      const data = await this._classMapper.mapArrayAsync(
+        matches,
+        Profile,
+        MatchedUserProfile,
+      );
+
+      return {
+        statusCode: HttpStatus.OK,
+        data,
+      };
+    } catch (err) {
+      throw new BadRequestException(HttpStatus.NOT_FOUND, 'Not Found Matches');
+    }
+  }
+
+  async getMatched(
     userId: string,
   ): Promise<THttpResponse<MatchedUserProfile[]>> {
     try {
@@ -101,10 +146,6 @@ export class MatchService {
     }
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} match`;
-  }
-
   async update(match: Match) {
     try {
       const matchUpdate: Match = { ...match, status: !match.status };
@@ -114,6 +155,56 @@ export class MatchService {
         data: response,
         statusCode: HttpStatus.OK,
         message: 'matching!',
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  async removeMatch(userId: string, matchedId: string): Promise<number> {
+    try {
+      const match = await this._matchRepository.findOne({
+        where: [
+          {
+            userId,
+            matchedId,
+            status: true,
+          },
+          {
+            userId: matchedId,
+            matchedId: userId,
+            status: true,
+          },
+        ],
+      });
+
+      if (!match) {
+        throw new BadRequestException('Not Found Match');
+      }
+
+      const result = await this._matchRepository.delete({
+        userId: match.userId,
+        matchedId: match.matchedId,
+      });
+
+      return result.affected;
+    } catch (err) {
+      throw new BadRequestException('Not Found Match');
+    }
+  }
+
+  async updateIsChat(findMatch: CreateMatchDto) {
+    try {
+      const responseIsMatch = await this.checkIsMatch(findMatch);
+      const matchFinded = responseIsMatch.data;
+
+      const matchUpdate: Match = { ...matchFinded, isChat: true };
+
+      const response = await this._matchRepository.save(matchUpdate);
+      return {
+        data: response,
+        statusCode: HttpStatus.OK,
+        message: 'Update success',
       };
     } catch (error) {
       throw new BadRequestException(error.message);
@@ -134,7 +225,20 @@ export class MatchService {
     }
   }
 
-  async checkIsMatch(findMatchDto: FindMatchDto) {
+  async deleteMatch(userId: string, matchedId: string) {
+    try {
+      const result = await this._matchRepository.delete({
+        userId,
+        matchedId,
+        status: true,
+      });
+    } catch (err) {
+      console.log(err.message);
+      throw new BadRequestException('Unable to delete match');
+    }
+  }
+
+  async checkIsMatch(findMatchDto: CreateMatchDto) {
     const { userId, matchedId } = findMatchDto;
     try {
       const response = await this._matchRepository.findOne({
@@ -165,13 +269,21 @@ export class MatchService {
       // False: Create
       // True: Check Is User Created
       const responseIsMatch = await this.checkIsMatch(findMatch);
+
       if (!responseIsMatch.isExist) {
-        return this.create(findMatch);
+        const newMatch = await this.create(findMatch);
+        this._notificationGateway.create({
+          userFromId: newMatch.data.userId,
+          userToId: newMatch.data.matchedId,
+          isSeen: false,
+          type: NotiType.LIKED,
+        });
+
+        return newMatch;
       }
       const matchFinded = responseIsMatch.data;
-      // console.log('match find', matchFinded);
       const isUserCreated = matchFinded.userId === userId;
-      // console.log('is created', isUserCreated);
+
       // If it is user matched updated status
       if (!isUserCreated) {
         this._notificationGateway.create({
