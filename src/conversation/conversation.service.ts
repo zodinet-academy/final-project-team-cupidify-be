@@ -3,12 +3,7 @@ import { ProfileConversationDto } from '../profile/dto/profile-conversation.dto'
 import { ProfileService } from './../profile/profile.service';
 import { Mapper } from '@automapper/core';
 import { InjectMapper } from '@automapper/nestjs';
-import {
-  BadRequestException,
-  HttpStatus,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { BadRequestException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { THttpResponse } from 'src/shared/common/http-response.dto';
 import { Repository } from 'typeorm';

@@ -5,7 +5,6 @@ import {
   Put,
   UseGuards,
   Get,
-  Param,
   Query,
 } from '@nestjs/common';
 import { LocationService } from './location.service';
@@ -15,8 +14,6 @@ import { AuthenticationGuard } from 'src/auth/guards/auth.guard';
 import { User } from 'src/user/decorator/user.decorator';
 import { UserDto } from 'src/user/dto/user.dto';
 import { Location } from './entities/location.entity';
-import { GetUserWithinDto } from './dto/get-user-within.dto';
-import { UpdateTest } from './dto/update-test';
 import { PaginationQuery } from './dto/PaginationQuery .dto';
 
 @ApiTags('Location')

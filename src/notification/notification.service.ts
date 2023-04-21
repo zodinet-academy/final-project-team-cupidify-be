@@ -5,7 +5,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { ProfileService } from 'src/profile/profile.service';
 import { LIMIT_NOTI_RESULTS } from 'src/shared/constants/constants';
 import { NotiType } from 'src/shared/enums';
-import { DataSource, LessThan, Repository } from 'typeorm';
+import { LessThan, Repository } from 'typeorm';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { FindNotiDto } from './dto/find-notification.dto';
 import { NotificationDto } from './dto/notification.dto';

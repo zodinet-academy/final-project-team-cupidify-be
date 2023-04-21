@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  HttpException,
-  HttpStatus,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Point, Repository } from 'typeorm';
 import { UpdateLocationDto } from './dto/update-location.dto';

@@ -37,11 +37,6 @@ export class ProfileController {
     return this.profileService.findOneByUserId(user.id);
   }
 
-  // @Get(':id')
-  // findOne(@Param('id') id: string) {
-  //   return this.profileService.findOne(+id);
-  // }
-
   @ApiOkResponse({
     description: 'Update profile succesfully',
   })
@@ -55,9 +50,4 @@ export class ProfileController {
   ): Promise<THttpResponse<void>> {
     return this.profileService.update(user.id, updateProfileDto);
   }
-
-  // @Delete(':id')
-  // remove(@Param('id') id: string) {
-  //   return this.profileService.remove(+id);
-  // }
 }
